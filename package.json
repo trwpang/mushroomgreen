@@ -1,0 +1,21 @@
+{
+  "name": "mushroomgreen",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Family history archive map of Mushroom Green, 1865.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.2.0",
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
