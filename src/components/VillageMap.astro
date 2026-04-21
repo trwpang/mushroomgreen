@@ -1,0 +1,372 @@
+---
+/**
+ * VillageMap — a 1865 Mushroom Green Leaflet map.
+ *
+ * Renders only the map container, the popup CSS, and the client-side script.
+ * The page header (title bar + legend) belongs to index.astro.
+ *
+ * Static reference data (boundary, brook, greens, family colours) is imported
+ * from JSON and passed to the client script via `define:vars`. House data is
+ * fetched at runtime from `/households.json` (built by households.json.ts).
+ *
+ * Visual fidelity with legacy/Map/mushroom_green_1865_v10_9_3.html is the spec.
+ *
+ * Note on innerHTML: the compass SVG and divIcon HTML below are constructed
+ * from data we author ourselves (boundary/brook/greens/families JSON, and the
+ * authored content collection). No user-supplied input flows in. The legacy
+ * file uses the same approach.
+ */
+import boundary from '../data/boundary.json';
+import brook from '../data/brook.json';
+import greens from '../data/greens.json';
+import families from '../data/families.json';
+---
+
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+/>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+  is:inline
+></script>
+
+<div
+  id="map"
+  style="height: calc(100vh - 48px); width: 100%; background: #ffffff;"
+></div>
+
+<style is:global>
+  /* Leaflet container background — match legacy. */
+  .leaflet-container { background: #ffffff !important; }
+
+  /* Popup wrapper — verbatim from legacy lines 30-42. */
+  .leaflet-popup-content-wrapper {
+    border-radius: 3px;
+    font-family: Georgia, serif;
+    border: 1px solid #803303;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+  }
+  .leaflet-popup-content { margin: 10px 14px; min-width: 175px; }
+  .pt {
+    font-size: 0.92em;
+    font-weight: bold;
+    color: #2c1810;
+    border-bottom: 1px solid #c8a87a;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+  }
+  .pr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .pn  { font-size: 0.85em; color: #111; flex: 1; }
+  .pnw { font-size: 0.85em; color: #1a5276; font-weight: bold; flex: 1; }
+  .poc {
+    font-size: 0.76em;
+    color: #555;
+    background: #f0ece0;
+    border-radius: 10px;
+    padding: 1px 7px;
+    white-space: nowrap;
+  }
+  .pocw {
+    font-size: 0.76em;
+    color: #1a5276;
+    background: #dceefb;
+    border-radius: 10px;
+    padding: 1px 7px;
+    white-space: nowrap;
+  }
+  .ps {
+    font-size: 0.68em;
+    color: #999;
+    margin-top: 5px;
+    font-style: italic;
+    border-top: 1px solid #ece6d8;
+    padding-top: 4px;
+  }
+  .pest {
+    font-size: 0.68em;
+    color: #c07000;
+    margin-top: 5px;
+    font-style: italic;
+  }
+
+  /* House labels — divIcon container with halo'd serif text. */
+  .house-label { background: transparent; border: none; box-shadow: none; }
+  .house-label div {
+    font-family: Georgia, serif;
+    line-height: 1.2;
+    text-align: center;
+    text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* Founder pulse — injected ONCE here, not per-marker (legacy duplicates
+     this block inside every marker, which is wasteful). */
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(184, 134, 11, 0.6); }
+    70%  { box-shadow: 0 0 0 10px rgba(184, 134, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(184, 134, 11, 0); }
+  }
+</style>
+
+<script
+  define:vars={{ boundary, brook, greens, families }}
+  is:inline
+>
+  // ── Map setup ──────────────────────────────────────────────────────────
+  const SW = [52.4723, -2.0987];
+  const NE = [52.4797, -2.0909];
+  const viewBounds = [SW, NE];
+
+  const map = L.map('map', {
+    maxBounds: viewBounds,
+    maxBoundsViscosity: 1.0,
+    minZoom: 16,
+    maxZoom: 21,
+    zoomControl: true,
+    scrollWheelZoom: true,
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:
+      '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 21,
+  }).addTo(map);
+
+  // ── Inverse mask: world rectangle with the settlement polygon punched out
+  const outerRing = [[-90, -180], [-90, 180], [90, 180], [90, -180]];
+  L.polygon([outerRing, boundary], {
+    color: 'none',
+    fillColor: '#ffffff',
+    fillOpacity: 0.92,
+    interactive: false,
+  }).addTo(map);
+
+  // Settlement boundary outline (dashed brown).
+  L.polygon(boundary, {
+    color: '#803303',
+    weight: 2,
+    dashArray: '6 3',
+    fill: false,
+  }).addTo(map);
+
+  map.fitBounds(viewBounds, { padding: [0, 0] });
+
+  // ── Compass control (top-right, see spec) ─────────────────────────────
+  const compassSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">'
+    + '<defs><filter id="cds"><feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="rgba(60,20,0,0.4)"/></filter></defs>'
+    + '<g filter="url(#cds)">'
+    + '<circle cx="44" cy="44" r="42" fill="none" stroke="#6b3a10" stroke-width="1.5" opacity="0.7"/>'
+    + '<circle cx="44" cy="44" r="38" fill="rgba(245,230,195,0.90)" stroke="#6b3a10" stroke-width="0.8" opacity="0.7"/>'
+    + '<polygon points="44,4 47,38 44,30 41,38" fill="#2c1008"/>'
+    + '<polygon points="44,84 41,50 44,58 47,50" fill="#7a3a18"/>'
+    + '<polygon points="4,44 38,41 30,44 38,47" fill="#7a3a18"/>'
+    + '<polygon points="84,44 50,47 58,44 50,41" fill="#7a3a18"/>'
+    + '<polygon points="44,44 18,18 42,40" fill="#b87820"/>'
+    + '<polygon points="44,44 70,18 46,40" fill="#b87820"/>'
+    + '<polygon points="44,44 18,70 42,48" fill="#b87820"/>'
+    + '<polygon points="44,44 70,70 46,48" fill="#b87820"/>'
+    + '<polygon points="44,44 27,22 43,39" fill="#d4a848"/>'
+    + '<polygon points="44,44 61,22 45,39" fill="#d4a848"/>'
+    + '<polygon points="44,44 22,27 39,43" fill="#d4a848"/>'
+    + '<polygon points="44,44 66,27 49,43" fill="#d4a848"/>'
+    + '<polygon points="44,44 22,61 39,45" fill="#d4a848"/>'
+    + '<polygon points="44,44 66,61 49,45" fill="#d4a848"/>'
+    + '<polygon points="44,44 27,66 43,49" fill="#d4a848"/>'
+    + '<polygon points="44,44 61,66 45,49" fill="#d4a848"/>'
+    + '<circle cx="44" cy="44" r="4.5" fill="#2c1008" stroke="#f5e6c8" stroke-width="1.2"/>'
+    + '<circle cx="44" cy="44" r="2" fill="#f5e6c8"/>'
+    + '<text x="44" y="15" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#2c1008">N</text>'
+    + '</g></svg>';
+
+  const CompassControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function () {
+      const div = L.DomUtil.create('div', '');
+      div.style.cssText =
+        'background:none;border:none;box-shadow:none;margin:0 8px 8px 0;line-height:0;';
+      // Trusted: the SVG is a literal string above, not user input.
+      div.innerHTML = compassSvg;
+      L.DomEvent.disableClickPropagation(div);
+      return div;
+    },
+  });
+  new CompassControl().addTo(map);
+
+  // ── Black Brook — three stacked polylines for soft river effect ───────
+  L.polyline(brook, {
+    color: '#a8d8f0', weight: 9, opacity: 0.35, interactive: false,
+  }).addTo(map);
+  L.polyline(brook, {
+    color: '#4a90d9', weight: 4.5, opacity: 0.8, interactive: false,
+  }).addTo(map);
+  L.polyline(brook, {
+    color: '#c8eaf8', weight: 1.8, opacity: 0.65, interactive: false,
+  }).addTo(map);
+
+  // Brook labels — italic, rotated 22deg, halo'd. Two fixed positions per spec.
+  const brookLabelHtml =
+    '<div style="font-family:Georgia,serif;font-size:9px;color:#1a5a90;font-style:italic;white-space:nowrap;transform:rotate(22deg);transform-origin:left center;text-shadow:0 0 3px #fff,0 0 3px #fff;">Black Brook</div>';
+  L.marker([52.47668, -2.09548], {
+    icon: L.divIcon({ className: '', html: brookLabelHtml, iconAnchor: [0, 6] }),
+    interactive: false,
+  }).addTo(map);
+  L.marker([52.47508, -2.0948], {
+    icon: L.divIcon({ className: '', html: brookLabelHtml, iconAnchor: [0, 6] }),
+    interactive: false,
+  }).addTo(map);
+
+  // ── Greens (and the Village Green label) ──────────────────────────────
+  greens.forEach((g) => {
+    L.polygon(g.polygon, {
+      color: '#5a8a3c',
+      weight: 1.5,
+      fillColor: '#8db86a',
+      fillOpacity: 0.55,
+    }).addTo(map);
+
+    if (g.label_position) {
+      const labelText = g.name === 'Village Green' ? 'Village<br>Green' : g.name;
+      L.marker(g.label_position, {
+        icon: L.divIcon({
+          className: '',
+          html: `<div style="font-family:Georgia,serif;font-size:7.5px;color:#2d5a1b;font-style:italic;text-align:center;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 2px #fff;">${labelText}</div>`,
+          iconAnchor: [16, 10],
+        }),
+        interactive: false,
+      }).addTo(map);
+    }
+  });
+
+  // ── Households ─────────────────────────────────────────────────────────
+  // Inline equivalents of family-style.ts (helper functions can't cross the
+  // server/client boundary; the colour table arrives via define:vars).
+  function styleFor(family, founder) {
+    if (founder) return families.Founder ?? families.Other;
+    return families[family] ?? families.Other;
+  }
+  function fillOpacityFor(founder, isWeaver, estimated) {
+    if (founder) return 0.95;
+    if (estimated) return 0.7;
+    if (isWeaver) return 0.88;
+    return 0.68;
+  }
+  function borderWeightFor(founder, isWeaver) {
+    if (founder) return 3;
+    if (isWeaver) return 2.5;
+    return 1.5;
+  }
+
+  // Henry Weaver bio for the founder popup (only #22 has founder: true).
+  const founderBioHtml = '<div style="margin-top:6px;padding:7px 8px;background:#fffbea;border-left:3px solid #b8860b;border-radius:2px;font-size:0.78em;line-height:1.5;color:#4a3800;">'
+    + '<div style="font-weight:bold;margin-bottom:3px;">&#9733; Founder of Mushroom Green</div>'
+    + '<div><b>Henry Weaver b.1789, Sedgley</b> &mdash; patriarch of the Mushroom Green Weavers and one of the first settlers of the enclosure, establishing the family\'s presence in the chainmaking community. Lived here from c.1800 until 1857, when his wife Ann Maria passed away. He then moved to 52 Netherton Hill, and his son <b>John Weaver b.1824</b> took over the house.</div>'
+    + '</div>';
+
+  fetch('/households.json')
+    .then((r) => r.json())
+    .then((households) => {
+      households.forEach((h) => {
+        const isFounder = !!h.founder;
+        const isWeaver = h.family === 'Weaver';
+        const isEst = !!h.estimated_position;
+        const swatch = styleFor(h.family, isFounder);
+
+        // Polygon
+        const poly = L.polygon(h.polygon, {
+          fillColor: swatch.fill,
+          fillOpacity: fillOpacityFor(isFounder, isWeaver, isEst),
+          color: swatch.border,
+          weight: borderWeightFor(isFounder, isWeaver),
+          dashArray: isEst ? '5 3' : null,
+        }).addTo(map);
+
+        // House label — number + surname
+        const surname = isFounder
+          ? '\u2605 Weaver'
+          : h.household_name.replace(/\s+\d{4}$/, '').split(' ').slice(-1)[0];
+        const labelColor = isFounder
+          ? '#7a5900'
+          : isEst
+          ? '#a06000'
+          : h.family && h.family !== 'Other'
+          ? swatch.border
+          : '#2c1810';
+        const labelIcon = L.divIcon({
+          className: 'house-label',
+          html: `<div style="color:${labelColor};"><span style="font-size:9px;font-weight:bold;">${h.number}</span><br><span style="font-size:7px;">${surname}</span></div>`,
+          iconAnchor: [0, 8],
+        });
+        L.marker([h.position.lat, h.position.lon], {
+          icon: labelIcon,
+          interactive: false,
+        }).addTo(map);
+
+        // Founder pulse — Henry Weaver only
+        if (isFounder) {
+          const starIcon = L.divIcon({
+            className: '',
+            html: '<div style="width:28px;height:28px;border-radius:50%;border:2.5px solid #b8860b;animation:pulse 1.8s ease-out infinite;box-shadow:0 0 0 0 rgba(184,134,11,0.6);pointer-events:none;"></div>',
+            iconAnchor: [14, 14],
+          });
+          L.marker([h.position.lat, h.position.lon], {
+            icon: starIcon,
+            interactive: false,
+          }).addTo(map);
+        }
+
+        // Popup styling — name and occupants pills change colour by family.
+        const matchedFamily = h.family && h.family !== 'Other';
+        const nameClass = isWeaver && !isFounder ? 'pnw' : 'pn';
+        const nameStyle = isFounder
+          ? 'color:#7a5900;font-weight:bold;font-size:0.95em;'
+          : matchedFamily && !isWeaver
+          ? `color:${swatch.border};font-weight:bold;`
+          : '';
+        const occClass = isWeaver && !isFounder ? 'pocw' : 'poc';
+        const occBg = isFounder
+          ? '#f9e04b'
+          : matchedFamily && !isWeaver
+          ? swatch.fill
+          : '';
+        const occColor = isFounder
+          ? '#7a5900'
+          : matchedFamily && !isWeaver
+          ? swatch.border
+          : '';
+        const occStyle =
+          occBg || occColor ? `background:${occBg};color:${occColor};` : '';
+
+        const occWord = `occupant${h.occupants_1861 !== 1 ? 's' : ''}`;
+        const founderBlock = isFounder ? founderBioHtml : '';
+        const estBlock = isEst
+          ? '<div class="pest">&#9432; Position estimated &mdash; not yet in OSM</div>'
+          : '';
+
+        poly.bindPopup(
+          `<div class="pt">${isFounder ? '&#9733;&nbsp;' : ''}No.&nbsp;${h.number} &mdash; Mushroom Green</div>
+<div class="pr">
+  <span class="${nameClass}" style="${nameStyle}">${h.household_name}</span>
+  <span class="${occClass}" style="${occStyle}">${h.occupants_1861}&nbsp;${occWord}</span>
+</div>
+${founderBlock}
+${estBlock}
+<p style="margin-top:8px;text-align:right;font-size:0.78em;"><a href="/household/${h.slug}">View household &rarr;</a></p>`,
+          { maxWidth: 280 }
+        );
+        poly.on('mouseover', function () { this.openPopup(); });
+        poly.on('mouseout', function () { this.closePopup(); });
+      });
+    })
+    .catch((err) => {
+      // Fail loudly in the console; the rest of the map is still usable.
+      console.error('VillageMap: failed to load /households.json', err);
+    });
+</script>
