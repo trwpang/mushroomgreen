@@ -1,0 +1,13 @@
+{
+  "Weaver":     {"fill": "#aed6f1", "border": "#2471a3"},
+  "Billingham": {"fill": "#f9c6d0", "border": "#c0392b"},
+  "Hancox":     {"fill": "#d5f5e3", "border": "#27ae60"},
+  "Dimmock":    {"fill": "#fdebd0", "border": "#e67e22"},
+  "Griffiths":  {"fill": "#e8daef", "border": "#8e44ad"},
+  "Nicklin":    {"fill": "#d6eaf8", "border": "#1a6fa8"},
+  "Pearson":    {"fill": "#fdfbd4", "border": "#b7950b"},
+  "Sidaway":    {"fill": "#f5cba7", "border": "#ca6f1e"},
+  "Kendrick":   {"fill": "#b8ede4", "border": "#1a8878"},
+  "Other":      {"fill": "#f0ece0", "border": "#8a7a55"},
+  "Founder":    {"fill": "#f9e04b", "border": "#b8860b"}
+}
