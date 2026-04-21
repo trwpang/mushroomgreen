@@ -1,19 +1,137 @@
 ---
-// Placeholder homepage. The map and per-household pages will be built per
-// docs/plans/2026-04-21-mushroom-green-rebuild-design.md and the implementation
-// plan that follows.
----
+/**
+ * Homepage — the Mushroom Green 1865 map.
+ *
+ * Thin wrapper around <VillageMap />. Renders the dark-brown header with
+ * title + family-colour legend (lifted from
+ * legacy/Map/mushroom_green_1865_v10_9_3.html lines 47-67), pulling colours
+ * from families.json so the legend stays in sync with the map polygons.
+ *
+ * Print CSS preserved for A4-landscape handouts: shrinks the header to 36px
+ * and overrides the map's default `100vh - 48px` height accordingly.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import VillageMap from '../components/VillageMap.astro';
+import families from '../data/families.json';
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mushroom Green — 1865</title>
-  </head>
-  <body style="font-family: Georgia, serif; padding: 2rem; max-width: 40rem; margin: 0 auto;">
-    <h1>Mushroom Green — 1865</h1>
-    <p>Scaffold complete. Implementation in progress.</p>
-    <p>See <code>docs/plans/2026-04-21-mushroom-green-rebuild-design.md</code> for the design.</p>
-  </body>
-</html>
+// Legend order matches the legacy header. The Founder swatch leads, the nine
+// family colours follow in legacy order, then Other, then the boundary swatch
+// (rendered separately because it has no fill).
+const legendFamilies: Array<{ key: keyof typeof families; label: string; textColor?: string }> = [
+  { key: 'Founder',    label: '\u2605 Founder' },
+  { key: 'Weaver',     label: 'Weaver' },
+  { key: 'Billingham', label: 'Billingham' },
+  { key: 'Hancox',     label: 'Hancox' },
+  { key: 'Dimmock',    label: 'Dimmock' },
+  { key: 'Griffiths',  label: 'Griffiths' },
+  { key: 'Nicklin',    label: 'Nicklin' },
+  { key: 'Pearson',    label: 'Pearson' },
+  { key: 'Sidaway',    label: 'Sidaway' },
+  { key: 'Kendrick',   label: 'Kendrick' },
+  // Legacy uses #e8e0cc for the "Other" label text (the fill #f0ece0 is too
+  // pale to read on the dark header). Keep that override.
+  { key: 'Other',      label: 'Other', textColor: '#e8e0cc' },
+];
+---
+<BaseLayout title="Mushroom Green — 1865 Occupants">
+  <div id="header">
+    <div>
+      <h1>Mushroom Green &mdash; 1865 Occupants</h1>
+      <p>Book of Weaver &middot; OSM mapping by Mike Mushroom &middot; 59 households &middot; Click any house for details</p>
+    </div>
+    <div id="legend">
+      {legendFamilies.map(({ key, label, textColor }) => {
+        const swatch = families[key];
+        const borderWidth = key === 'Founder' ? 2 : key === 'Other' ? 1 : 1.5;
+        return (
+          <div class="li">
+            <div class="lb" style={`background:${swatch.fill};border:${borderWidth}px solid ${swatch.border};`}></div>
+            <span style={`color:${textColor ?? swatch.fill}`}>{label}</span>
+          </div>
+        );
+      })}
+      <div class="li">
+        <div class="lbd"></div>
+        <span style="color:#c8a87a">Boundary</span>
+      </div>
+    </div>
+  </div>
+  <VillageMap />
+</BaseLayout>
+
+<style>
+  /* Header — lifted from legacy lines 12-22. */
+  #header {
+    background: #2c1810;
+    color: #f5e6c8;
+    padding: 8px 16px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #803303;
+  }
+  #header h1 {
+    font-size: 1.05em;
+    letter-spacing: 0.03em;
+  }
+  #header p {
+    font-size: 0.7em;
+    color: #c8a87a;
+    margin-top: 1px;
+  }
+
+  /* Legend swatches — lifted from legacy lines 19-22. */
+  #legend {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.7em;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 55%;
+  }
+  .li {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .lb {
+    width: 13px;
+    height: 9px;
+    border-radius: 2px;
+  }
+  .lbd {
+    width: 13px;
+    height: 9px;
+    border-radius: 2px;
+    border: 2px dashed #803303;
+  }
+
+  /* Reset margins so the header height is honoured exactly. */
+  :global(body) {
+    margin: 0;
+    font-family: Georgia, serif;
+    background: #ffffff;
+  }
+  :global(*) {
+    box-sizing: border-box;
+  }
+
+  /* Print CSS — A4-landscape handouts. Shrinks the header to 36px and
+     overrides VillageMap's inline `height: calc(100vh - 48px)`. */
+  @media print {
+    :global(body) { background: #fff; }
+    #header {
+      background: #2c1810 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      height: 36px;
+      padding: 5px 12px;
+    }
+    :global(#map) {
+      height: calc(100vh - 36px) !important;
+    }
+  }
+</style>
