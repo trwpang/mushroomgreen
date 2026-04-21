@@ -1,0 +1,26 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Georgia, serif;
+  background: #ffffff;
+  color: #2c1810;
+  line-height: 1.5;
+}
+
+a {
+  color: #803303;
+  text-decoration: underline;
+}
+
+a:hover {
+  color: #2c1810;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
