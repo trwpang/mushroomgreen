@@ -1,0 +1,718 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mushroom Green — 1865 — Book of Weaver</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&amp;display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {  background:#ffffff; }
+#header {
+  background:#2c1810; color:#f5e6c8; padding:12px 16px; height:72px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:2px solid #803303;
+}
+#header h1 { font-size:1.2em; letter-spacing:0.03em; }
+#header p { font-size:0.8em; color:#c8a87a; margin-top:1px; }
+#legend { display:flex; gap:10px; align-items:center; font-size:0.7em; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end; max-width:55%; }
+.li { display:flex; align-items:center; gap:4px; }
+.lb { width:13px; height:9px; border-radius:2px; }
+.lbd { width:13px; height:9px; border-radius:2px; border:2px dashed #803303; }
+#map { height:calc(100vh - 72px); width:100%; background:#ffffff; }
+.leaflet-container { background:#ffffff !important; }
+@media print {
+  body { background:#fff; }
+  #header { background:#2c1810 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; height:36px; padding:5px 12px; }
+  #map { height:calc(100vh - 36px); }
+}
+.leaflet-popup-content-wrapper {
+  border-radius:3px; 
+  border:1px solid #803303; box-shadow:0 3px 12px rgba(0,0,0,0.5);
+}
+.leaflet-popup-content { margin:10px 14px; min-width:175px; }
+.pt { font-size:0.92em; font-weight:bold; color:#2c1810; border-bottom:1px solid #c8a87a; padding-bottom:4px; margin-bottom:6px; }
+.pr { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.pn  { font-size:0.85em; color:#111; flex:1; }
+.pnw { font-size:0.85em; color:#1a5276; font-weight:bold; flex:1; }
+.poc  { font-size:0.76em; color:#555; background:#f0ece0; border-radius:10px; padding:1px 7px; white-space:nowrap; }
+.pocw { font-size:0.76em; color:#1a5276; background:#dceefb; border-radius:10px; padding:1px 7px; white-space:nowrap; }
+.ps { font-size:0.68em; color:#999; margin-top:5px; font-style:italic; border-top:1px solid #ece6d8; padding-top:4px; }
+.pest { font-size:0.68em; color:#c07000; margin-top:5px; font-style:italic; }
+.house-label { background:transparent; border:none; box-shadow:none; }
+.house-label div {  line-height:1.2; text-align:center; text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff; pointer-events:none; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div id="header">
+  <div>
+    <h1>Mushroom Green — 1865 Occupants</h1>
+    <p>Book of Weaver · OSM mapping by Mike Mushroom · 59 households · Click any house for details</p>
+  </div>
+  <div id="legend">
+    <div class="li"><div class="lb" style="background:#f9e04b;border:2px solid #b8860b;"></div><span style="color:#f9e04b">★ Founder</span></div>
+    <div class="li"><div class="lb" style="background:#aed6f1;border:1.5px solid #2471a3;"></div><span style="color:#aed6f1">Weaver</span></div>
+    <div class="li"><div class="lb" style="background:#f9c6d0;border:1.5px solid #c0392b;"></div><span style="color:#f9c6d0">Billingham</span></div>
+    <div class="li"><div class="lb" style="background:#d5f5e3;border:1.5px solid #27ae60;"></div><span style="color:#d5f5e3">Hancox</span></div>
+    <div class="li"><div class="lb" style="background:#fdebd0;border:1.5px solid #e67e22;"></div><span style="color:#fdebd0">Dimmock</span></div>
+    <div class="li"><div class="lb" style="background:#e8daef;border:1.5px solid #8e44ad;"></div><span style="color:#e8daef">Griffiths</span></div>
+    <div class="li"><div class="lb" style="background:#d6eaf8;border:1.5px solid #1a6fa8;"></div><span style="color:#d6eaf8">Nicklin</span></div>
+    <div class="li"><div class="lb" style="background:#fdfbd4;border:1.5px solid #b7950b;"></div><span style="color:#fdfbd4">Pearson</span></div>
+    <div class="li"><div class="lb" style="background:#f5cba7;border:1.5px solid #ca6f1e;"></div><span style="color:#f5cba7">Sidaway</span></div>
+    <div class="li"><div class="lb" style="background:#b8ede4;border:1.5px solid #1a8878;"></div><span style="color:#b8ede4">Kendrick</span></div>
+    <div class="li"><div class="lb" style="background:#f0ece0;border:1px solid #8a7a55;"></div><span style="color:#e8e0cc">Other</span></div>
+    <div class="li"><div class="lb" style="background:#d8c8f0;border:1.5px solid #6844b0;"></div><span style="color:#d8c8f0">Homer</span></div>
+    <div class="li"><div class="lbd"></div><span style="color:#c8a87a">Boundary</span></div>
+  </div>
+</div>
+
+<div id="area-key" style="display:none;position:fixed;bottom:12px;left:12px;z-index:1000;
+  background:rgba(255,248,235,0.93);border:1px solid #803303;border-radius:4px;
+  padding:7px 10px;font-size:10px;color:#2c1408;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);max-width:210px;">
+  <div style="font-weight:bold;font-size:11px;border-bottom:1px solid #c8a87a;
+    padding-bottom:3px;margin-bottom:4px;">Map Areas</div>
+  <div style="display:grid;grid-template-columns:18px 1fr;gap:2px 4px;line-height:1.5;">
+    <b>A</b><span>Mushroom Green Valley</span>
+    <b>B</b><span>MG Settlement boundary</span>
+    <b>C</b><span>Saltwells Nature Reserve</span>
+    <b>D</b><span>Village Green N</span>
+    <b>E</b><span>Village Green S</span>
+    <b>F</b><span>Industrial Area</span>
+    <b>G</b><span>Residential W</span>
+    <b>H</b><span>Residential NE</span>
+    <b>I</b><span>Residential SE</span>
+    <b>J</b><span>Residential Central</span>
+    <b>K</b><span>Residential S</span>
+    <b>M</b><span>West H</span>
+    <b>L</b><span>Pond</span>
+  </div>
+  <div style="margin-top:5px;font-size:9px;color:#888;border-top:1px solid #e0d0b0;padding-top:3px;">
+    Console: changeArea('D','red')<br>resetArea('D') &nbsp; listAreas()
+  </div>
+</div>
+<div id="map" class="leaflet-container leaflet-touch leaflet-safari leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane" style="filter: sepia(0.2) brightness(0.98) contrast(0.97);"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 21; transform: translate3d(0px, 0px, 0px) scale(1.189207);"><img alt="" src="https://c.basemaps.cartocdn.com/light_all/18/129547/86023.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(235px, 3px, 0px); opacity: 1;"><img alt="" src="https://d.basemaps.cartocdn.com/light_all/18/129547/86024.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(235px, 259px, 0px); opacity: 1;"><img alt="" src="https://b.basemaps.cartocdn.com/light_all/18/129546/86023.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-21px, 3px, 0px); opacity: 1;"><img alt="" src="https://d.basemaps.cartocdn.com/light_all/18/129548/86023.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(491px, 3px, 0px); opacity: 1;"><img alt="" src="https://c.basemaps.cartocdn.com/light_all/18/129546/86024.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-21px, 259px, 0px); opacity: 1;"><img alt="" src="https://a.basemaps.cartocdn.com/light_all/18/129548/86024.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(491px, 259px, 0px); opacity: 1;"><img alt="" src="https://b.basemaps.cartocdn.com/light_all/18/129547/86022.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(235px, -253px, 0px); opacity: 1;"><img alt="" src="https://a.basemaps.cartocdn.com/light_all/18/129547/86025.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(235px, 515px, 0px); opacity: 1;"><img alt="" src="https://a.basemaps.cartocdn.com/light_all/18/129546/86022.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-21px, -253px, 0px); opacity: 1;"><img alt="" src="https://c.basemaps.cartocdn.com/light_all/18/129548/86022.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(491px, -253px, 0px); opacity: 1;"><img alt="" src="https://d.basemaps.cartocdn.com/light_all/18/129546/86025.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-21px, 515px, 0px); opacity: 1;"><img alt="" src="https://b.basemaps.cartocdn.com/light_all/18/129548/86025.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(491px, 515px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="1008" height="998" viewBox="-84 -83 1008 998" style="transform: translate3d(-84px, -83px, 0px);"><g><path stroke="none" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#ffffff" fill-opacity="0.92" fill-rule="evenodd" d="M927 918L927 -86L-87 -86L-87 918zM283 -86L232 -86L128 11L121 808L494 818L598 662L853 287L287 -86L285 -86L288 -81z"></path><path class="leaflet-interactive" stroke="#803303" stroke-opacity="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 3" fill="none" d="M284 -85L231 -85L128 11L121 808L494 818L598 662L853 287L289 -85L286 -85L288 -81z"></path><path class="leaflet-interactive" stroke="#5a8a3c" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#8db86a" fill-opacity="0.55" fill-rule="evenodd" d="M525 174L517 107L586 118L637 207z"></path><path class="leaflet-interactive" stroke="#5a8a3c" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#8db86a" fill-opacity="0.55" fill-rule="evenodd" d="M697 250L819 274L923 379L826 341L774 409L687 331L668 325L674 285z"></path><path stroke="#7a9888" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#e3ece6" fill-opacity="1" fill-rule="nonzero" d="M925 528L925 916L-12 916L17 793L-26 784L-24 712L-65 605L-47 557L-85 519L-85 451L-71 433L-85 423L-85 -84L103 -84L104 -47L130 41L141 56L179 61L214 77L225 111L165 146L170 161L87 201L118 227L156 276L172 325L183 331L193 377L203 399L219 400L237 395L303 299L272 242L324 211L415 186L459 190L435 343L403 408L377 476L334 539L310 670L370 800L414 796L430 815L404 916L545 916L539 893L512 856L498 786L497 768L503 736L567 609L607 657L753 784L770 754z"></path><path stroke="#7a9888" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#e3ece6" fill-opacity="1" fill-rule="nonzero" d="M285 -84L230 -84L128 11L121 808L494 818L598 662L853 287L290 -84L286 -84L288 -81z"></path><path stroke="#5a7840" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#c6d8a7" fill-opacity="1" fill-rule="nonzero" d="M925 916L-85 916L-85 632L-55 632L-65 605L-47 557L334 539L317 632L339 632L339 734L370 800L498 786L497 768L503 736L567 609L607 657L753 784L770 754L925 528z"></path><path stroke="#3a6028" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#6aa84f" fill-opacity="1" fill-rule="nonzero" d="M525 174L517 107L586 118L637 207z"></path><path stroke="#3a6028" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#6aa84f" fill-opacity="1" fill-rule="nonzero" d="M697 250L819 274L923 379L826 341L774 409L687 331L668 325L674 285z"></path><path stroke="#3a6030" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#82a874" fill-opacity="1" fill-rule="nonzero" d="M607 657L774 409L826 341L925 379L925 528L770 754L753 784z"></path><path stroke="#3a6030" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#82a874" fill-opacity="1" fill-rule="nonzero" d="M-85 916L-85 188L-85 423L-71 433L-85 451L-85 519L-47 557L-65 605L-24 712L-26 784L17 793L-12 916z"></path><path stroke="#7a9888" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#e3ece6" fill-opacity="1" fill-rule="nonzero" d="M925 -84L925 332L852 268L806 188L805 21L812 -84z"></path><path stroke="#3a6030" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#82a874" fill-opacity="1" fill-rule="nonzero" d="M0 0"></path><path stroke="#8a7a40" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#efecd1" fill-opacity="1" fill-rule="nonzero" d="M663 242L637 387L648 392L661 343L668 325L687 331L774 409L607 657L567 609L503 736L497 768L498 786L370 800L310 670L334 539L377 476L403 408L435 343L459 190L472 189L524 195L658 236z"></path><path stroke="#3a6030" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#82a874" fill-opacity="1" fill-rule="nonzero" d="M0 0"></path><path stroke="#8a7a40" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#e2e3d2" fill-opacity="1" fill-rule="nonzero" d="M777 -84L768 -4L768 132L761 193L747 230L680 219L668 214L655 212L614 136L578 43L559 49L586 118L517 107L525 174L426 168L407 150L317 200L220 231L206 222L187 196L170 161L165 146L225 111L214 77L179 61L141 56L130 41L104 -47L146 -84z"></path><path stroke="#2471a3" stroke-opacity="1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="#a8d8f0" fill-opacity="0.7" fill-rule="nonzero" d="M286 -84L295 -71L294 -65L291 -55L283 -55L276 -50L270 -50L266 -55L261 -73L263 -82L265 -84z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M667 469L655 485L676 500L688 484z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M635 505L658 523L671 506L648 488z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M613 530L637 550L651 533L627 513z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M602 541L580 569L605 594L627 564z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M502 565L523 539L539 552L519 578z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M511 608L539 597L552 629L528 639z"></path><path class="leaflet-interactive" stroke="#1a8878" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#b8ede4" fill-opacity="0.68" fill-rule="evenodd" d="M491 645L504 646L505 636L522 638L518 673L503 671L502 681L486 679z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M445 678L441 678L435 674L433 669L440 660L419 644L434 623L458 641L454 647L462 654z"></path><path class="leaflet-interactive" stroke="#1a8878" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#b8ede4" fill-opacity="0.68" fill-rule="evenodd" d="M384 576L411 574L413 605L386 607L386 594z"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f9c6d0" fill-opacity="0.68" fill-rule="evenodd" d="M373 505L400 523L379 553L353 534z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M323 472L334 454L359 470L348 488L335 479z"></path><path class="leaflet-interactive" stroke="#1a8878" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#b8ede4" fill-opacity="0.68" fill-rule="evenodd" d="M388 476L400 456L430 474L418 494z"></path><path class="leaflet-interactive" stroke="#b7950b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdfbd4" fill-opacity="0.68" fill-rule="evenodd" d="M355 430L364 409L394 423L385 443z"></path><path class="leaflet-interactive" stroke="#e67e22" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdebd0" fill-opacity="0.68" fill-rule="evenodd" d="M537 484L557 495L541 524L521 513z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M645 413L673 426L658 460L629 447z"></path><path class="leaflet-interactive" stroke="#e67e22" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdebd0" fill-opacity="0.68" fill-rule="evenodd" d="M690 374L722 374L722 416L691 416z"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f9c6d0" fill-opacity="0.68" fill-rule="evenodd" d="M660 343L689 343L689 372L661 372z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M581 397L627 394L628 409L600 411L601 436L584 437z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M488 436L554 424L558 446L492 459z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M510 233L507 247L462 238L465 223z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M457 387L458 380L446 378L445 385L430 382L426 405L453 410z"></path><path class="leaflet-interactive" stroke="#b8860b" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#f9e04b" fill-opacity="0.95" fill-rule="evenodd" d="M426 412L459 426L449 454L413 438z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M645 335L622 335L622 244L646 244z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M475 305L505 297L511 318L497 322L503 346L488 350z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M473 243L507 250L504 268L496 266L490 292L470 287L475 262L469 261z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M374 360L414 369L408 397L368 388z"></path><path class="leaflet-interactive" stroke="#27ae60" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d5f5e3" fill-opacity="0.68" fill-rule="evenodd" d="M426 330L402 321L396 336L420 345z"></path><path class="leaflet-interactive" stroke="#6844b0" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d8c8f0" fill-opacity="0.68" fill-rule="evenodd" d="M408 283L430 289L424 309L402 302z"></path><path class="leaflet-interactive" stroke="#e67e22" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdebd0" fill-opacity="0.68" fill-rule="evenodd" d="M548 251L570 247L576 276L554 280z"></path><path class="leaflet-interactive" stroke="#b7950b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdfbd4" fill-opacity="0.68" fill-rule="evenodd" d="M546 326L590 315L596 337L551 349z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M606 245L618 249L610 268L598 264z"></path><path class="leaflet-interactive" stroke="#8e44ad" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#e8daef" fill-opacity="0.68" fill-rule="evenodd" d="M594 228L589 244L601 248L606 232z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M568 218L588 225L582 243L562 237z"></path><path class="leaflet-interactive" stroke="#b7950b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdfbd4" fill-opacity="0.68" fill-rule="evenodd" d="M551 211L565 216L558 237L544 232z"></path><path class="leaflet-interactive" stroke="#6844b0" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d8c8f0" fill-opacity="0.68" fill-rule="evenodd" d="M533 208L545 212L539 231L527 227z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M523 226L510 223L515 201L528 204z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M497 197L512 200L506 223L491 220z"></path><path class="leaflet-interactive" stroke="#2471a3" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#aed6f1" fill-opacity="0.88" fill-rule="evenodd" d="M472 214L488 218L492 198L475 194z"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f9c6d0" fill-opacity="0.68" fill-rule="evenodd" d="M427 192L445 196L441 217L423 214z"></path><path class="leaflet-interactive" stroke="#e67e22" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdebd0" fill-opacity="0.68" fill-rule="evenodd" d="M377 201L397 197L401 214L382 225z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M340 207L362 201L369 226L348 234z"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f9c6d0" fill-opacity="0.68" fill-rule="evenodd" d="M309 228L328 217L338 238L320 250z"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f9c6d0" fill-opacity="0.68" fill-rule="evenodd" d="M281 245L301 233L312 254L292 267z"></path><path class="leaflet-interactive" stroke="#6844b0" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d8c8f0" fill-opacity="0.68" fill-rule="evenodd" d="M436 120L474 115L472 106L490 103L494 133L439 141z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M245 119L263 111L275 136L257 145z"></path><path class="leaflet-interactive" stroke="#ca6f1e" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f5cba7" fill-opacity="0.68" fill-rule="evenodd" d="M220 132L238 123L250 148L232 156z"></path><path class="leaflet-interactive" stroke="#27ae60" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d5f5e3" fill-opacity="0.68" fill-rule="evenodd" d="M190 145L216 136L225 160L198 169z"></path><path class="leaflet-interactive" stroke="#b7950b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdfbd4" fill-opacity="0.68" fill-rule="evenodd" d="M207 188L233 175L242 192L251 187L259 203L224 221z"></path><path class="leaflet-interactive" stroke="#6844b0" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d8c8f0" fill-opacity="0.68" fill-rule="evenodd" d="M261 182L285 174L291 193L266 201z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M306 168L324 163L328 180L311 185z"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f9c6d0" fill-opacity="0.68" fill-rule="evenodd" d="M347 149L373 131L385 148L359 166z"></path><path class="leaflet-interactive" stroke="#6844b0" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d8c8f0" fill-opacity="0.68" fill-rule="evenodd" d="M338 145L368 124L357 108L326 129z"></path><path class="leaflet-interactive" stroke="#1a6fa8" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d6eaf8" fill-opacity="0.68" fill-rule="evenodd" d="M358 77L327 79L328 104L359 102z"></path><path class="leaflet-interactive" stroke="#8a7a55" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f0ece0" fill-opacity="0.68" fill-rule="evenodd" d="M309 50L326 35L337 47L340 44L346 51L323 72L310 58L314 54z"></path><path class="leaflet-interactive" stroke="#b7950b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdfbd4" fill-opacity="0.68" fill-rule="evenodd" d="M216 36L261 20L268 41L238 51L235 42L220 47z"></path><path class="leaflet-interactive" stroke="#27ae60" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d5f5e3" fill-opacity="0.68" fill-rule="evenodd" d="M261 91L301 67L312 86L273 110z"></path><path class="leaflet-interactive" stroke="#27ae60" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#d5f5e3" fill-opacity="0.68" fill-rule="evenodd" d="M277 52L304 39L309 50L283 63z"></path><path class="leaflet-interactive" stroke="#e67e22" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#fdebd0" fill-opacity="0.68" fill-rule="evenodd" d="M386 100L403 87L426 117L409 130z"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#f9c6d0" fill-opacity="0.68" fill-rule="evenodd" d="M396 42L412 48L398 80L382 73z"></path><path stroke="#4a3010" stroke-opacity="0.9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M383 34L362 77L363 106L414 175"></path><path stroke="#e8dfc0" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M383 34L362 77L363 106L414 175"></path><path stroke="#4a3010" stroke-opacity="0.9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M669 233L524 189L414 175L318 207L256 232L233 238L220 238L211 235L197 223L160 158"></path><path stroke="#e8dfc0" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M669 233L524 189L414 175L318 207L256 232L233 238L220 238L211 235L197 223L160 158"></path><path stroke="#4a3010" stroke-opacity="0.9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M500 419L651 366"></path><path stroke="#e8dfc0" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M500 419L651 366"></path><path stroke="#4a3010" stroke-opacity="0.9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M439 590L521 595L539 590L552 583L576 549L636 411L651 366L664 294L669 233"></path><path stroke="#e8dfc0" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M439 590L521 595L539 590L552 583L576 549L636 411L651 366L664 294L669 233"></path><path stroke="#4a3010" stroke-opacity="0.9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M827 262L721 240L669 233"></path><path stroke="#e8dfc0" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M827 262L721 240L669 233"></path><path stroke="#4a3010" stroke-opacity="0.9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M566 46L607 141L645 208L669 233"></path><path stroke="#e8dfc0" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M566 46L607 141L645 208L669 233"></path><path stroke="#7ab8d8" stroke-opacity="0.45" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M-58 -83L-59 -39L-48 66L-6 146L27 185L29 252L21 288L44 293L83 344L92 425L96 512L132 576L189 705L214 858L199 882L219 891L225 915"></path><path stroke="#4a90d9" stroke-opacity="0.85" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M-58 -83L-59 -39L-48 66L-6 146L27 185L29 252L21 288L44 293L83 344L92 425L96 512L132 576L189 705L214 858L199 882L219 891L225 915"></path><path stroke="#c8eaf8" stroke-opacity="0.7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M-58 -83L-59 -39L-48 66L-6 146L27 185L29 252L21 288L44 293L83 344L92 425L96 512L132 576L189 705L214 858L199 882L219 891L225 915"></path><path stroke="#7ab8d8" stroke-opacity="0.45" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M924 455L694 741L666 736L639 734L611 737L583 745L556 750L528 759L445 797L417 806L389 810L362 809L339 813L295 812L273 809L256 810L223 814L206 819"></path><path stroke="#4a90d9" stroke-opacity="0.85" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M924 455L694 741L666 736L639 734L611 737L583 745L556 750L528 759L445 797L417 806L389 810L362 809L339 813L295 812L273 809L256 810L223 814L206 819"></path><path stroke="#c8eaf8" stroke-opacity="0.7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M924 455L694 741L666 736L639 734L611 737L583 745L556 750L528 759L445 797L417 806L389 810L362 809L339 813L295 812L273 809L256 810L223 814L206 819"></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: -16px; margin-top: -10px; width: 12px; height: 12px; transform: translate3d(558px, 156px, 0px); z-index: 156;"><div style="font-size:7.5px;color:#2d5a1b;font-style:italic;text-align:center;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 2px #fff;">Village<br>Green</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -5px; width: 12px; height: 12px; transform: translate3d(295px, -132px, 0px); z-index: -132;"><div style="font-size:8px;color:#1a3a6a;
+            font-style:italic;white-space:nowrap;
+            transform:rotate(8deg);transform-origin:left center;
+            text-shadow:0 0 3px #fff,0 0 3px #fff;">Oxley Close</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -5px; width: 12px; height: 12px; transform: translate3d(827px, 268px, 0px); z-index: 268;"><div style="font-size:8px;color:#1a3a6a;
+            font-style:italic;white-space:nowrap;
+            transform:rotate(8deg);transform-origin:left center;
+            text-shadow:0 0 3px #fff,0 0 3px #fff;">Quarry Road</div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(671px, 481px, 0px); z-index: 481;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">1</span><br><span style="font-size:7px;">Frost</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(649px, 505px, 0px); z-index: 505;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">2</span><br><span style="font-size:7px;">Roberts</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(628px, 531px, 0px); z-index: 531;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">3</span><br><span style="font-size:7px;">Coley</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(603px, 561px, 0px); z-index: 561;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">4</span><br><span style="font-size:7px;">Heath</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(517px, 560px, 0px); z-index: 560;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">5</span><br><span style="font-size:7px;">Coley</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(528px, 616px, 0px); z-index: 616;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">6</span><br><span style="font-size:7px;">Weaver</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(502px, 657px, 0px); z-index: 657;"><div style="color:#1a8878;"><span style="font-size:9px;font-weight:bold;">7</span><br><span style="font-size:7px;">Kendrick</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(442px, 659px, 0px); z-index: 659;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">8</span><br><span style="font-size:7px;">Peakes</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(394px, 588px, 0px); z-index: 588;"><div style="color:#1a8878;"><span style="font-size:9px;font-weight:bold;">9</span><br><span style="font-size:7px;">Kendrick</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(376px, 524px, 0px); z-index: 524;"><div style="color:#c0392b;"><span style="font-size:9px;font-weight:bold;">10</span><br><span style="font-size:7px;">Billingham</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(337px, 473px, 0px); z-index: 473;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">11</span><br><span style="font-size:7px;">Round</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(404px, 475px, 0px); z-index: 475;"><div style="color:#1a8878;"><span style="font-size:9px;font-weight:bold;">12</span><br><span style="font-size:7px;">Kendrick</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(370px, 427px, 0px); z-index: 427;"><div style="color:#b7950b;"><span style="font-size:9px;font-weight:bold;">13</span><br><span style="font-size:7px;">Pearson</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(539px, 500px, 0px); z-index: 500;"><div style="color:#e67e22;"><span style="font-size:9px;font-weight:bold;">14</span><br><span style="font-size:7px;">Dimmock</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(650px, 432px, 0px); z-index: 432;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">15</span><br><span style="font-size:7px;">Yardley</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(703px, 391px, 0px); z-index: 391;"><div style="color:#e67e22;"><span style="font-size:9px;font-weight:bold;">16</span><br><span style="font-size:7px;">Dimmock</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(672px, 355px, 0px); z-index: 355;"><div style="color:#c0392b;"><span style="font-size:9px;font-weight:bold;">17</span><br><span style="font-size:7px;">Billingham</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(600px, 411px, 0px); z-index: 411;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">18</span><br><span style="font-size:7px;">Stanton</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(516px, 440px, 0px); z-index: 440;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">19</span><br><span style="font-size:7px;">Foley</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(491px, 235px, 0px); z-index: 235;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">20</span><br><span style="font-size:7px;">Weaver</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(447px, 389px, 0px); z-index: 389;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">21</span><br><span style="font-size:7px;">Weaver</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(435px, 428px, 0px); z-index: 428;"><div style="color:#7a5900;"><span style="font-size:9px;font-weight:bold;">22</span><br><span style="font-size:7px;">★ Weaver</span></div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: -14px; margin-top: -14px; width: 12px; height: 12px; transform: translate3d(435px, 428px, 0px); z-index: 428;"><div style="
+        width:28px;height:28px;
+        border-radius:50%;
+        border:2.5px solid #b8860b;
+        animation:pulse 1.8s ease-out infinite;
+        box-shadow:0 0 0 0 rgba(184,134,11,0.6);
+        pointer-events:none;
+      "></div>
+      <style>
+        @keyframes pulse {
+          0%   { box-shadow:0 0 0 0 rgba(184,134,11,0.6); }
+          70%  { box-shadow:0 0 0 10px rgba(184,134,11,0); }
+          100% { box-shadow:0 0 0 0 rgba(184,134,11,0); }
+        }
+      </style></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(636px, 298px, 0px); z-index: 298;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">23</span><br><span style="font-size:7px;">Bradley</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(493px, 320px, 0px); z-index: 320;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">24</span><br><span style="font-size:7px;">Weaver</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(484px, 264px, 0px); z-index: 264;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">25</span><br><span style="font-size:7px;">Weaver</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(388px, 375px, 0px); z-index: 375;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">26</span><br><span style="font-size:7px;">(Tromans)</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(414px, 332px, 0px); z-index: 332;"><div style="color:#27ae60;"><span style="font-size:9px;font-weight:bold;">27</span><br><span style="font-size:7px;">Hancox</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(415px, 293px, 0px); z-index: 293;"><div style="color:#6844b0;"><span style="font-size:9px;font-weight:bold;">28</span><br><span style="font-size:7px;">Homer</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(559px, 261px, 0px); z-index: 261;"><div style="color:#e67e22;"><span style="font-size:9px;font-weight:bold;">29</span><br><span style="font-size:7px;">Dimmock</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(566px, 331px, 0px); z-index: 331;"><div style="color:#b7950b;"><span style="font-size:9px;font-weight:bold;">30</span><br><span style="font-size:7px;">Pearson</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(608px, 254px, 0px); z-index: 254;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">31</span><br><span style="font-size:7px;">Raybould</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(597px, 236px, 0px); z-index: 236;"><div style="color:#8e44ad;"><span style="font-size:9px;font-weight:bold;">32</span><br><span style="font-size:7px;">Griffiths</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(573px, 228px, 0px); z-index: 228;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">33</span><br><span style="font-size:7px;">Marsh</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(554px, 222px, 0px); z-index: 222;"><div style="color:#b7950b;"><span style="font-size:9px;font-weight:bold;">34</span><br><span style="font-size:7px;">Pearson</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(535px, 217px, 0px); z-index: 217;"><div style="color:#6844b0;"><span style="font-size:9px;font-weight:bold;">35</span><br><span style="font-size:7px;">Homer</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(520px, 216px, 0px); z-index: 216;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">36</span><br><span style="font-size:7px;">Weaver</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(501px, 207px, 0px); z-index: 207;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">37</span><br><span style="font-size:7px;">Weaver</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(480px, 208px, 0px); z-index: 208;"><div style="color:#2471a3;"><span style="font-size:9px;font-weight:bold;">38</span><br><span style="font-size:7px;">Weaver</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(433px, 202px, 0px); z-index: 202;"><div style="color:#c0392b;"><span style="font-size:9px;font-weight:bold;">39</span><br><span style="font-size:7px;">Billingham</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(387px, 208px, 0px); z-index: 208;"><div style="color:#e67e22;"><span style="font-size:9px;font-weight:bold;">40</span><br><span style="font-size:7px;">Dimmock</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(352px, 215px, 0px); z-index: 215;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">41</span><br><span style="font-size:7px;">Heathcock</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(321px, 232px, 0px); z-index: 232;"><div style="color:#c0392b;"><span style="font-size:9px;font-weight:bold;">42</span><br><span style="font-size:7px;">Billingham</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(293px, 249px, 0px); z-index: 249;"><div style="color:#c0392b;"><span style="font-size:9px;font-weight:bold;">43</span><br><span style="font-size:7px;">Billingham</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(463px, 120px, 0px); z-index: 120;"><div style="color:#6844b0;"><span style="font-size:9px;font-weight:bold;">44</span><br><span style="font-size:7px;">Homer</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(257px, 126px, 0px); z-index: 126;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">45</span><br><span style="font-size:7px;">Round</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(232px, 138px, 0px); z-index: 138;"><div style="color:#ca6f1e;"><span style="font-size:9px;font-weight:bold;">46</span><br><span style="font-size:7px;">Sidaway</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(204px, 151px, 0px); z-index: 151;"><div style="color:#27ae60;"><span style="font-size:9px;font-weight:bold;">47</span><br><span style="font-size:7px;">Hancox</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(232px, 193px, 0px); z-index: 193;"><div style="color:#b7950b;"><span style="font-size:9px;font-weight:bold;">48</span><br><span style="font-size:7px;">Pearson</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(273px, 186px, 0px); z-index: 186;"><div style="color:#6844b0;"><span style="font-size:9px;font-weight:bold;">49</span><br><span style="font-size:7px;">Homer</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(315px, 173px, 0px); z-index: 173;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">50</span><br><span style="font-size:7px;">Cox</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(362px, 149px, 0px); z-index: 149;"><div style="color:#c0392b;"><span style="font-size:9px;font-weight:bold;">51</span><br><span style="font-size:7px;">Billingham</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(345px, 130px, 0px); z-index: 130;"><div style="color:#6844b0;"><span style="font-size:9px;font-weight:bold;">52</span><br><span style="font-size:7px;">Homer</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(346px, 88px, 0px); z-index: 88;"><div style="color:#1a6fa8;"><span style="font-size:9px;font-weight:bold;">53</span><br><span style="font-size:7px;">Nicklin</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(324px, 51px, 0px); z-index: 51;"><div style="color:#2c1810;"><span style="font-size:9px;font-weight:bold;">54</span><br><span style="font-size:7px;">Coates</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(236px, 39px, 0px); z-index: 39;"><div style="color:#b7950b;"><span style="font-size:9px;font-weight:bold;">55</span><br><span style="font-size:7px;">Pearson</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(281px, 89px, 0px); z-index: 89;"><div style="color:#27ae60;"><span style="font-size:9px;font-weight:bold;">56</span><br><span style="font-size:7px;">Hancox</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(290px, 51px, 0px); z-index: 51;"><div style="color:#27ae60;"><span style="font-size:9px;font-weight:bold;">57</span><br><span style="font-size:7px;">Hancox</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(402px, 107px, 0px); z-index: 107;"><div style="color:#e67e22;"><span style="font-size:9px;font-weight:bold;">58</span><br><span style="font-size:7px;">Dimmock</span></div></div><div class="leaflet-marker-icon house-label leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -8px; width: 12px; height: 12px; transform: translate3d(397px, 57px, 0px); z-index: 57;"><div style="color:#c0392b;"><span style="font-size:9px;font-weight:bold;">59</span><br><span style="font-size:7px;">Billingham</span></div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: -6px; margin-top: 0px; width: 12px; height: 12px; transform: translate3d(122px, 741px, 0px); z-index: 741;"><div style="font-size:10px;color:#1a5a90;font-style:italic;font-weight:bold;white-space:nowrap;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);letter-spacing:0.12em;text-shadow:0 0 4px #fff,0 0 4px #fff,0 0 4px #fff;">Black Brook</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: -6px; width: 12px; height: 12px; transform: translate3d(339px, 814px, 0px); z-index: 814;"><div style="font-size:10px;color:#1a5a90;font-style:italic;font-weight:bold;white-space:nowrap;transform:rotate(-7deg);transform-origin:left center;text-shadow:0 0 4px #fff,0 0 4px #fff,0 0 4px #fff;">Mousesweet Brook</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: -60px; margin-top: -5px; width: 12px; height: 12px; transform: translate3d(-237px, 268px, 0px); z-index: 268;"><div style="font-size:9px;color:#3a5a30;font-style:italic;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;pointer-events:none;">Mushroom Green Valley</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: -65px; margin-top: -5px; width: 12px; height: 12px; transform: translate3d(-148px, 2088px, 0px); z-index: 2088;"><div style="font-size:9px;color:#3a5a30;font-style:italic;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;pointer-events:none;">Saltwells Nature Reserve</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: -16px; margin-top: -10px; width: 12px; height: 12px; transform: translate3d(558px, 156px, 0px); z-index: 156;"><div style="font-size:8px;color:#2d5a1b;font-style:italic;text-align:center;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 2px #fff;pointer-events:none;">Village<br>Green</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: -16px; margin-top: -10px; width: 12px; height: 12px; transform: translate3d(752px, 316px, 0px); z-index: 316;"><div style="font-size:8px;color:#2d5a1b;font-style:italic;text-align:center;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 2px #fff;pointer-events:none;">Village<br>Green</div></div></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(39439043px, 26188998px, 0px) scale(155871.754978);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="#" title="Zoom in" role="button" aria-label="Zoom in" aria-disabled="false"><span aria-hidden="true">+</span></a><a class="leaflet-control-zoom-out" href="#" title="Zoom out" role="button" aria-label="Zoom out" aria-disabled="false"><span aria-hidden="true">−</span></a></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control" style="background: none; border: medium; box-shadow: none; margin: 0px 8px 8px 0px; line-height: 0;"><svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">
+  <defs><filter id="cds"><feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="rgba(60,20,0,0.4)"></feDropShadow></filter></defs>
+  <g filter="url(#cds)">
+  <circle cx="44" cy="44" r="42" fill="none" stroke="#6b3a10" stroke-width="1.5" opacity="0.7"></circle>
+  <circle cx="44" cy="44" r="38" fill="rgba(245,230,195,0.90)" stroke="#6b3a10" stroke-width="0.8" opacity="0.7"></circle>
+  <polygon points="44,4 47,38 44,30 41,38" fill="#2c1008"></polygon>
+  <!-- Fleur-de-lis on N point -->
+  <g transform="translate(44,2) scale(0.55)">
+    <path d="M0,-12 C0,-8 -3,-6 -3,-3 C-3,0 0,1 0,1 C0,1 3,0 3,-3 C3,-6 0,-8 0,-12Z" fill="#2c1008"></path>
+    <path d="M-6,-5 C-9,-5 -10,-2 -8,0 C-6,2 -3,1 0,1 C-3,1 -5,3 -5,5 C-5,7 -3,8 0,8 L0,1Z" fill="#2c1008"></path>
+    <path d="M6,-5 C9,-5 10,-2 8,0 C6,2 3,1 0,1 C3,1 5,3 5,5 C5,7 3,8 0,8 L0,1Z" fill="#2c1008"></path>
+    <rect x="-1.5" y="5" width="3" height="4" fill="#2c1008"></rect>
+  </g>
+  <polygon points="44,84 41,50 44,58 47,50" fill="#7a3a18"></polygon>
+  <polygon points="4,44 38,41 30,44 38,47" fill="#7a3a18"></polygon>
+  <polygon points="84,44 50,47 58,44 50,41" fill="#7a3a18"></polygon>
+  <polygon points="44,44 18,18 42,40" fill="#b87820"></polygon>
+  <polygon points="44,44 70,18 46,40" fill="#b87820"></polygon>
+  <polygon points="44,44 18,70 42,48" fill="#b87820"></polygon>
+  <polygon points="44,44 70,70 46,48" fill="#b87820"></polygon>
+  <polygon points="44,44 27,22 43,39" fill="#d4a848"></polygon>
+  <polygon points="44,44 61,22 45,39" fill="#d4a848"></polygon>
+  <polygon points="44,44 22,27 39,43" fill="#d4a848"></polygon>
+  <polygon points="44,44 66,27 49,43" fill="#d4a848"></polygon>
+  <polygon points="44,44 22,61 39,45" fill="#d4a848"></polygon>
+  <polygon points="44,44 66,61 49,45" fill="#d4a848"></polygon>
+  <polygon points="44,44 27,66 43,49" fill="#d4a848"></polygon>
+  <polygon points="44,44 61,66 45,49" fill="#d4a848"></polygon>
+  <circle cx="44" cy="44" r="4.5" fill="#2c1008" stroke="#f5e6c8" stroke-width="1.2"></circle>
+  <circle cx="44" cy="44" r="2" fill="#f5e6c8"></circle>
+  <text x="44" y="15" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#2c1008">N</text>
+  </g></svg></div><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a> <span aria-hidden="true">|</span> © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors © <a href="https://carto.com">CARTO</a></div></div></div></div>
+<script>
+const boundary = [[52.4772048,-2.0943019],[52.4772815,-2.094292],[52.4769054,-2.0949522],[52.4747151,-2.0949838],[52.47469,-2.0933034],[52.4751177,-2.0928342],[52.4761486,-2.0916816],[52.4771787,-2.0942501],[52.4771595,-2.0942338],[52.4772048,-2.0943019]];
+
+const census = {
+  1: {name:"Frost",                        occ:2,  weaver:false, founder:false},
+  2: {name:"Roberts",                      occ:5,  weaver:false, founder:false},
+  3: {name:"Coley",                         occ:3,  weaver:false, founder:false},
+  4: {name:"Heath",                         occ:6,  weaver:false, founder:false},
+  5: {name:"Coley",                        occ:3,  weaver:false, est:false},
+  6: {name:"Henry Weaver 1827",            occ:6,  weaver:true,  est:false},
+  7: {name:"Kendrick",                     occ:4,  weaver:false, est:false},
+  8: {name:"Peakes",                       occ:3,  weaver:false, est:false},
+  9: {name:"Kendrick",                     occ:8,  weaver:false, est:false},
+  10:{name:"Benj Billingham",              occ:10, weaver:false, est:false},
+  11:{name:"Susannah Round",               occ:1,  weaver:false, est:false},
+  12:{name:"Kendrick",                     occ:7,  weaver:false, est:false},
+  13:{name:"Pearson",                      occ:9,  weaver:false, est:false},
+  14:{name:"Dimmock",                      occ:3,  weaver:false, est:false},
+  15:{name:"Yardley",                      occ:7,  weaver:false, est:false},
+  16:{name:"Jos Dimmock 1830",             occ:3,  weaver:false, est:false},
+  17:{name:"Billingham",                   occ:5,  weaver:false, est:false},
+  18:{name:"Stanton",                      occ:3,  weaver:false, est:false},
+  19:{name:"Foley",                        occ:8,  weaver:false, est:false},
+  20:{name:"Jos. Weaver 1811",             occ:10, weaver:true,  est:false},
+  21:{name:"Amb Weaver 1814",              occ:7,  weaver:true,  est:false},
+  22:{name:"Henry Weaver 1789",            occ:2,  weaver:true,  est:false, founder:true},
+  23:{name:"Bradley",                      occ:3,  weaver:false, est:false},
+  24:{name:"Jas Weaver 1814",              occ:8,  weaver:true,  est:false},
+  25:{name:"Thos Weaver 1821",             occ:9,  weaver:true,  est:false},
+  26:{name:"Hannah Weaver (Tromans) 1813", occ:3,  weaver:true,  est:false},
+  27:{name:"Hancox",                       occ:4,  weaver:false, est:false},
+  28:{name:"John Homer 1819",              occ:7,  weaver:false, est:false},
+  29:{name:"Dimmock",                      occ:6,  weaver:false, est:false},
+  30:{name:"Pearson",                      occ:6,  weaver:false, est:false},
+  31:{name:"Raybould",                     occ:3,  weaver:false, est:false},
+  32:{name:"Griffiths",                    occ:5,  weaver:false, est:false},
+  33:{name:"Marsh",                        occ:6,  weaver:false, est:false},
+  34:{name:"Pearson",                      occ:2,  weaver:false, est:false},
+  35:{name:"John Homer 1803",              occ:4,  weaver:false, est:false},
+  36:{name:"Henry Weaver 1837",            occ:4,  weaver:true,  est:false},
+  37:{name:"Samuel Weaver 1818",           occ:8,  weaver:true,  est:false},
+  38:{name:"Yardley / Mariah Weaver 1789", occ:15, weaver:true,  est:false},
+  39:{name:"Billingham",                   occ:13, weaver:false, est:false},
+  40:{name:"Dimmock",                      occ:5,  weaver:false, est:false},
+  41:{name:"Heathcock",                    occ:1,  weaver:false, est:false},
+  42:{name:"Geo Billingham 1793",          occ:6,  weaver:false, est:false},
+  43:{name:"John Billingham 1823",         occ:7,  weaver:false, est:false},
+  44:{name:"Homer",                        occ:2,  weaver:false, est:false},
+  45:{name:"Round",                        occ:9,  weaver:false, est:false},
+  46:{name:"Sidaway",                      occ:6,  weaver:false, est:false},
+  47:{name:"Hancox",                       occ:4,  weaver:false, est:false},
+  48:{name:"Pearson",                      occ:6,  weaver:false, est:false},
+  49:{name:"Homer",                        occ:7,  weaver:false, est:false},
+  50:{name:"Cox",                          occ:2,  weaver:false, est:false},
+  51:{name:"Wm Round / Isaac Billingham",  occ:5,  weaver:false, est:false},
+  52:{name:"Thos Homer 1803",              occ:6,  weaver:false, est:false},
+  53:{name:"Hannah Nicklin 1897",          occ:8,  weaver:false, est:false},
+  54:{name:"Coates",                       occ:5,  weaver:false, est:false},
+  55:{name:"Pearson",                      occ:4,  weaver:false, est:false},
+  56:{name:"Hancox",                       occ:7,  weaver:false, est:false},
+  57:{name:"Hancox",                       occ:5,  weaver:false, est:false},
+  58:{name:"Kendrick / Dimmock",           occ:5,  weaver:false, est:false},
+  59:{name:"Sml Billingham 1826",          occ:9,  weaver:false, est:false},
+};
+
+const osmHouses = [{"number": "1", "num_int": 1, "lat": 52.47561399999999, "lon": -2.09250598, "poly": [[52.4756481, -2.0925223], [52.4756037, -2.0925748], [52.4755628, -2.0924815], [52.4756073, -2.092429], [52.4756481, -2.0925223]]}, {"number": "2", "num_int": 2, "lat": 52.47554792, "lon": -2.0926017000000003, "poly": [[52.475549, -2.0926668], [52.4754998, -2.0925642], [52.4755463, -2.0925041], [52.4755955, -2.0926066], [52.475549, -2.0926668]]}, {"number": "3", "num_int": 3, "lat": 52.47547614, "lon": -2.09269694, "poly": [[52.4754787, -2.0927655], [52.4754248, -2.0926585], [52.4754723, -2.0925941], [52.4755262, -2.0927011], [52.4754787, -2.0927655]]}, {"number": "4", "num_int": 4, "lat": 52.475393540000006, "lon": -2.0928089400000003, "poly": [[52.475451, -2.0928132], [52.475374, -2.0929156], [52.475305, -2.0927998], [52.4753867, -2.0927029], [52.475451, -2.0928132]]}, {"number": "5", "num_int": 5, "lat": 52.47539714, "lon": -2.09319796, "poly": [[52.475383, -2.0932648], [52.4754544, -2.0931739], [52.4754183, -2.0930977], [52.475347, -2.0931886], [52.475383, -2.0932648]]}, {"number": "6", "num_int": 6, "lat": 52.47524248, "lon": -2.09314788, "poly": [[52.4752645, -2.0932245], [52.4752946, -2.0931014], [52.4752091, -2.0930405], [52.4751797, -2.0931485], [52.4752645, -2.0932245]]}, {"number": "7", "num_int": 7, "lat": 52.47513074444444, "lon": -2.093264544444444, "poly": [[52.4751646, -2.0933165], [52.47516, -2.0932577], [52.4751896, -2.0932515], [52.4751837, -2.0931764], [52.4750879, -2.0931965], [52.475093, -2.0932616], [52.475064, -2.0932677], [52.4750693, -2.0933365], [52.4751646, -2.0933165]]}, {"number": "8", "num_int": 8, "lat": 52.47512648181819, "lon": -2.093535727272727, "poly": [[52.4750738, -2.0935247], [52.4750742, -2.0935416], [52.4750853, -2.0935683], [52.4750974, -2.0935781], [52.4751237, -2.0935467], [52.4751659, -2.0936424], [52.4752239, -2.0935734], [52.4751753, -2.0934634], [52.4751576, -2.0934844], [52.4751404, -2.0934453], [52.4750738, -2.0935247]]}, {"number": "9", "num_int": 9, "lat": 52.4753194, "lon": -2.0937533166666666, "poly": [[52.4753541, -2.0937977], [52.4753594, -2.0936776], [52.4752747, -2.0936675], [52.4752694, -2.0937876], [52.4753047, -2.0937918], [52.4753541, -2.0937977]]}, {"number": "10", "num_int": 10, "lat": 52.47549647999999, "lon": -2.09383648, "poly": [[52.4755493, -2.0938479], [52.4754987, -2.0937274], [52.4754173, -2.0938193], [52.4754678, -2.0939399], [52.4755493, -2.0938479]]}, {"number": "11", "num_int": 11, "lat": 52.475637750000004, "lon": -2.0940102666666665, "poly": [[52.4756393, -2.094073], [52.4756878, -2.0940225], [52.4756445, -2.0939103], [52.475596, -2.0939608], [52.4756196, -2.094022], [52.4756393, -2.094073]]}, {"number": "12", "num_int": 12, "lat": 52.4756298, "lon": -2.09370652, "poly": [[52.4756276, -2.0937826], [52.475683, -2.0937274], [52.4756331, -2.0935924], [52.4755777, -2.0936476], [52.4756276, -2.0937826]]}, {"number": "13", "num_int": 13, "lat": 52.47576268, "lon": -2.09385978, "poly": [[52.4757548, -2.0939303], [52.4758113, -2.0938886], [52.4757745, -2.093754], [52.475718, -2.0937957], [52.4757548, -2.0939303]]}, {"number": "14", "num_int": 14, "lat": 52.47556278, "lon": -2.09310114, "poly": [[52.4756062, -2.0931079], [52.4755769, -2.0930199], [52.4754977, -2.093091], [52.4755269, -2.093179], [52.4756062, -2.0931079]]}, {"number": "15", "num_int": 15, "lat": 52.47574882, "lon": -2.09259886, "poly": [[52.4758005, -2.0926225], [52.4757645, -2.0924933], [52.4756713, -2.0925634], [52.4757073, -2.0926926], [52.4758005, -2.0926225]]}, {"number": "16", "num_int": 16, "lat": 52.47586249999999, "lon": -2.0923603999999996, "poly": [[52.4759083, -2.0924183], [52.4759096, -2.0922764], [52.4757938, -2.0922735], [52.4757925, -2.0924155], [52.4759083, -2.0924183]]}, {"number": "17", "num_int": 17, "lat": 52.47596188, "lon": -2.0925003, "poly": [[52.4759932, -2.0925517], [52.4759938, -2.0924242], [52.4759149, -2.0924232], [52.4759143, -2.0925507], [52.4759932, -2.0925517]]}, {"number": "18", "num_int": 18, "lat": 52.4758062, "lon": -2.092823185714286, "poly": [[52.4758462, -2.0929095], [52.4758542, -2.0927019], [52.475813, -2.0926976], [52.475808, -2.0928264], [52.4757394, -2.0928193], [52.4757364, -2.0928981], [52.4758462, -2.0929095]]}, {"number": "19", "num_int": 19, "lat": 52.4757263, "lon": -2.0932024599999997, "poly": [[52.4757375, -2.0933289], [52.4757707, -2.0930312], [52.4757095, -2.0930128], [52.4756763, -2.0933105], [52.4757375, -2.0933289]]}, {"number": "20", "num_int": 20, "lat": 52.47629171999999, "lon": -2.0933161399999998, "poly": [[52.4762972, -2.0932293], [52.4762564, -2.0932441], [52.4762835, -2.0934464], [52.4763243, -2.0934316], [52.4762972, -2.0932293]]}, {"number": "21", "num_int": 21, "lat": 52.475866475000004, "lon": -2.0935166875, "poly": [[52.4758716, -2.0934695], [52.4758924, -2.093464], [52.4758979, -2.09352], [52.4758793, -2.093525], [52.4758859, -2.0935915], [52.4758226, -2.0936083], [52.4758105, -2.0934857], [52.4758716, -2.0934695]]}, {"number": "22", "num_int": 22, "lat": 52.47575918, "lon": -2.09357062, "poly": [[52.4758041, -2.0936096], [52.4757662, -2.0934586], [52.4756894, -2.0935066], [52.4757321, -2.0936687], [52.4758041, -2.0936096]]}, {"number": "23", "num_int": 23, "lat": 52.476116579999996, "lon": -2.0926614199999998, "poly": [[52.4760164, -2.0926195], [52.4760165, -2.0927255], [52.4762669, -2.0927243], [52.4762667, -2.0926183], [52.4760164, -2.0926195]]}, {"number": "24", "num_int": 24, "lat": 52.47605598571429, "lon": -2.0933058, "poly": [[52.4760977, -2.0933883], [52.4761207, -2.0932549], [52.4760625, -2.0932279], [52.4760518, -2.0932901], [52.4759869, -2.0932599], [52.4759746, -2.0933312], [52.4760977, -2.0933883]]}, {"number": "25", "num_int": 25, "lat": 52.47621212222222, "lon": -2.093346811111111, "poly": [[52.4762683, -2.0933966], [52.4762487, -2.0932425], [52.4762001, -2.0932591], [52.4762047, -2.0932952], [52.4761352, -2.093319], [52.476147, -2.0934115], [52.4762168, -2.0933876], [52.47622, -2.0934132], [52.4762683, -2.0933966]]}, {"number": "26", "num_int": 26, "lat": 52.475905620000006, "lon": -2.09378184, "poly": [[52.4759459, -2.0938422], [52.4759222, -2.0936637], [52.4758452, -2.0936913], [52.4758689, -2.0938698], [52.4759459, -2.0938422]]}, {"number": "27", "num_int": 27, "lat": 52.47602278000001, "lon": -2.0936635, "poly": [[52.4760294, -2.0936106], [52.4760543, -2.0937165], [52.4760129, -2.0937429], [52.4759879, -2.0936369], [52.4760294, -2.0936106]]}, {"number": "28", "num_int": 28, "lat": 52.47613068, "lon": -2.09366122, "poly": [[52.4761598, -2.0936897], [52.4761417, -2.0935914], [52.476087, -2.0936185], [52.4761051, -2.0937168], [52.4761598, -2.0936897]]}, {"number": "29", "num_int": 29, "lat": 52.476218599999996, "lon": -2.0930093800000003, "poly": [[52.4762456, -2.0930593], [52.4762579, -2.0929616], [52.4761781, -2.0929345], [52.4761658, -2.0930322], [52.4762456, -2.0930593]]}, {"number": "30", "num_int": 30, "lat": 52.476028, "lon": -2.09297948, "poly": [[52.4760406, -2.0930696], [52.4760715, -2.0928704], [52.4760091, -2.0928443], [52.4759782, -2.0930435], [52.4760406, -2.0930696]]}, {"number": "31", "num_int": 31, "lat": 52.4762377, "lon": -2.0927900399999997, "poly": [[52.4762638, -2.0927982], [52.4762511, -2.0927444], [52.4761986, -2.0927778], [52.4762112, -2.0928316], [52.4762638, -2.0927982]]}, {"number": "32", "num_int": 32, "lat": 52.47628846, "lon": -2.09283906, "poly": [[52.4763101, -2.0928516], [52.476266, -2.0928738], [52.476256, -2.0928203], [52.4763001, -2.092798], [52.4763101, -2.0928516]]}, {"number": "33", "num_int": 33, "lat": 52.47630936, "lon": -2.09294414, "poly": [[52.4763372, -2.0929703], [52.476319, -2.0928777], [52.4762676, -2.0929049], [52.4762858, -2.0929975], [52.4763372, -2.0929703]]}, {"number": "34", "num_int": 34, "lat": 52.476327160000004, "lon": -2.09303314, "poly": [[52.4763558, -2.0930461], [52.4763421, -2.092981], [52.4762842, -2.0930137], [52.4762979, -2.0930788], [52.4763558, -2.0930461]]}, {"number": "35", "num_int": 35, "lat": 52.47633946, "lon": -2.09311576, "poly": [[52.4763656, -2.093126], [52.4763543, -2.0930706], [52.4763002, -2.0931004], [52.4763116, -2.0931558], [52.4763656, -2.093126]]}, {"number": "36", "num_int": 36, "lat": 52.47634342, "lon": -2.09318636, "poly": [[52.4763157, -2.093172], [52.4763246, -2.093232], [52.476385, -2.0932079], [52.4763761, -2.0931479], [52.4763157, -2.093172]]}, {"number": "37", "num_int": 37, "lat": 52.47636688, "lon": -2.09327264, "poly": [[52.4763963, -2.0932888], [52.4763862, -2.0932224], [52.4763232, -2.0932483], [52.4763324, -2.0933149], [52.4763963, -2.0932888]]}, {"number": "38", "num_int": 38, "lat": 52.476365539999996, "lon": -2.09336698, "poly": [[52.4763471, -2.0934041], [52.4763384, -2.0933282], [52.4763932, -2.0933113], [52.4764019, -2.0933872], [52.4763471, -2.0934041]]}, {"number": "39", "num_int": 39, "lat": 52.47638088, "lon": -2.09357958, "poly": [[52.4764085, -2.093604], [52.476399, -2.093524], [52.4763395, -2.0935429], [52.4763489, -2.093623], [52.4764085, -2.093604]]}, {"number": "40", "num_int": 40, "lat": 52.47636532, "lon": -2.09378558, "poly": [[52.4763832, -2.0938299], [52.4763951, -2.0937391], [52.4763475, -2.0937223], [52.4763176, -2.0938067], [52.4763832, -2.0938299]]}, {"number": "41", "num_int": 41, "lat": 52.476345779999996, "lon": -2.09394338, "poly": [[52.4763684, -2.0939966], [52.4763853, -2.0938971], [52.4763146, -2.0938651], [52.4762922, -2.0939615], [52.4763684, -2.0939966]]}, {"number": "42", "num_int": 42, "lat": 52.47629872, "lon": -2.0940845599999998, "poly": [[52.4763106, -2.0941375], [52.4763412, -2.0940523], [52.476283, -2.0940081], [52.4762482, -2.0940874], [52.4763106, -2.0941375]]}, {"number": "43", "num_int": 43, "lat": 52.47625268, "lon": -2.09420718, "poly": [[52.476263, -2.0942622], [52.4762966, -2.0941737], [52.4762393, -2.0941218], [52.4762015, -2.094216], [52.476263, -2.0942622]]}, {"number": "44", "num_int": 44, "lat": 52.47660701428571, "lon": -2.0934417714285716, "poly": [[52.4766054, -2.093563], [52.4766207, -2.0933935], [52.4766462, -2.0933997], [52.4766532, -2.0933221], [52.4765702, -2.093302], [52.476548, -2.0935491], [52.4766054, -2.093563]]}, {"number": "45", "num_int": 45, "lat": 52.47659042, "lon": -2.09437164, "poly": [[52.4766099, -2.0944256], [52.4766325, -2.0943441], [52.4765612, -2.0942907], [52.4765386, -2.0943722], [52.4766099, -2.0944256]]}, {"number": "46", "num_int": 46, "lat": 52.476556540000004, "lon": -2.0944850600000002, "poly": [[52.4765737, -2.0945383], [52.4765974, -2.0944588], [52.4765308, -2.0944052], [52.4765071, -2.0944847], [52.4765737, -2.0945383]]}, {"number": "47", "num_int": 47, "lat": 52.47652178, "lon": -2.09461266, "poly": [[52.4765391, -2.0946759], [52.4765635, -2.0945546], [52.4764958, -2.0945178], [52.4764714, -2.0946391], [52.4765391, -2.0946759]]}, {"number": "48", "num_int": 48, "lat": 52.4764048, "lon": -2.0944850571428573, "poly": [[52.4764188, -2.0945959], [52.4764547, -2.094479], [52.4764091, -2.0944412], [52.4764224, -2.0943981], [52.4763795, -2.0943626], [52.4763303, -2.0945227], [52.4764188, -2.0945959]]}, {"number": "49", "num_int": 49, "lat": 52.47642404, "lon": -2.09430094, "poly": [[52.4764366, -2.0943553], [52.4764571, -2.0942456], [52.4764052, -2.0942194], [52.4763847, -2.0943291], [52.4764366, -2.0943553]]}, {"number": "50", "num_int": 50, "lat": 52.476460880000005, "lon": -2.09410976, "poly": [[52.476474, -2.0941499], [52.476487, -2.0940696], [52.4764412, -2.0940495], [52.4764282, -2.0941299], [52.476474, -2.0941499]]}, {"number": "51", "num_int": 51, "lat": 52.476527839999996, "lon": -2.09389638, "poly": [[52.476526, -2.0939639], [52.4765756, -2.0938463], [52.4765306, -2.0937951], [52.476481, -2.0939127], [52.476526, -2.0939639]]}, {"number": "52", "num_int": 52, "lat": 52.47657834, "lon": -2.09397292, "poly": [[52.4765369, -2.0940066], [52.4765962, -2.0938714], [52.4766399, -2.0939185], [52.4765818, -2.0940615], [52.4765369, -2.0940066]]}, {"number": "53", "num_int": 53, "lat": 52.47669456, "lon": -2.0939711599999997, "poly": [[52.4767242, -2.0939172], [52.4767196, -2.0940582], [52.4766501, -2.0940521], [52.4766547, -2.0939111], [52.4767242, -2.0939172]]}, {"number": "54", "num_int": 54, "lat": 52.47679525555556, "lon": -2.0940702333333334, "poly": [[52.4767975, -2.0941352], [52.4768404, -2.0940608], [52.4768074, -2.0940122], [52.476816, -2.0939966], [52.4767967, -2.0939681], [52.4767377, -2.0940759], [52.4767768, -2.0941336], [52.4767873, -2.0941145], [52.4767975, -2.0941352]]}, {"number": "55", "num_int": 55, "lat": 52.476828985714285, "lon": -2.0944661, "poly": [[52.4768377, -2.0945587], [52.4768811, -2.0943547], [52.4768242, -2.094322], [52.4767955, -2.0944568], [52.4768207, -2.0944713], [52.476806, -2.0945405], [52.4768377, -2.0945587]]}, {"number": "56", "num_int": 56, "lat": 52.47669140000001, "lon": -2.09426144, "poly": [[52.476685, -2.0943539], [52.4767524, -2.0941749], [52.476701, -2.0941227], [52.4766336, -2.0943018], [52.476685, -2.0943539]]}, {"number": "57", "num_int": 57, "lat": 52.47679534, "lon": -2.09422166, "poly": [[52.4767939, -2.0942793], [52.4768296, -2.0941613], [52.4767975, -2.0941352], [52.4767618, -2.0942532], [52.4767939, -2.0942793]]}, {"number": "58", "num_int": 58, "lat": 52.4766434, "lon": -2.09371818, "poly": [[52.4766626, -2.0937895], [52.4766974, -2.0937141], [52.4766146, -2.0936112], [52.4765798, -2.0936866], [52.4766626, -2.0937895]]}, {"number": "59", "num_int": 59, "lat": 52.476780180000006, "lon": -2.09374038, "poly": [[52.4768218, -2.0937448], [52.4768046, -2.0936706], [52.4767167, -2.0937345], [52.476736, -2.0938072], [52.4768218, -2.0937448]]}];
+
+// Tight A4-landscape viewport:
+// Left = western settlement boundary
+// Top = Oxley Close level / above no.55
+// Right = Saltwells Lane / Oxley Close junction
+// Bottom = southern tip of settlement
+const SW = [52.4720, -2.0980];
+const NE = [52.4800, -2.0855];
+const viewBounds = [SW, NE];
+
+const map = L.map('map', {
+  // maxBounds removed — full view
+  // maxBoundsViscosity: 1.0,
+  minZoom: 15,
+  maxZoom: 21,
+  zoomControl: true,
+  scrollWheelZoom: true,
+  zoomSnap: 0.25,
+  zoomDelta: 0.25
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>',
+  subdomains:'abcd', maxZoom:21
+}).addTo(map);
+
+// Draw an inverse mask: large outer rectangle minus the settlement polygon
+// This covers everything OUTSIDE the boundary with a solid colour
+const outerRing = [[-90,-180],[-90,180],[90,180],[90,-180]];
+const innerRing = [[52.4772048,-2.0943019],[52.4772815,-2.094292],[52.4769054,-2.0949522],[52.4747151,-2.0949838],[52.47469,-2.0933034],[52.4751177,-2.0928342],[52.4761486,-2.0916816],[52.4771787,-2.0942501],[52.4771595,-2.0942338],[52.4772048,-2.0943019]];
+
+// Mask polygon: world rectangle with settlement hole punched out
+L.polygon([outerRing, innerRing], {
+  color: 'none',
+  fillColor: '#ffffff',
+  fillOpacity: 0.92,
+  interactive: false
+}).addTo(map);
+
+// Settlement boundary outline
+const boundaryPoly = L.polygon(innerRing, {
+  color:'#803303', weight:2, dashArray:'6 3',
+  fill: false
+}).addTo(map);
+
+map.setView([52.4757932163071, -2.0936364426410514], 18.25);
+
+// ── COMPASS ROSE — old-fashioned Leaflet control, bottom-right ───────────────
+const CompassControl = L.Control.extend({
+  options: { position: 'bottomright' },
+  onAdd: function() {
+    const div = L.DomUtil.create('div', '');
+    div.style.cssText = 'background:none;border:none;box-shadow:none;margin:0 8px 8px 0;line-height:0;';
+    div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">
+  <defs><filter id="cds"><feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="rgba(60,20,0,0.4)"/></filter></defs>
+  <g filter="url(#cds)">
+  <circle cx="44" cy="44" r="42" fill="none" stroke="#6b3a10" stroke-width="1.5" opacity="0.7"/>
+  <circle cx="44" cy="44" r="38" fill="rgba(245,230,195,0.90)" stroke="#6b3a10" stroke-width="0.8" opacity="0.7"/>
+  <polygon points="44,4 47,38 44,30 41,38" fill="#2c1008"/>
+  <!-- Fleur-de-lis on N point -->
+  <g transform="translate(44,2) scale(0.55)">
+    <path d="M0,-12 C0,-8 -3,-6 -3,-3 C-3,0 0,1 0,1 C0,1 3,0 3,-3 C3,-6 0,-8 0,-12Z" fill="#2c1008"/>
+    <path d="M-6,-5 C-9,-5 -10,-2 -8,0 C-6,2 -3,1 0,1 C-3,1 -5,3 -5,5 C-5,7 -3,8 0,8 L0,1Z" fill="#2c1008"/>
+    <path d="M6,-5 C9,-5 10,-2 8,0 C6,2 3,1 0,1 C3,1 5,3 5,5 C5,7 3,8 0,8 L0,1Z" fill="#2c1008"/>
+    <rect x="-1.5" y="5" width="3" height="4" fill="#2c1008"/>
+  </g>
+  <polygon points="44,84 41,50 44,58 47,50" fill="#7a3a18"/>
+  <polygon points="4,44 38,41 30,44 38,47" fill="#7a3a18"/>
+  <polygon points="84,44 50,47 58,44 50,41" fill="#7a3a18"/>
+  <polygon points="44,44 18,18 42,40" fill="#b87820"/>
+  <polygon points="44,44 70,18 46,40" fill="#b87820"/>
+  <polygon points="44,44 18,70 42,48" fill="#b87820"/>
+  <polygon points="44,44 70,70 46,48" fill="#b87820"/>
+  <polygon points="44,44 27,22 43,39" fill="#d4a848"/>
+  <polygon points="44,44 61,22 45,39" fill="#d4a848"/>
+  <polygon points="44,44 22,27 39,43" fill="#d4a848"/>
+  <polygon points="44,44 66,27 49,43" fill="#d4a848"/>
+  <polygon points="44,44 22,61 39,45" fill="#d4a848"/>
+  <polygon points="44,44 66,61 49,45" fill="#d4a848"/>
+  <polygon points="44,44 27,66 43,49" fill="#d4a848"/>
+  <polygon points="44,44 61,66 45,49" fill="#d4a848"/>
+  <circle cx="44" cy="44" r="4.5" fill="#2c1008" stroke="#f5e6c8" stroke-width="1.2"/>
+  <circle cx="44" cy="44" r="2" fill="#f5e6c8"/>
+  <text x="44" y="15" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#2c1008">N</text>
+  </g></svg>`;
+    L.DomEvent.disableClickPropagation(div);
+    return div;
+  }
+});
+new CompassControl().addTo(map);
+
+
+// Black Brook — wider, meandering, triple-line
+const brookCoords = [[52.4783193, -2.0965326], [52.478227, -2.0965528], [52.4782487, -2.0964608], [52.4781718, -2.0962069], [52.4779629, -2.0960435], [52.4778976, -2.0961038], [52.4778909, -2.0960152], [52.4779326, -2.0959309], [52.4778386, -2.0959313], [52.4777659, -2.095989], [52.4777509, -2.0958974], [52.47765, -2.0958477], [52.4776016, -2.0959492], [52.4775173, -2.0960176], [52.4774563, -2.0959278], [52.4772742, -2.0957861], [52.4770437, -2.0957969], [52.4767551, -2.0957488], [52.476535, -2.0955561], [52.4764272, -2.095408], [52.4762441, -2.0954011], [52.476146, -2.0954357], [52.47613, -2.095333], [52.4759899, -2.0951562], [52.4757678, -2.0951167], [52.4755281, -2.0950992], [52.4753524, -2.0949351], [52.4749999, -2.0946782], [52.4745784, -2.0945657], [52.4745132, -2.0946314], [52.4744883, -2.0945422], [52.474333, -2.0944784], [52.4741948, -2.0945737], [52.4740928, -2.0946877], [52.4739449, -2.0946485], [52.4738877, -2.0945821], [52.4738763, -2.094669], [52.4737947, -2.0947139], [52.4737942, -2.0946208], [52.4737475, -2.0945299], [52.4736695, -2.094596], [52.4736304, -2.0947043], [52.4735208, -2.0946691], [52.4734057, -2.0945936], [52.4732969, -2.0946779]];
+// Brook drawn later — see end of script
+
+// Brook labels drawn later — see end of script
+
+
+
+// Village Green (west of Saltwells Lane)
+L.polygon([[52.4764568, -2.0931627], [52.4766425, -2.0932004], [52.4766113, -2.0928889], [52.4763679, -2.0926572], [52.4764568, -2.0931627]], {
+  color: '#5a8a3c',
+  weight: 1.5,
+  fillColor: '#8db86a',
+  fillOpacity: 0.55
+}).addTo(map);
+
+L.marker([52.476507, -2.093014], {
+  icon: L.divIcon({
+    className: '',
+    html: '<div style="font-size:7.5px;color:#2d5a1b;font-style:italic;text-align:center;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 2px #fff;">Village<br>Green</div>',
+    iconAnchor: [16, 10]
+  }),
+  interactive: false
+}).addTo(map);
+
+// Second green (below Quarry Rd entrance)
+L.polygon([[52.476248, -2.0923873], [52.4761838, -2.0918355], [52.475896, -2.0913672], [52.4760005, -2.0918051], [52.4758128, -2.0920404], [52.4760258, -2.0924309], [52.4760423, -2.0925164], [52.4761527, -2.0924928], [52.476248, -2.0923873]], {
+  color: '#5a8a3c',
+  weight: 1.5,
+  fillColor: '#8db86a',
+  fillOpacity: 0.55
+}).addTo(map);
+
+
+const outerBoundary = [[52.4773, -2.0965326], [52.4773, -2.0919438], [52.4789914, -2.0943068], [52.4789252, -2.0942108], [52.4788955, -2.0941678], [52.4787527, -2.0939368], [52.478515, -2.0935794], [52.4784465, -2.0934746], [52.4782196, -2.0930856], [52.4778712, -2.0922236], [52.4778153, -2.0920724], [52.4777947, -2.0920135], [52.4777561, -2.0919269], [52.4777262, -2.0919021], [52.4776775, -2.0918798], [52.4776166, -2.0918723], [52.4772013, -2.0919438], [52.4770861, -2.0919613], [52.4769484, -2.0919828], [52.4766404, -2.0919934], [52.4765583, -2.0919847], [52.4764908, -2.0919655], [52.4764127, -2.0919436], [52.476216, -2.091799], [52.476216, -2.091799], [52.4761383, -2.0917043], [52.4760822, -2.0916205], [52.4760098, -2.0914815], [52.4759382, -2.0912826], [52.4758551, -2.090998], [52.4758551, -2.090998], [52.4758217, -2.0908671], [52.4757496, -2.0905846], [52.4755243, -2.0898233], [52.4754484, -2.0895778], [52.4753942, -2.089311], [52.475362, -2.0889891], [52.4752946, -2.0881512], [52.4752656, -2.0879328], [52.4752514, -2.087869], [52.4752045, -2.0877326], [52.4751385, -2.0876318], [52.4749357, -2.0873204], [52.4748968, -2.0871879], [52.474136, -2.0870884], [52.474136, -2.0870884], [52.4742019, -2.0873842], [52.4743577, -2.0876937], [52.4744611, -2.088154], [52.4744879, -2.0885972], [52.4745157, -2.0889305], [52.4745797, -2.089092], [52.4746132, -2.0891922], [52.474615, -2.0894077], [52.4746514, -2.0896094], [52.4746239, -2.0897549], [52.4746, -2.0899294], [52.4745703, -2.0900925], [52.4745493, -2.0902787], [52.4745131, -2.0906358], [52.4745046, -2.0906753], [52.4744511, -2.0910681], [52.4744287, -2.0913323], [52.4740366, -2.0919705], [52.4738392, -2.092287], [52.4738504, -2.0923777], [52.4737629, -2.0925297], [52.4737863, -2.0926863], [52.4737058, -2.0928235], [52.4737938, -2.0930112], [52.4737641, -2.0930563], [52.473767, -2.093136], [52.4737849, -2.093205], [52.4737144, -2.093366], [52.4737658, -2.0935494], [52.4737312, -2.0937224], [52.4736239, -2.093973], [52.4736157, -2.0941534], [52.4735922, -2.0942663], [52.4735655, -2.0943604], [52.4735258, -2.0943718], [52.4734754, -2.0944313], [52.4734015, -2.0944826], [52.4732969, -2.0946779], [52.4732969, -2.0946779], [52.4735208, -2.0946691], [52.4736695, -2.094596], [52.4737942, -2.0946208], [52.4738763, -2.094669], [52.4739449, -2.0946485], [52.4741948, -2.0945737], [52.4744883, -2.0945422], [52.4745784, -2.0945657], [52.4753524, -2.0949351], [52.4757678, -2.0951167], [52.47613, -2.095333], [52.4762441, -2.0954011], [52.476535, -2.0955561], [52.4770437, -2.0957969], [52.4774563, -2.0959278], [52.4776016, -2.0959492], [52.4777509, -2.0958974], [52.4778386, -2.0959313], [52.4778909, -2.0960152], [52.4779629, -2.0960435], [52.4782487, -2.0964608], [52.4783193, -2.0965326], [52.4773, -2.0965326]];
+
+const areaPolygons = {
+  A: {name:"Mushroom Green Valley",coords:[[52.4758077, -2.0909911], [52.475391, -2.0895721], [52.4752725, -2.0896859], [52.4749506, -2.0894564], [52.4747869, -2.0893857], [52.474615, -2.0894077], [52.4746514, -2.0896094], [52.4746239, -2.0897549], [52.4746, -2.0899294], [52.4745703, -2.0900925], [52.4745493, -2.0902787], [52.4745131, -2.0906358], [52.4745046, -2.0906753], [52.4744511, -2.0910681], [52.4741247, -2.0909584], [52.4740303, -2.0909767], [52.4740079, -2.0913624], [52.4739119, -2.0916994], [52.4739112, -2.0920319], [52.4733141, -2.0917877], [52.4732651, -2.091752], [52.4729653, -2.0926272], [52.4729848, -2.0929491], [52.4727722, -2.0933833], [52.4728231, -2.0935784], [52.4729271, -2.0937143], [52.4729759, -2.0937526], [52.4729924, -2.0938558], [52.4730226, -2.0940452], [52.4730374, -2.0942109], [52.4731158, -2.094345], [52.4732057, -2.094404], [52.4731942, -2.0945266], [52.4730228, -2.0946405], [52.4724369, -2.0949093], [52.4721079, -2.095188], [52.4718935, -2.0950583], [52.4717425, -2.0950503], [52.4712988, -2.0948684], [52.4709841, -2.0952793], [52.4708154, -2.0953657], [52.4708833, -2.0956096], [52.4710361, -2.0959267], [52.471135, -2.0960641], [52.4712217, -2.096221], [52.4713099, -2.0964347], [52.4715221, -2.0960939], [52.4719615, -2.0960451], [52.4720803, -2.0958744], [52.4723244, -2.0957838], [52.4724496, -2.0958988], [52.4724347, -2.0960556], [52.4725316, -2.0965927], [52.4726467, -2.0965394], [52.4730914, -2.0960754], [52.4733099, -2.0958644], [52.4732264, -2.0957315], [52.4734322, -2.0951776], [52.4736742, -2.0950138], [52.474105, -2.0949441], [52.474313, -2.0953448], [52.4742472, -2.0954981], [52.4741568, -2.0956825], [52.474757, -2.0954564], [52.474781, -2.0956501], [52.4749795, -2.0956398], [52.4752736, -2.0958244], [52.475406, -2.0957425], [52.475594, -2.0960485], [52.4757458, -2.0958516], [52.4758558, -2.0961078], [52.4759201, -2.0963443], [52.4757441, -2.0966622], [52.4757094, -2.0969196], [52.4756987, -2.0970172], [52.4757581, -2.0971669], [52.4757893, -2.0970597], [52.4759103, -2.0968864], [52.4760402, -2.0967433], [52.4761942, -2.0965003], [52.4762602, -2.096216], [52.4762562, -2.0961324], [52.4763137, -2.0959383], [52.4764049, -2.0959112], [52.4765152, -2.0959515], [52.4766354, -2.0960769], [52.4768208, -2.0961055], [52.4770055, -2.0959792], [52.4770538, -2.095979], [52.4773015, -2.0961348], [52.4774232, -2.0961094], [52.477438, -2.0965489], [52.4775332, -2.0970014], [52.4776754, -2.0973376], [52.4777575, -2.0974661], [52.4778198, -2.0973201], [52.4779317, -2.0972218], [52.4780198, -2.0972083], [52.4781758, -2.097108], [52.478308, -2.0975314], [52.4783476, -2.0972422], [52.4783738, -2.0969626], [52.4783603, -2.0965546], [52.4782849, -2.096072], [52.4782548, -2.0955335], [52.4779666, -2.0955191], [52.4777614, -2.0953901], [52.4776711, -2.0951525], [52.477809, -2.0947041], [52.4780329, -2.0945941], [52.4783192, -2.094409], [52.478307, -2.094169], [52.4780877, -2.0942965], [52.4778547, -2.0942865], [52.4776684, -2.0945166], [52.477349, -2.0950775], [52.4770645, -2.0950641], [52.4768224, -2.0949457], [52.4767833, -2.0948942], [52.4767676, -2.094725], [52.4767234, -2.0945641], [52.4766319, -2.0945164], [52.476534, -2.094785], [52.476494, -2.0947657], [52.4763827, -2.0951403], [52.4763127, -2.0949965], [52.4761791, -2.0948288], [52.4760425, -2.0947541], [52.4760272, -2.094705], [52.4759016, -2.0946606], [52.475841, -2.0946155], [52.4758364, -2.0945444], [52.4758514, -2.094464], [52.4761149, -2.0941632], [52.4762724, -2.0943022], [52.4763556, -2.0940716], [52.4763684, -2.0939966], [52.4763853, -2.0938971], [52.4764255, -2.0936608], [52.4764141, -2.0934595], [52.4759933, -2.093568], [52.4758145, -2.0937111], [52.4756285, -2.0938313], [52.4754561, -2.0940259], [52.4750961, -2.0941342], [52.4747385, -2.0938611], [52.4747492, -2.0936635], [52.4746972, -2.0935932], [52.4743392, -2.0937437], [52.4741645, -2.0935], [52.4741863, -2.0931631], [52.474313, -2.093034], [52.4744833, -2.0930985], [52.4745837, -2.0932204], [52.4746798, -2.0932491], [52.4747778, -2.0932843], [52.4748272, -2.0932871], [52.4749139, -2.0932625], [52.4752621, -2.0929727], [52.4751316, -2.0927921], [52.4747814, -2.092135], [52.4748651, -2.0920578], [52.4758077, -2.0909911]],fill:"#e3ece6",border:"#7a9888",opacity:1.0,clat:52.475125,clon:-2.094487},
+  B: {name:"Mushroom Green Settlement",coords:[[52.4772048, -2.0943019], [52.4772815, -2.094292], [52.4769054, -2.0949522], [52.4747151, -2.0949838], [52.47469, -2.0933034], [52.4751177, -2.0928342], [52.4761486, -2.0916816], [52.4771787, -2.0942501], [52.4771595, -2.0942338], [52.4772048, -2.0943019]],fill:"#e3ece6",border:"#7a9888",opacity:1.0,clat:52.476361,clon:-2.093913},
+  C: {name:"Saltwells Nature Reserve",coords:[[52.4745493, -2.0902787], [52.4745131, -2.0906358], [52.4745046, -2.0906753], [52.4744023, -2.0913282], [52.474322, -2.0914796], [52.4740131, -2.0919937], [52.4739112, -2.0920319], [52.4734039, -2.0935348], [52.4717425, -2.0950503], [52.4712988, -2.0948684], [52.4709841, -2.0952793], [52.4707271, -2.0956217], [52.4705884, -2.0957118], [52.4706197, -2.0959944], [52.4706232, -2.0962833], [52.4703338, -2.0965204], [52.4699973, -2.0965716], [52.4696297, -2.0969204], [52.4697051, -2.0972707], [52.4699102, -2.0976556], [52.470301, -2.0971905], [52.4703427, -2.0971472], [52.4706023, -2.0967095], [52.4708495, -2.0964306], [52.4708762, -2.0963962], [52.4710412, -2.0961909], [52.471135, -2.0960641], [52.4711624, -2.0961187], [52.4712217, -2.096221], [52.4713099, -2.0964347], [52.4714053, -2.0966641], [52.471483, -2.0966149], [52.4715089, -2.0963957], [52.4716194, -2.0961445], [52.4719125, -2.0961648], [52.4719178, -2.0963921], [52.4723203, -2.0966085], [52.4723248, -2.0967252], [52.4725316, -2.0965927], [52.4726467, -2.0965394], [52.473, -2.0961708], [52.473, -2.0975], [52.4752, -2.0975], [52.4752, -2.0957782], [52.4752736, -2.0958244], [52.475406, -2.0957425], [52.4754561, -2.0940259], [52.4752, -2.0941029], [52.4752, -2.094], [52.4749204, -2.094], [52.4747385, -2.0938611], [52.4747492, -2.0936635], [52.4747778, -2.0932843], [52.4748272, -2.0932871], [52.4749139, -2.0932625], [52.4752621, -2.0929727], [52.4751316, -2.0927921], [52.4747814, -2.092135], [52.4748651, -2.0920578], [52.4758077, -2.0909911], [52.475391, -2.0895721], [52.4752725, -2.0896859], [52.4749506, -2.0894564], [52.4747869, -2.0893857], [52.474615, -2.0894077], [52.4746514, -2.0896094], [52.4746, -2.0899294], [52.4745493, -2.0902787]],fill:"#c6d8a7",border:"#5a7840",opacity:1.0,clat:52.473039,clon:-2.094483},
+  D: {name:"Village Green N",coords:[[52.4764568, -2.0931627], [52.4766425, -2.0932004], [52.4766113, -2.0928889], [52.4763679, -2.0926572], [52.4764568, -2.0931627]],fill:"#6aa84f",border:"#3a6028",opacity:1.0,clat:52.476507,clon:-2.093014},
+  E: {name:"Village Green S",coords:[[52.476248, -2.0923873], [52.4761838, -2.0918355], [52.475896, -2.0913672], [52.4760005, -2.0918051], [52.4758128, -2.0920404], [52.4760258, -2.0924309], [52.4760423, -2.0925164], [52.4761527, -2.0924928], [52.476248, -2.0923873]],fill:"#6aa84f",border:"#3a6028",opacity:1.0,clat:52.476068,clon:-2.09214},
+  F: {name:"Industrial Area",coords:[[52.4751316, -2.0927921], [52.4758128, -2.0920404], [52.4760005, -2.0918051], [52.475896, -2.0913672], [52.4758893, -2.0913287], [52.4758077, -2.0909911], [52.4748651, -2.0920578], [52.4747814, -2.092135], [52.4751316, -2.0927921]],fill:"#82a874",border:"#3a6030",opacity:1.0,clat:52.47548,clon:-2.091923},
+  G: {name:"Residential W",coords:[[52.4768386, -2.0994066], [52.4769481, -2.0991231], [52.476797, -2.0987852], [52.4767673, -2.0987039], [52.4767407, -2.0986786], [52.4760982, -2.0989831], [52.4760867, -2.0989037], [52.4770089, -2.0984753], [52.4770961, -2.0988537], [52.4771553, -2.098768], [52.4773525, -2.098503], [52.4781785, -2.0978589], [52.478308, -2.0975314], [52.4781758, -2.097108], [52.4780198, -2.0972083], [52.4779317, -2.0972218], [52.4778198, -2.0973201], [52.4777575, -2.0974661], [52.4776754, -2.0973376], [52.4775332, -2.0970014], [52.477438, -2.0965489], [52.4774232, -2.0961094], [52.4773015, -2.0961348], [52.4770538, -2.095979], [52.4770055, -2.0959792], [52.4768208, -2.0961055], [52.4766354, -2.0960769], [52.4765152, -2.0959515], [52.4764049, -2.0959112], [52.4763137, -2.0959383], [52.4762562, -2.0961324], [52.4762602, -2.096216], [52.4761942, -2.0965003], [52.4760402, -2.0967433], [52.4759103, -2.0968864], [52.4757893, -2.0970597], [52.4757581, -2.0971669], [52.4756987, -2.0972807], [52.475488, -2.0975275], [52.4755004, -2.097562], [52.4751121, -2.0981895], [52.475271, -2.0986452], [52.4751319, -2.0987605], [52.4750559, -2.0988689], [52.4751366, -2.0992518], [52.4751199, -2.099259], [52.4750261, -2.0988608], [52.4749093, -2.0984079], [52.4748694, -2.0984259], [52.4748673, -2.098205], [52.4750052, -2.0979996], [52.4753576, -2.0973638], [52.4757441, -2.0966622], [52.4759201, -2.0963443], [52.4758558, -2.0961078], [52.4757458, -2.0958516], [52.475594, -2.0960485], [52.475406, -2.0957425], [52.4752736, -2.0958244], [52.4749795, -2.0956398], [52.474781, -2.0956501], [52.474757, -2.0954564], [52.4741568, -2.0956825], [52.4738787, -2.0957963], [52.4738163, -2.0962952], [52.4738308, -2.0963922], [52.4735983, -2.0964188], [52.4733647, -2.0964874], [52.4732343, -2.0965715], [52.4731086, -2.0967611], [52.4730788, -2.0969355], [52.4732641, -2.0971939], [52.4735536, -2.0972853], [52.4738216, -2.0973464], [52.4738677, -2.0973874], [52.4739375, -2.0974653], [52.4739928, -2.0975388], [52.474031, -2.0976275], [52.4740574, -2.0977183], [52.4740732, -2.0978243], [52.4740877, -2.0979692], [52.4742983, -2.0980788], [52.4743469, -2.0979037], [52.4743774, -2.0978818], [52.4744533, -2.0980143], [52.4744658, -2.0980008], [52.4746476, -2.0977335], [52.4750291, -2.0970398], [52.4750951, -2.0971371], [52.474679, -2.0978679], [52.4743745, -2.0982821], [52.474308, -2.0983744], [52.4743001, -2.0983853], [52.4742352, -2.0985184], [52.4741245, -2.0988904], [52.4741378, -2.0993827], [52.4743511, -2.0993436], [52.4744473, -2.0988965], [52.4745349, -2.0987856], [52.4746253, -2.0991029], [52.4747484, -2.0994795], [52.4750075, -2.0993309], [52.4751681, -2.0992887], [52.47531, -2.0992698], [52.4753118, -2.0993513], [52.475192, -2.0993717], [52.4750403, -2.0994169], [52.4747834, -2.0996015], [52.4745493, -2.0998185], [52.4742645, -2.100244], [52.4739064, -2.1008021], [52.4738522, -2.1006911], [52.4739817, -2.1004988], [52.474074, -2.1003394], [52.4740824, -2.100257], [52.4740705, -2.0998116], [52.4740376, -2.0989033], [52.4740284, -2.0987066], [52.4739915, -2.0978697], [52.4739625, -2.0977378], [52.4739177, -2.0976426], [52.4738782, -2.0975756], [52.4738308, -2.0975215], [52.4737702, -2.0974783], [52.4735767, -2.0974399], [52.4733638, -2.0973728], [52.4730862, -2.0972566], [52.4728403, -2.0971373], [52.4726569, -2.0971388], [52.4725348, -2.0971893], [52.4722805, -2.0973636], [52.4721796, -2.0974799], [52.4717569, -2.0977907], [52.4715322, -2.0979589], [52.4713738, -2.0980598], [52.4707618, -2.0984926], [52.4707402, -2.0987678], [52.4712008, -2.0995872], [52.4712766, -2.0997354], [52.4714351, -2.0994878], [52.4714813, -2.0994612], [52.4717244, -2.0994136], [52.472038, -2.0995341], [52.4722202, -2.0996292], [52.472327, -2.0996865], [52.4723474, -2.0996967], [52.4724099, -2.0996445], [52.4724822, -2.099664], [52.4727165, -2.0997273], [52.4731543, -2.0998394], [52.4731517, -2.1000122], [52.4731415, -2.1006782], [52.4730374, -2.1009888], [52.4729967, -2.1015154], [52.4726756, -2.1015053], [52.4724229, -2.1017315], [52.4724699, -2.1019406], [52.4725145, -2.102117], [52.4725607, -2.102298], [52.472576, -2.1023668], [52.4727307, -2.1022845], [52.4728334, -2.1022588], [52.4728323, -2.1024035], [52.4727162, -2.1024584], [52.4727403, -2.1030187], [52.4726186, -2.1030246], [52.4726628, -2.1035478], [52.4732695, -2.1034694], [52.4732719, -2.1035976], [52.4727464, -2.1036786], [52.4728016, -2.1044309], [52.472931, -2.1043895], [52.4729634, -2.1046864], [52.473212, -2.1046309], [52.4735204, -2.10454], [52.473781, -2.1044552], [52.4737787, -2.1044336], [52.4737371, -2.1040328], [52.4743937, -2.1040663], [52.4744068, -2.1039379], [52.474424, -2.1036615], [52.47443, -2.1036361], [52.4744291, -2.1034871], [52.4756901, -2.1036867], [52.4758862, -2.1027501], [52.4758668, -2.1022559], [52.4755033, -2.102187], [52.4754984, -2.1020371], [52.4759009, -2.1020757], [52.476045, -2.1017913], [52.4761573, -2.1016216], [52.4763354, -2.1008977], [52.4765451, -2.1001269], [52.4768386, -2.0994066]],fill:"#82a874",border:"#3a6030",opacity:1.0,clat:52.474515,clon:-2.099013},
+  H: {name:"Residential NE (East)",coords:[[52.4776848, -2.0860633], [52.4776551, -2.0858452], [52.4776104, -2.0854855], [52.4774314, -2.0843274], [52.4770017, -2.083842], [52.4767142, -2.083936], [52.4764817, -2.0840528], [52.4762262, -2.0837145], [52.4759636, -2.0837759], [52.4759431, -2.0836808], [52.4758867, -2.0835666], [52.4756938, -2.0833726], [52.4756289, -2.0833697], [52.4755722, -2.0833961], [52.4752868, -2.0841651], [52.4750206, -2.0844802], [52.4749861, -2.0846542], [52.4749388, -2.0856146], [52.4749548, -2.0857405], [52.4748912, -2.0860358], [52.4748932, -2.0863875], [52.4750381, -2.0863615], [52.4750839, -2.0866398], [52.4751041, -2.0867827], [52.4751354, -2.0869701], [52.4761141, -2.0865459], [52.4761474, -2.0867512], [52.4751652, -2.0871438], [52.475211, -2.0874947], [52.4755317, -2.0873551], [52.4755533, -2.0875205], [52.4757073, -2.0874609], [52.4757493, -2.0877596], [52.4757949, -2.0879946], [52.475372, -2.0881334], [52.475411, -2.0887743], [52.4754924, -2.0895054], [52.4758161, -2.090603], [52.47585, -2.0906358], [52.4759592, -2.0912378], [52.4762001, -2.0916885], [52.4764191, -2.091895], [52.4764608, -2.0919], [52.4768795, -2.0919], [52.4771732, -2.0918692], [52.4772514, -2.0918648], [52.4774461, -2.0918432], [52.4774476, -2.0919], [52.4795797, -2.0919], [52.4797921, -2.0901482], [52.4794409, -2.0903995], [52.4793057, -2.0899305], [52.4786918, -2.0904203], [52.4786685, -2.0902873], [52.4797377, -2.0894104], [52.4798706, -2.0894309], [52.4798968, -2.0894023], [52.4799777, -2.0886859], [52.4799615, -2.0886232], [52.4799091, -2.0886094], [52.4793588, -2.088623], [52.4789996, -2.088877], [52.4785252, -2.0892597], [52.4779083, -2.0897149], [52.4778629, -2.0897309], [52.4777926, -2.0896932], [52.477716, -2.0896176], [52.4776707, -2.089409], [52.477676, -2.0893012], [52.4777021, -2.0892139], [52.4777446, -2.0891164], [52.4778723, -2.0890365], [52.4791976, -2.0884335], [52.4792553, -2.0883096], [52.4790513, -2.0870946], [52.4788274, -2.0868325], [52.4789116, -2.0866117], [52.4790562, -2.0867628], [52.4792449, -2.0867282], [52.4795015, -2.0866971], [52.4802271, -2.0865877], [52.4802801, -2.0864368], [52.4802829, -2.086084], [52.4797943, -2.0862145], [52.4795926, -2.0857303], [52.4795731, -2.085239], [52.4783923, -2.0857793], [52.4783513, -2.0858046], [52.4776848, -2.0860633]],fill:"#e3ece6",border:"#7a9888",opacity:1.0,clat:52.477369,clon:-2.087666},
+  I: {name:"Residential SE",coords:[[52.475391, -2.0895721], [52.4752761, -2.0886533], [52.4752382, -2.0881047], [52.475171, -2.0878219], [52.4749244, -2.0874301], [52.4748487, -2.0873603], [52.4750109, -2.0884383], [52.4752725, -2.0896859], [52.475391, -2.0895721]],fill:"#82a874",border:"#3a6030",opacity:1.0,clat:52.475169,clon:-2.088515},
+  J: {name:"Residential Central",coords:[[52.4762721, -2.0925408], [52.4758717, -2.0926576], [52.4758583, -2.0926101], [52.4759946, -2.0925509], [52.4760423, -2.0925164], [52.4760258, -2.0924309], [52.4758128, -2.0920404], [52.4751316, -2.0927921], [52.4752621, -2.0929727], [52.4749139, -2.0932625], [52.4748272, -2.0932871], [52.4747778, -2.0932843], [52.4747492, -2.0936635], [52.4747385, -2.0938611], [52.4750961, -2.0941342], [52.4754561, -2.0940259], [52.4756285, -2.0938313], [52.4758145, -2.0937111], [52.4759933, -2.093568], [52.4764141, -2.0934595], [52.4764177, -2.0934015], [52.4764014, -2.093169], [52.4762872, -2.0925618], [52.4762721, -2.0925408]],fill:"#efecd1",border:"#8a7a40",opacity:1.0,clat:52.475669,clon:-2.09312},
+  K: {name:"Residential S",coords:[[52.474615, -2.0894077], [52.4743106, -2.0893604], [52.4740784, -2.0893909], [52.4736858, -2.0903286], [52.473585, -2.0907635], [52.4735304, -2.0908632], [52.4740303, -2.0909767], [52.4741247, -2.0909584], [52.4744511, -2.0910681], [52.4745131, -2.0906358], [52.4745493, -2.0902787], [52.4745703, -2.0900925], [52.4746, -2.0899294], [52.4746239, -2.0897549], [52.4746514, -2.0896094], [52.474615, -2.0894077]],fill:"#82a874",border:"#3a6030",opacity:1.0,clat:52.474283,clon:-2.090177},
+  M: {name:"West H",coords:[[52.4774495, -2.0919753], [52.4769467, -2.0920652], [52.4765729, -2.0920651], [52.4764062, -2.092096], [52.4763052, -2.0921633], [52.4763332, -2.0924614], [52.4763471, -2.0925164], [52.476354, -2.0925784], [52.4765619, -2.0927623], [52.4768186, -2.0929223], [52.476801, -2.0930081], [52.4766113, -2.0928889], [52.4766425, -2.0932004], [52.4764568, -2.0931627], [52.4764733, -2.0936084], [52.4765231, -2.093697], [52.4763873, -2.0941026], [52.4763024, -2.0945402], [52.476327, -2.0946016], [52.4763984, -2.0946868], [52.476494, -2.0947657], [52.476534, -2.094785], [52.4766319, -2.0945164], [52.4767234, -2.0945641], [52.4767676, -2.094725], [52.4767833, -2.0948942], [52.4768224, -2.0949457], [52.4770645, -2.0950641], [52.477499, -2.094254], [52.4775791, -2.094377], [52.4776435, -2.0944791], [52.4776684, -2.0945166], [52.4778547, -2.0942865], [52.4779707, -2.0941449], [52.4777009, -2.0937326], [52.4776683, -2.0936901], [52.4779237, -2.0933823], [52.4782545, -2.0930099], [52.4782857, -2.0930712], [52.4780154, -2.0933725], [52.4782309, -2.0937526], [52.4784155, -2.0934955], [52.47847, -2.0934232], [52.4787213, -2.0938126], [52.4789444, -2.094109], [52.4789878, -2.0941165], [52.479032, -2.094094], [52.4790826, -2.094031], [52.4792974, -2.0936984], [52.4793624, -2.0935064], [52.4795258, -2.0923443], [52.4795797, -2.0919], [52.4774476, -2.0919], [52.4774495, -2.0919753]],fill:"#e2e3d2",border:"#8a7a40",opacity:1.0,clat:52.477434,clon:-2.093553},
+  L: {name:"Pond",coords:[[52.4771836, -2.0943038], [52.4771787, -2.0942501], [52.4771595, -2.0942338], [52.4771303, -2.0942022], [52.4771154, -2.0942046], [52.4770884, -2.0942186], [52.4770884, -2.0942559], [52.4770749, -2.094284], [52.4770749, -2.0943132], [52.4770869, -2.0943307], [52.4770976, -2.0943365], [52.477136, -2.0943552], [52.4771602, -2.0943458], [52.4771708, -2.0943307], [52.4771836, -2.0943038]],fill:"#a8d8f0",border:"#2471a3",opacity:0.7,clat:52.477129,clon:-2.094285},
+};
+
+// ── AREA POLYGONS — lettered A–L, individually recolourable ─────────────────
+const areaLayers = {};
+Object.entries(areaPolygons).forEach(([letter, a]) => {
+  const poly = L.polygon(a.coords, {
+    fillColor: a.fill, fillOpacity: a.opacity,
+    color: a.border, weight: 1.2,
+    fillRule: 'nonzero',
+    interactive: false
+  }).addTo(map);
+  areaLayers[letter] = poly;
+
+  // Letter labels suppressed
+});
+
+// Outer boundary removed
+
+// ── BOUNDARY LABELS ──────────────────────────────────────────────────────────
+[
+  [[52.4773, -2.0942], 'Oxley Close', 0],
+  [[52.4762, -2.0918], 'Quarry Road', -72],
+].forEach(([pos, label, rot]) => {
+  L.marker(pos, {
+    icon: L.divIcon({
+      className:'',
+      html:`<div style="font-size:8px;color:#1a3a6a;
+            font-style:italic;white-space:nowrap;
+            transform:rotate(8deg);transform-origin:left center;
+            text-shadow:0 0 3px #fff,0 0 3px #fff;">${label}</div>`,
+      iconAnchor:[0,5]
+    }), interactive:false
+  }).addTo(map);
+});
+
+// ── changeArea() — call from browser console ─────────────────────────────────
+// Usage: changeArea('D', 'red')  or  changeArea('A', '#3d7a2b', '#1a4a10', 0.5)
+window.changeArea = function(letter, fill, border, opacity) {
+  const poly = areaLayers[letter.toUpperCase()];
+  if (!poly) { console.warn('No area: ' + letter); return; }
+  if (fill)    poly.setStyle({ fillColor: fill });
+  if (border)  poly.setStyle({ color: border });
+  if (opacity !== undefined) poly.setStyle({ fillOpacity: opacity });
+  console.log('Area ' + letter.toUpperCase() + ' updated');
+};
+
+// Reset area to original colour
+window.resetArea = function(letter) {
+  const l = letter.toUpperCase();
+  const a = areaPolygons[l];
+  if (!a || !areaLayers[l]) { console.warn('No area: ' + l); return; }
+  areaLayers[l].setStyle({ fillColor: a.fill, color: a.border, fillOpacity: a.opacity });
+  console.log('Area ' + l + ' reset');
+};
+
+// List all areas
+window.listAreas = function() {
+  Object.entries(areaPolygons).forEach(([l,a]) => console.log(l + ': ' + a.name));
+};
+
+osmHouses.forEach(h => {
+  const c = census[h.num_int] || {name:'Unknown', occ:0, weaver:false, est:false};
+  const isWeaver = c.weaver;
+  const isEst = c.est;
+  const isFounder = c.founder || false;
+
+  // Family colour lookup
+  const familyColors = {
+    'Weaver':     {fill:'#aed6f1', border:'#2471a3'},
+    'Billingham': {fill:'#f9c6d0', border:'#c0392b'},
+    'Hancox':     {fill:'#d5f5e3', border:'#27ae60'},
+    'Dimmock':    {fill:'#fdebd0', border:'#e67e22'},
+    'Griffiths':  {fill:'#e8daef', border:'#8e44ad'},
+    'Nicklin':    {fill:'#d6eaf8', border:'#1a6fa8'},
+    'Pearson':    {fill:'#fdfbd4', border:'#b7950b'},
+    'Sidaway':    {fill:'#f5cba7', border:'#ca6f1e'},
+    'Kendrick':   {fill:'#b8ede4', border:'#1a8878'},
+    'Homer':      {fill:'#d8c8f0', border:'#6844b0'},
+  };
+  const families = Object.keys(familyColors);
+  const matchedFamily = isWeaver ? 'Weaver' : families.find(f => c.name.toLowerCase().includes(f.toLowerCase()));
+
+  // Founder gets gold override
+  const colors = isFounder ? {fill:'#f9e04b', border:'#b8860b'} :
+                 isEst     ? {fill:'#fff8e8', border:'#aaa'} :
+                 matchedFamily ? familyColors[matchedFamily] :
+                 {fill:'#f0ece0', border:'#8a7a55'};
+
+  const fillColor = colors.fill;
+  const borderColor = colors.border;
+  const dashArray = isEst ? '5 3' : null;
+
+  const poly = L.polygon(h.poly, {
+    fillColor, fillOpacity: isFounder ? 0.95 : isEst ? 0.7 : isWeaver ? 0.88 : 0.68,
+    color: borderColor, weight: isFounder ? 3 : isWeaver ? 2.5 : 1.5,
+    dashArray
+  }).addTo(map);
+
+  // Label on building
+  const surname = isFounder ? '★ Weaver' : c.name.replace(/\s+\d{4}$/,'').split(' ').slice(-1)[0];
+  const labelColor = isFounder ? '#7a5900' : isEst ? '#a06000' : matchedFamily ? borderColor : '#2c1810';
+  const icon = L.divIcon({
+    className:'house-label',
+    html:`<div style="color:${labelColor};"><span style="font-size:9px;font-weight:bold;">${h.num_int}</span><br><span style="font-size:7px;">${surname}</span></div>`,
+    iconAnchor:[0,8]
+  });
+  L.marker([h.lat, h.lon], {icon, interactive:false}).addTo(map);
+
+  // Founder star marker — pulsing ring
+  if (isFounder) {
+    const starIcon = L.divIcon({
+      className:'',
+      html:`<div style="
+        width:28px;height:28px;
+        border-radius:50%;
+        border:2.5px solid #b8860b;
+        animation:pulse 1.8s ease-out infinite;
+        box-shadow:0 0 0 0 rgba(184,134,11,0.6);
+        pointer-events:none;
+      "></div>
+      <style>
+        @keyframes pulse {
+          0%   { box-shadow:0 0 0 0 rgba(184,134,11,0.6); }
+          70%  { box-shadow:0 0 0 10px rgba(184,134,11,0); }
+          100% { box-shadow:0 0 0 0 rgba(184,134,11,0); }
+        }
+      </style>`,
+      iconAnchor:[14,14]
+    });
+    L.marker([h.lat, h.lon], {icon:starIcon, interactive:false}).addTo(map);
+  }
+
+  const nameStyle = isFounder ? 'color:#7a5900;font-weight:bold;font-size:0.95em;' : matchedFamily ? `color:${borderColor};font-weight:bold;` : 'color:#111;';
+  const occBg = isFounder ? '#f9e04b' : matchedFamily ? colors.fill : '#f0ece0';
+  const occColor = isFounder ? '#7a5900' : matchedFamily ? borderColor : '#555';
+  const estNote = isEst ? `<div class="pest">&#9432; Position estimated — not yet in OSM</div>` : '';
+
+  const founderPopup = isFounder ? `
+    <div style="margin-top:6px;padding:7px 8px;background:#fffbea;border-left:3px solid #b8860b;border-radius:2px;font-size:0.78em;line-height:1.5;color:#4a3800;">
+      <div style="font-weight:bold;margin-bottom:3px;">&#9733; Founder of Mushroom Green</div>
+      <div><b>Henry Weaver b.1789, Sedgley</b> — patriarch of the Mushroom Green Weavers and one of the first settlers of the enclosure, establishing the family's presence in the chainmaking community. Lived here from c.1800 until 1857, when his wife Ann Maria passed away. He then moved to 52 Netherton Hill, and his son <b>John Weaver b.1824</b> took over the house.</div>
+    </div>` : '';
+
+  poly.bindPopup(`
+    <div class="pt">${isFounder ? '&#9733;&nbsp;' : ''}No.&nbsp;${h.number} &mdash; Mushroom Green</div>
+    <div class="pr">
+      <span style="font-size:0.85em;flex:1;${nameStyle}">${c.name}</span>
+      <span style="font-size:0.76em;border-radius:10px;padding:1px 7px;white-space:nowrap;background:${occBg};color:${occColor};">${c.occ} occupant${c.occ!==1?'s':''}</span>
+    </div>
+    ${founderPopup}
+    ${estNote}
+  `, {maxWidth:280});
+  poly.on('mouseover', function() { this.openPopup(); });
+  poly.on('mouseout',  function() { this.closePopup(); });
+});
+
+// ── SETTLEMENT ROADS — after houses so they render on top ───────────────────
+[
+  [[52.4768439,-2.0938011],[52.4767251,-2.0939],[52.4766439,-2.0938926],[52.4764545,-2.093662]],
+  [[52.4762954,-2.0925113],[52.476418,-2.0931689],[52.4764483,-2.0935788],[52.4764545,-2.093662],[52.4763667,-2.0940953],[52.476299,-2.0943772],[52.4762814,-2.0944797],[52.4762812,-2.0945375],[52.4762897,-2.0945793],[52.4763238,-2.0946444],[52.4765031,-2.0948112]],
+  [[52.4757862,-2.0932735],[52.4759314,-2.0925929]],
+  [[52.4753138,-2.0935515],[52.4753012,-2.0931827],[52.4753147,-2.0930999],[52.4753339,-2.0930407],[52.475429,-2.0929318],[52.4758061,-2.0926604],[52.4759314,-2.0925929],[52.4759759,-2.09258],[52.4761275,-2.0925361],[52.4762954,-2.0925113]],
+  [[52.476216,-2.091799],[52.4762759,-2.0922805],[52.4762954,-2.0925113]],
+  [[52.4768103,-2.0929786],[52.476549,-2.0927924],[52.4763637,-2.0926226],[52.4762954,-2.0925113]],
+].forEach(coords => {
+  L.polyline(coords, {color:'#4a3010', weight:5,   opacity:0.9, interactive:false}).addTo(map);
+  L.polyline(coords, {color:'#e8dfc0', weight:2.5, opacity:1.0, interactive:false}).addTo(map);
+});
+
+// ── BLACK BROOK — drawn last so it appears above all fills ──────────────────
+L.polyline(brookCoords, {color:'#7ab8d8', weight:8,  opacity:0.45, interactive:false}).addTo(map);
+L.polyline(brookCoords, {color:'#4a90d9', weight:4.5, opacity:0.85, interactive:false}).addTo(map);
+L.polyline(brookCoords, {color:'#c8eaf8', weight:1.8, opacity:0.70, interactive:false}).addTo(map);
+
+// Brook labels
+
+L.marker([52.47490, -2.09498], {icon:L.divIcon({className:'',
+  html:'<div style="font-size:10px;color:#1a5a90;font-style:italic;font-weight:bold;white-space:nowrap;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);letter-spacing:0.12em;text-shadow:0 0 4px #fff,0 0 4px #fff,0 0 4px #fff;">Black Brook</div>',
+  iconAnchor:[6,0]}), interactive:false}).addTo(map);
+
+// ── MOUSESWEET BROOK — joins Black Brook at south ────────────────────────────
+const mousesweetCoords = [[52.4755729, -2.0855231], [52.4756021, -2.0856595], [52.4756092, -2.0856942], [52.4755927, -2.0861451], [52.4755131, -2.0864753], [52.4754895, -2.0870581], [52.4754864, -2.0873745], [52.4755464, -2.0877128], [52.475566, -2.0881982], [52.4755827, -2.0886445], [52.4756488, -2.0889663], [52.4757491, -2.0891169], [52.4758077, -2.0892095], [52.4758607, -2.0894097], [52.4759478, -2.0895962], [52.4759546, -2.0897314], [52.4759656, -2.0898954], [52.4759615, -2.0900508], [52.4759584, -2.0902316], [52.4759209, -2.0905891], [52.4759092, -2.0906296], [52.4757971, -2.09104], [52.4757156, -2.0913219], [52.4753894, -2.0917531], [52.4751447, -2.0920766], [52.4749, -2.0924], [52.4749127, -2.092525], [52.4749184, -2.09265], [52.4749116, -2.092775], [52.474889, -2.0929], [52.4748762, -2.093025], [52.4748507, -2.09315], [52.4748168, -2.093275], [52.4747802, -2.0934], [52.4747468, -2.093525], [52.4747223, -2.09365], [52.4747106, -2.093775], [52.4747137, -2.0939], [52.4747029, -2.094], [52.4747012, -2.0941], [52.4747055, -2.0942], [52.4747122, -2.0943], [52.4747114, -2.094375], [52.4747078, -2.09445], [52.4746996, -2.094525], [52.4746857, -2.0946]];
+L.polyline(mousesweetCoords, {color:'#7ab8d8', weight:8,   opacity:0.45, interactive:false}).addTo(map);
+L.polyline(mousesweetCoords, {color:'#4a90d9', weight:4.5, opacity:0.85, interactive:false}).addTo(map);
+L.polyline(mousesweetCoords, {color:'#c8eaf8', weight:1.8, opacity:0.70, interactive:false}).addTo(map);
+
+
+// Mousesweet Brook label — below Area J, along flow
+L.marker([52.4747, -2.0940], {
+  icon: L.divIcon({
+    className: '',
+    html: '<div style="font-size:10px;color:#1a5a90;font-style:italic;font-weight:bold;white-space:nowrap;transform:rotate(-7deg);transform-origin:left center;text-shadow:0 0 4px #fff,0 0 4px #fff,0 0 4px #fff;">Mousesweet Brook</div>',
+    iconAnchor: [0, 6]
+  }), interactive: false
+}).addTo(map);
+
+// ── AREA NAME LABELS ──────────────────────────────────────────────────────────
+// A — Mushroom Green Valley (western open space of A)
+L.marker([52.4762, -2.0966], {icon:L.divIcon({className:'',
+  html:'<div style="font-size:9px;color:#3a5a30;font-style:italic;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;pointer-events:none;">Mushroom Green Valley</div>',
+  iconAnchor:[60,5]
+}), interactive:false}).addTo(map);
+
+// C — Saltwells Nature Reserve (open southern area of C)
+L.marker([52.4712, -2.0962], {icon:L.divIcon({className:'',
+  html:'<div style="font-size:9px;color:#3a5a30;font-style:italic;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;pointer-events:none;">Saltwells Nature Reserve</div>',
+  iconAnchor:[65,5]
+}), interactive:false}).addTo(map);
+
+// D — Village Green N
+L.marker([52.476507, -2.093014], {icon:L.divIcon({className:'',
+  html:'<div style="font-size:8px;color:#2d5a1b;font-style:italic;text-align:center;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 2px #fff;pointer-events:none;">Village<br>Green</div>',
+  iconAnchor:[16,10]
+}), interactive:false}).addTo(map);
+
+// E — Village Green S
+L.marker([52.476068, -2.09214], {icon:L.divIcon({className:'',
+  html:'<div style="font-size:8px;color:#2d5a1b;font-style:italic;text-align:center;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 2px #fff;pointer-events:none;">Village<br>Green</div>',
+  iconAnchor:[16,10]
+}), interactive:false}).addTo(map);
+
+
+// ══ 3. VICTORIAN TITLE CARTOUCHE — fixed, next to compass ════════════════
+(function() {
+  var cart = document.createElement('div');
+  cart.style.cssText = [
+    'position:fixed','bottom:8px','left:14px',
+    'z-index:1400','pointer-events:none',
+    'text-align:center'
+  ].join(';');
+  cart.innerHTML = `
+    <div style="
+      border:2.5px solid #4a2c08;
+      box-shadow:inset 0 0 0 1.5px #f5e6c8, inset 0 0 0 3.5px #4a2c08, inset 0 0 0 6px #f5e6c8;
+      background:rgba(252,245,225,0.95);
+      padding:8px 12px 7px;
+      text-align:center;
+      min-width:160px;
+    ">
+      <div style="font-size:12px;font-weight:bold;letter-spacing:0.15em;color:#2c1008;line-height:1.2;text-transform:uppercase;">Mushroom Green</div>
+      <div style="font-size:9px;letter-spacing:0.1em;color:#2c1008;margin:2px 0 4px;text-transform:uppercase;">1865 Occupants</div>
+      <div style="border-top:1px solid #8a5a20;border-bottom:1px solid #8a5a20;padding:3px 0;margin:3px 0;">
+        <div style="font-size:8px;font-style:italic;color:#5a3010;line-height:1.5;">Book of Weaver</div>
+        <div style="font-size:7.5px;font-style:italic;color:#5a3010;">OSM mapping by Mike Mushroom</div>
+      </div>
+      <div style="font-size:7.5px;color:#3a2008;letter-spacing:0.03em;margin-top:3px;">59 households &middot; hover any house</div>
+    </div>`;
+  document.body.appendChild(cart);
+})();
+
+// ══ 1. SEPIA TILE FILTER ══════════════════════════════════════════════════
+map.whenReady(function() {
+  var tilePane = document.querySelector('.leaflet-tile-pane');
+  if (tilePane) tilePane.style.filter = 'sepia(0.2) brightness(0.98) contrast(0.97)';
+});
+
+// ══ 8. DECORATIVE MAP BORDER + CORNER EMBELLISHMENTS ════════════════════
+(function() {
+  var border = document.createElement('div');
+  border.style.cssText = [
+    'position:fixed','top:64px','left:0','right:0','bottom:0',
+    'pointer-events:none','z-index:1500',
+    'border:3px solid #5a3310',
+    'box-shadow:inset 0 0 0 2px #f5e6c8, inset 0 0 0 5px #5a3310, inset 0 0 0 8px #f5e6c8',
+    'outline:none'
+  ].join(';');
+  document.body.appendChild(border);
+
+  // Corner ornaments — Victorian cross-pattée style
+  var corners = [
+    ['top:4px;left:4px','rotate(0)'],
+    ['top:4px;right:4px','rotate(90deg)'],
+    ['bottom:4px;right:4px','rotate(180deg)'],
+    ['bottom:4px;left:4px','rotate(270deg)']
+  ];
+  corners.forEach(function(c) {
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;pointer-events:none;z-index:1501;' + c[0];
+    el.innerHTML = '<svg width="28" height="28" viewBox="0 0 28 28"><g transform="translate(14,14) ' + c[1] + '">'
+      + '<rect x="-1.5" y="-12" width="3" height="11" fill="#5a3310"/>'
+      + '<rect x="-12" y="-1.5" width="11" height="3" fill="#5a3310"/>'
+      + '<rect x="-3" y="-3" width="6" height="6" fill="#5a3310"/>'
+      + '<circle cx="-10" cy="0" r="2" fill="#5a3310"/>'
+      + '<circle cx="0" cy="-10" r="2" fill="#5a3310"/>'
+      + '</g></svg>';
+    document.body.appendChild(el);
+  });
+})();
+
+// ══ 9. SURVEYED ANNOTATION ════════════════════════════════════════════════
+(function() {
+  var ann = document.createElement('div');
+  ann.style.cssText = [
+    'position:fixed','bottom:42px','right:105px',
+    'z-index:1400','pointer-events:none',
+    'font-size:8px','font-style:italic','color:#3a2008',
+    'text-shadow:0 0 3px #fff,0 0 3px #fff',
+    'letter-spacing:0.04em','white-space:nowrap'
+  ].join(';');
+  ann.textContent = 'Surveyed by Michael Weaver from Census Returns, 1861 \u00b7 Parish of Rowley Regis';
+  document.body.appendChild(ann);
+})();
+
+
+
+// ══ 4. VICTORIAN SCALE BAR (chains) ══════════════════════════════════════
+// 1 chain = 20.1168m. A-C = 164m = 8.15 chains.
+// Show 4 chains = 80.47m. At map scale, use L.control.scale as base,
+// then overlay custom Victorian bar.
+(function() {
+  // Custom chain scale bar — positioned bottom-left above legend
+  var bar = document.createElement('div');
+  bar.style.cssText = [
+    'position:fixed','bottom:60px','right:105px',
+    'z-index:1400','pointer-events:none',
+  ].join(';');
+
+  // 4 chains = 80.47m. At 31cm = 164m scale: 80.47m = 31*80.47/164 = 15.2cm
+  // In pixels at 96dpi: 15.2cm = 57.6px ≈ 58px per 4 chains
+  // Each chain segment = 14.5px
+  var chainPx = 14.5;  // pixels per chain at current print scale
+  bar.innerHTML = `
+    <div style="font-size:7.5px;color:#3a2008;text-align:center;margin-bottom:1px;letter-spacing:0.06em;">SCALE OF CHAINS</div>
+    <div style="display:flex;align-items:stretch;border:1px solid #4a2c08;height:8px;width:${chainPx*4}px;">
+      <div style="width:${chainPx}px;background:#2c1008;"></div>
+      <div style="width:${chainPx}px;background:#f5e6c8;border-left:1px solid #4a2c08;"></div>
+      <div style="width:${chainPx}px;background:#2c1008;border-left:1px solid #4a2c08;"></div>
+      <div style="width:${chainPx}px;background:#f5e6c8;border-left:1px solid #4a2c08;"></div>
+    </div>
+    <div style="display:flex;font-size:7px;color:#3a2008;width:${chainPx*4+2}px;justify-content:space-between;margin-top:1px;">
+      <span>0</span><span>1</span><span>2</span><span>3</span><span>4 ch.</span>
+    </div>`;
+  document.body.appendChild(bar);
+})();
+
+</script><div style="position: fixed; bottom: 8px; left: 14px; z-index: 1400; pointer-events: none; text-align: center;">
+    <div style="
+      border:2.5px solid #4a2c08;
+      box-shadow:inset 0 0 0 1.5px #f5e6c8, inset 0 0 0 3.5px #4a2c08, inset 0 0 0 6px #f5e6c8;
+      background:rgba(252,245,225,0.95);
+      padding:8px 12px 7px;
+      text-align:center;
+      min-width:160px;
+    ">
+      <div style="font-size:12px;font-weight:bold;letter-spacing:0.15em;color:#2c1008;line-height:1.2;text-transform:uppercase;">Mushroom Green</div>
+      <div style="font-size:9px;letter-spacing:0.1em;color:#2c1008;margin:2px 0 4px;text-transform:uppercase;">1865 Occupants</div>
+      <div style="border-top:1px solid #8a5a20;border-bottom:1px solid #8a5a20;padding:3px 0;margin:3px 0;">
+        <div style="font-size:8px;font-style:italic;color:#5a3010;line-height:1.5;">Book of Weaver</div>
+        <div style="font-size:7.5px;font-style:italic;color:#5a3010;">OSM mapping by Mike Mushroom</div>
+      </div>
+      <div style="font-size:7.5px;color:#3a2008;letter-spacing:0.03em;margin-top:3px;">59 households · hover any house</div>
+    </div></div><div style="position: fixed; inset: 64px 0px 0px; pointer-events: none; z-index: 1500; border: 3px solid rgb(90, 51, 16); box-shadow: rgb(245, 230, 200) 0px 0px 0px 2px inset, rgb(90, 51, 16) 0px 0px 0px 5px inset, rgb(245, 230, 200) 0px 0px 0px 8px inset; outline: medium;"></div><div style="position: fixed; pointer-events: none; z-index: 1501; top: 4px; left: 4px;"><svg width="28" height="28" viewBox="0 0 28 28"><g transform="translate(14,14) rotate(0)"><rect x="-1.5" y="-12" width="3" height="11" fill="#5a3310"></rect><rect x="-12" y="-1.5" width="11" height="3" fill="#5a3310"></rect><rect x="-3" y="-3" width="6" height="6" fill="#5a3310"></rect><circle cx="-10" cy="0" r="2" fill="#5a3310"></circle><circle cx="0" cy="-10" r="2" fill="#5a3310"></circle></g></svg></div><div style="position: fixed; pointer-events: none; z-index: 1501; top: 4px; right: 4px;"><svg width="28" height="28" viewBox="0 0 28 28"><g transform="translate(14,14) rotate(90deg)"><rect x="-1.5" y="-12" width="3" height="11" fill="#5a3310"></rect><rect x="-12" y="-1.5" width="11" height="3" fill="#5a3310"></rect><rect x="-3" y="-3" width="6" height="6" fill="#5a3310"></rect><circle cx="-10" cy="0" r="2" fill="#5a3310"></circle><circle cx="0" cy="-10" r="2" fill="#5a3310"></circle></g></svg></div><div style="position: fixed; pointer-events: none; z-index: 1501; bottom: 4px; right: 4px;"><svg width="28" height="28" viewBox="0 0 28 28"><g transform="translate(14,14) rotate(180deg)"><rect x="-1.5" y="-12" width="3" height="11" fill="#5a3310"></rect><rect x="-12" y="-1.5" width="11" height="3" fill="#5a3310"></rect><rect x="-3" y="-3" width="6" height="6" fill="#5a3310"></rect><circle cx="-10" cy="0" r="2" fill="#5a3310"></circle><circle cx="0" cy="-10" r="2" fill="#5a3310"></circle></g></svg></div><div style="position: fixed; pointer-events: none; z-index: 1501; bottom: 4px; left: 4px;"><svg width="28" height="28" viewBox="0 0 28 28"><g transform="translate(14,14) rotate(270deg)"><rect x="-1.5" y="-12" width="3" height="11" fill="#5a3310"></rect><rect x="-12" y="-1.5" width="11" height="3" fill="#5a3310"></rect><rect x="-3" y="-3" width="6" height="6" fill="#5a3310"></rect><circle cx="-10" cy="0" r="2" fill="#5a3310"></circle><circle cx="0" cy="-10" r="2" fill="#5a3310"></circle></g></svg></div><div style="position: fixed; bottom: 42px; right: 105px; z-index: 1400; pointer-events: none; font-size: 8px; font-style: italic; color: rgb(58, 32, 8); text-shadow: rgb(255, 255, 255) 0px 0px 3px, rgb(255, 255, 255) 0px 0px 3px; letter-spacing: 0.04em; white-space: nowrap;">Surveyed by Michael Weaver from Census Returns, 1861 · Parish of Rowley Regis</div><div style="position: fixed; bottom: 60px; right: 105px; z-index: 1400; pointer-events: none;">
+    <div style="font-size:7.5px;color:#3a2008;text-align:center;margin-bottom:1px;letter-spacing:0.06em;">SCALE OF CHAINS</div>
+    <div style="display:flex;align-items:stretch;border:1px solid #4a2c08;height:8px;width:58px;">
+      <div style="width:14.5px;background:#2c1008;"></div>
+      <div style="width:14.5px;background:#f5e6c8;border-left:1px solid #4a2c08;"></div>
+      <div style="width:14.5px;background:#2c1008;border-left:1px solid #4a2c08;"></div>
+      <div style="width:14.5px;background:#f5e6c8;border-left:1px solid #4a2c08;"></div>
+    </div>
+    <div style="display:flex;font-size:7px;color:#3a2008;width:60px;justify-content:space-between;margin-top:1px;">
+      <span>0</span><span>1</span><span>2</span><span>3</span><span>4 ch.</span>
+    </div></div>
+
+
+</body></html>

@@ -35,6 +35,19 @@ const ogImageUrl = new URL(ogImage, Astro.site).toString();
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+
+    <!--
+      IM Fell English — antique serif used by the legacy map
+      (legacy/Map/mushroom_green_1865_v10_11_35_28.html line 6). Wired here
+      so every page gets the Victorian feel; Georgia is the global fallback
+      while the font loads (and forever for users with Google Fonts blocked).
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap"
+    />
   </head>
   <body>
     <slot />

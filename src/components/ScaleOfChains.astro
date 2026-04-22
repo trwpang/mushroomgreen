@@ -1,0 +1,91 @@
+---
+/**
+ * ScaleOfChains — fixed bottom-right Victorian-style scale bar.
+ *
+ * Lifted from legacy/Map/mushroom_green_1865_v10_11_35_28.html lines 663-687
+ * (JS) / 705-715 (resolved DOM). Renders four alternating black/cream chain
+ * segments with 0/1/2/3/4 ch. tick labels and a "SCALE OF CHAINS" header.
+ *
+ * Chain dimensions (from the source's own comment):
+ *   1 chain = 20.1168 m
+ *   A → C section ≈ 164 m ≈ 8.15 chains
+ *   Bar shows 4 chains = 80.47 m
+ *   At print scale (31 cm = 164 m), 80.47 m ≈ 15.2 cm ≈ 58 px @ 96 dpi
+ *   So each chain segment = 14.5 px wide
+ *
+ * Note: the bar is sized in CSS pixels, NOT geo-anchored to the map. It's
+ * an aesthetic Victorian flourish, accurate at the default zoom (18.25 set
+ * by VillageMap), but it does NOT update on zoom — same behaviour as the
+ * legacy file. Leaflet's L.control.scale would be the dynamic counterpart;
+ * the source deliberately rolled its own static bar for the antique look.
+ *
+ * Position: bottom-right, just above the SurveyedBy attribution. Sits at
+ * z-index 1400 with `pointer-events: none` so the map drag/zoom underneath
+ * remains unblocked.
+ *
+ * Hidden on print — same logic as the title cartouche; the printed version
+ * uses the legacy print header for context and the bar would clash with
+ * Chromium's own print scale (if enabled).
+ *
+ * Trust boundary: hard-coded literals from the source. No user input.
+ */
+---
+<div class="scale-of-chains" aria-label="Scale: 4 chains (~80 metres)">
+  <div class="scale-header">SCALE OF CHAINS</div>
+  <div class="scale-bar">
+    <div class="seg seg-dark"></div>
+    <div class="seg seg-light"></div>
+    <div class="seg seg-dark"></div>
+    <div class="seg seg-light"></div>
+  </div>
+  <div class="scale-ticks">
+    <span>0</span><span>1</span><span>2</span><span>3</span><span>4 ch.</span>
+  </div>
+</div>
+
+<style>
+  .scale-of-chains {
+    position: fixed;
+    bottom: 60px;
+    right: 105px;
+    z-index: 1400;
+    pointer-events: none;
+  }
+  .scale-header {
+    font-size: 7.5px;
+    color: #3a2008;
+    text-align: center;
+    margin-bottom: 1px;
+    letter-spacing: 0.06em;
+  }
+  .scale-bar {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #4a2c08;
+    height: 8px;
+    width: 58px; /* 4 chains × 14.5px */
+  }
+  .seg {
+    width: 14.5px;
+  }
+  .seg-dark  { background: #2c1008; }
+  .seg-light { background: #f5e6c8; }
+  /* Vertical hairline between segments — first segment doesn't get one. */
+  .seg + .seg {
+    border-left: 1px solid #4a2c08;
+  }
+  .scale-ticks {
+    display: flex;
+    font-size: 7px;
+    color: #3a2008;
+    width: 60px;
+    justify-content: space-between;
+    margin-top: 1px;
+  }
+
+  /* Print: hide. The legacy print layout omits this for the same reason
+     as the cartouche — Chromium's own print scale is sufficient. */
+  @media print {
+    .scale-of-chains { display: none; }
+  }
+</style>

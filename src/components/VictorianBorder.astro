@@ -1,0 +1,94 @@
+---
+/**
+ * VictorianBorder — fixed decorative outer frame + four corner cross-pattée
+ * ornaments.
+ *
+ * Lifted from legacy/Map/mushroom_green_1865_v10_11_35_28.html lines 610-641
+ * (JS) / line 705 (resolved DOM). The legacy file built it via inline JS
+ * `document.createElement` at runtime; rendering it server-side here.
+ *
+ * The frame starts at `top: 64px` to clear the header (which is 72px in the
+ * v10_11_35_28 source). At the top the legacy used 64px — the small overlap
+ * is intentional, it sits the border just inside the header's bottom rule.
+ *
+ * The triple inset rings (cream / brown / cream) are conjured from a
+ * three-layer `box-shadow: inset` — same trick as the title cartouche.
+ *
+ * The four corner ornaments are inline SVGs of a Victorian cross-pattée:
+ * a vertical bar, a horizontal bar, a centre square, and two flanking
+ * circles. The geometry is identical at every corner — only the rotation
+ * differs (0 / 90 / 180 / 270 deg) so the cross "points away" from the
+ * corner. SVG paths copied verbatim from the source.
+ *
+ * Pointer-events: none, z-index 1500 (above the map but below cartouche /
+ * scale / surveyed-by which sit at 1400 — wait, that's actually the legacy
+ * order: border z=1500/1501 sits ABOVE the cartouche/scale/surveyed-by at
+ * z=1400. The frame is on top because `pointer-events: none` makes it
+ * harmless either way, and the source put it on top deliberately so the
+ * inset shadow rings are unbroken).
+ *
+ * Hidden on print (`@media print`) — the printed map gets the dark-brown
+ * header and the surveyed-by/scale annotations as its frame; the
+ * decorative outer border would just waste ink.
+ *
+ * Trust boundary: SVG content is hard-coded literals from the source.
+ * No user input flows in.
+ */
+
+const corners = [
+  { pos: 'top: 4px; left: 4px;',     transform: 'rotate(0)'      },
+  { pos: 'top: 4px; right: 4px;',    transform: 'rotate(90deg)'  },
+  { pos: 'bottom: 4px; right: 4px;', transform: 'rotate(180deg)' },
+  { pos: 'bottom: 4px; left: 4px;',  transform: 'rotate(270deg)' },
+];
+---
+<div class="victorian-border" aria-hidden="true"></div>
+{corners.map(({ pos, transform }) => (
+  <div class="victorian-corner" style={pos} aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 28 28">
+      <g transform={`translate(14,14) ${transform}`}>
+        <rect x="-1.5" y="-12" width="3" height="11" fill="#5a3310" />
+        <rect x="-12" y="-1.5" width="11" height="3" fill="#5a3310" />
+        <rect x="-3" y="-3" width="6" height="6" fill="#5a3310" />
+        <circle cx="-10" cy="0" r="2" fill="#5a3310" />
+        <circle cx="0" cy="-10" r="2" fill="#5a3310" />
+      </g>
+    </svg>
+  </div>
+))}
+
+<style>
+  .victorian-border {
+    position: fixed;
+    /* `inset: 64px 0 0` — frame starts 64px down from the top so it tucks
+       just inside the header's bottom rule (header is 72px). */
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1500;
+    border: 3px solid #5a3310;
+    box-shadow:
+      inset 0 0 0 2px #f5e6c8,
+      inset 0 0 0 5px #5a3310,
+      inset 0 0 0 8px #f5e6c8;
+    outline: none;
+  }
+  .victorian-corner {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1501;
+    /* `top` / `left` / `right` / `bottom` come from the inline `style`
+       attribute since each corner needs different anchors. */
+  }
+
+  /* Print: hide entirely. The print layout uses the header + scale +
+     surveyed-by annotations as the map frame. */
+  @media print {
+    .victorian-border,
+    .victorian-corner {
+      display: none;
+    }
+  }
+</style>

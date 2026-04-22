@@ -1,0 +1,53 @@
+---
+/**
+ * SurveyedBy — fixed bottom-right italic surveyor attribution.
+ *
+ * Lifted from legacy/Map/mushroom_green_1865_v10_11_35_28.html lines 643-655.
+ *
+ * Positioning quirk: the source placed it at `bottom: 42px; right: 105px`
+ * (NOT bottom: 30px; right: 14px as a casual reading might suggest). The
+ * 105px right offset matches ScaleOfChains so both annotations stack
+ * vertically along the same right edge, clearing the bottom-right
+ * compass added by VillageMap. The scale bar sits at bottom: 60px; this
+ * line at bottom: 42px — i.e. just below the scale bar.
+ *
+ * The triple `text-shadow: 0 0 3px #fff` halo lifts the italic off the
+ * sepia map tiles for legibility — same trick used by the area labels
+ * inside VillageMap.
+ *
+ * Hidden on print: the print header carries the title; the surveyor
+ * attribution belongs to the on-screen Victorian flourish, not the print
+ * version. (Adjust this rule if a future print-friendly attribution is
+ * desired.)
+ *
+ * Trust boundary: hard-coded literal text. No user input.
+ */
+---
+<div class="surveyed-by" aria-hidden="true">
+  Surveyed by Michael Weaver from Census Returns, 1861 &middot; Parish of Rowley Regis
+</div>
+
+<style>
+  .surveyed-by {
+    position: fixed;
+    bottom: 42px;
+    right: 105px;
+    z-index: 1400;
+    pointer-events: none;
+    font-size: 8px;
+    font-style: italic;
+    color: #3a2008;
+    /* Triple halo for legibility against sepia map tiles. */
+    text-shadow:
+      0 0 3px #fff,
+      0 0 3px #fff;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  /* Print: hide. The dark-brown header carries title + attribution in
+     the print layout. */
+  @media print {
+    .surveyed-by { display: none; }
+  }
+</style>

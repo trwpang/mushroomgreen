@@ -5,7 +5,15 @@
 }
 
 body {
-  font-family: Georgia, serif;
+  /*
+   * IM Fell English first, Georgia as fallback. Matches legacy
+   * mushroom_green_1865_v10_11_35_28.html line 6 (font import) — that file
+   * never wired the new font globally, so its body still rendered as Georgia.
+   * Per Tom's call we wire it globally; map house labels and Leaflet popups
+   * keep `font-family: Georgia, serif` inline (set in VillageMap) for
+   * legibility on small map text.
+   */
+  font-family: 'IM Fell English', Georgia, serif;
   background: #ffffff;
   color: #2c1810;
   line-height: 1.5;

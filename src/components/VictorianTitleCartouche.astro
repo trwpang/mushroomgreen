@@ -1,0 +1,110 @@
+---
+/**
+ * VictorianTitleCartouche — fixed bottom-left antique title block.
+ *
+ * Renders the cream-on-brown nested-bordered cartouche from the legacy
+ * source (legacy/Map/mushroom_green_1865_v10_11_35_28.html lines 575-602
+ * and the resolved DOM at line 689). The legacy file built it via
+ * `document.createElement` in the inline script at runtime; we author the
+ * markup statically because the structure is purely decorative — no
+ * interactivity, no data binding, no DOM mutation.
+ *
+ * Layout / colour values are lifted verbatim from the source's resolved DOM
+ * (line 689 onward) — the inset triple-ring effect comes from a single
+ * `box-shadow: inset` declaration with three layers, not from real nested
+ * elements. The `pointer-events: none` keeps the map drag-able underneath.
+ *
+ * `print-color-adjust: exact` survives Chromium's "background graphics off"
+ * default in print preview, but the `@media print { display: none }` rule
+ * below hides the cartouche entirely on print — the print layout uses the
+ * dark-brown header for branding and the cartouche would clash with the
+ * SCALE-OF-CHAINS / SURVEYED-BY annotations that print as part of the map
+ * frame.
+ *
+ * Trust boundary: the inline styles are the spec (lifted from the source).
+ * No user input touches this component, so any PreToolUse style-flag is
+ * expected and benign.
+ */
+---
+<div class="victorian-title-cartouche">
+  <div class="cartouche-inner">
+    <div class="title">Mushroom Green</div>
+    <div class="subtitle">1865 Occupants</div>
+    <div class="byline">
+      <div class="book">Book of Weaver</div>
+      <div class="osm">OSM mapping by Mike Mushroom</div>
+    </div>
+    <div class="hint">59 households &middot; hover any house</div>
+  </div>
+</div>
+
+<style>
+  .victorian-title-cartouche {
+    position: fixed;
+    bottom: 8px;
+    left: 14px;
+    z-index: 1400;
+    pointer-events: none;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cartouche-inner {
+    /* The four shadows simulate the nested cream/brown rings without
+       authoring four real divs — copied from the legacy resolved DOM. */
+    border: 2.5px solid #4a2c08;
+    box-shadow:
+      inset 0 0 0 1.5px #f5e6c8,
+      inset 0 0 0 3.5px #4a2c08,
+      inset 0 0 0 6px #f5e6c8;
+    background: rgba(252, 245, 225, 0.95);
+    padding: 8px 12px 7px;
+    text-align: center;
+    min-width: 160px;
+  }
+  .title {
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.15em;
+    color: #2c1008;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+  .subtitle {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: #2c1008;
+    margin: 2px 0 4px;
+    text-transform: uppercase;
+  }
+  .byline {
+    border-top: 1px solid #8a5a20;
+    border-bottom: 1px solid #8a5a20;
+    padding: 3px 0;
+    margin: 3px 0;
+  }
+  .byline .book {
+    font-size: 8px;
+    font-style: italic;
+    color: #5a3010;
+    line-height: 1.5;
+  }
+  .byline .osm {
+    font-size: 7.5px;
+    font-style: italic;
+    color: #5a3010;
+  }
+  .hint {
+    font-size: 7.5px;
+    color: #3a2008;
+    letter-spacing: 0.03em;
+    margin-top: 3px;
+  }
+
+  /* Print: hide. The print layout uses the dark-brown header for branding
+     and the SCALE-OF-CHAINS / SURVEYED-BY annotations for map context;
+     duplicating the title here would only waste ink. */
+  @media print {
+    .victorian-title-cartouche { display: none; }
+  }
+</style>
