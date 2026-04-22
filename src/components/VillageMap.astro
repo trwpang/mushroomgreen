@@ -39,12 +39,13 @@ import labels from '../data/labels.json';
   is:inline
 ></script>
 
-<div
-  id="map"
-  style="height: calc(100vh - 48px); width: 100%; background: #ffffff;"
-></div>
+<div id="map"></div>
 
 <style is:global>
+  /* Map div sizing: the parent page owns height (the header dimension is a
+     page-level concern, not a component one). Width and background are the
+     component's responsibility. */
+  #map { width: 100%; background: #ffffff; height: calc(100vh - 72px); }
   /* Leaflet container background — match legacy. */
   .leaflet-container { background: #ffffff !important; }
 
