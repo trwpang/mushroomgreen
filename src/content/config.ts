@@ -11,6 +11,7 @@ const FAMILIES = [
   'Pearson',
   'Sidaway',
   'Kendrick',
+  'Homer',
   'Other',
 ] as const;
 

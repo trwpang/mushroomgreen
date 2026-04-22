@@ -1,7 +1,7 @@
 ---
 number: 52
 household_name: "Thos Homer 1803"
-family: Other
+family: Homer
 occupants_1861: 6
 position:
   lat: 52.47657834

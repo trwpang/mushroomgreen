@@ -1,7 +1,7 @@
 ---
 number: 44
 household_name: "Homer"
-family: Other
+family: Homer
 occupants_1861: 2
 position:
   lat: 52.47660701428571

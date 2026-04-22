@@ -17,9 +17,3 @@ sources:
   - "1861 census"
   - "OSM building polygon (mapping by Mike Mushroom)"
 ---
-
-Henry Weaver, b.1789 in Sedgley, was patriarch of the Mushroom Green Weavers
-and one of the first settlers of the enclosure, establishing the family's
-presence in the chainmaking community. He lived here from c.1800 until 1857,
-when his wife Ann Maria passed away. He then moved to 52 Netherton Hill, and
-his son **John Weaver b.1824** took over the house.

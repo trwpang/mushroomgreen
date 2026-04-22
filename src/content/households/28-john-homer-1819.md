@@ -1,7 +1,7 @@
 ---
 number: 28
 household_name: "John Homer 1819"
-family: Other
+family: Homer
 occupants_1861: 7
 position:
   lat: 52.47613068

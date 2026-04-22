@@ -8,6 +8,7 @@
   "Pearson":    {"fill": "#fdfbd4", "border": "#b7950b"},
   "Sidaway":    {"fill": "#f5cba7", "border": "#ca6f1e"},
   "Kendrick":   {"fill": "#b8ede4", "border": "#1a8878"},
+  "Homer":      {"fill": "#d8c8f0", "border": "#6844b0"},
   "Other":      {"fill": "#f0ece0", "border": "#8a7a55"},
   "Founder":    {"fill": "#f9e04b", "border": "#b8860b"}
 }

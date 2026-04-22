@@ -1,0 +1,70 @@
+[
+  {
+    "text": "Oxley Close",
+    "position": [52.4773, -2.0942],
+    "rotation_deg": 8,
+    "kind": "road",
+    "style": {
+      "font_size_px": 8,
+      "italic": true,
+      "color": "#1a3a6a"
+    }
+  },
+  {
+    "text": "Quarry Road",
+    "position": [52.4762, -2.0918],
+    "rotation_deg": 8,
+    "kind": "road",
+    "style": {
+      "font_size_px": 8,
+      "italic": true,
+      "color": "#1a3a6a"
+    }
+  },
+  {
+    "text": "Mushroom Green Valley",
+    "position": [52.4762, -2.0966],
+    "rotation_deg": 0,
+    "kind": "area",
+    "style": {
+      "font_size_px": 9,
+      "italic": true,
+      "color": "#3a5a30"
+    }
+  },
+  {
+    "text": "Saltwells Nature Reserve",
+    "position": [52.4712, -2.0962],
+    "rotation_deg": 0,
+    "kind": "area",
+    "style": {
+      "font_size_px": 9,
+      "italic": true,
+      "color": "#3a5a30"
+    }
+  },
+  {
+    "text": "Village\nGreen",
+    "position": [52.476507, -2.093014],
+    "rotation_deg": 0,
+    "kind": "green",
+    "style": {
+      "font_size_px": 8,
+      "italic": true,
+      "color": "#2d5a1b",
+      "text_align": "center"
+    }
+  },
+  {
+    "text": "Village\nGreen",
+    "position": [52.476068, -2.09214],
+    "rotation_deg": 0,
+    "kind": "green",
+    "style": {
+      "font_size_px": 8,
+      "italic": true,
+      "color": "#2d5a1b",
+      "text_align": "center"
+    }
+  }
+]

@@ -85,7 +85,7 @@ const osmHouses = [{"number": "1", "num_int": 1, "lat": 52.47561399999999, "lon"
 // ===== family detection =====
 // Iteration order matches the legacy HTML's substring-match logic so families
 // resolve identically. Weaver flag wins outright; otherwise first substring hit.
-const FAMILIES = ['Weaver','Billingham','Hancox','Dimmock','Griffiths','Nicklin','Pearson','Sidaway','Kendrick'];
+const FAMILIES = ['Weaver','Billingham','Hancox','Dimmock','Griffiths','Nicklin','Pearson','Sidaway','Kendrick','Homer'];
 
 function detectFamily(entry) {
   if (entry.weaver) return 'Weaver';
