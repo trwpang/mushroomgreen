@@ -5,21 +5,29 @@
  * Renders only the map container, the popup CSS, and the client-side script.
  * The page header (title bar + legend) belongs to index.astro.
  *
- * Static reference data (boundary, brook, greens, family colours) is imported
- * from JSON and passed to the client script via `define:vars`. House data is
- * fetched at runtime from `/households.json` (built by households.json.ts).
+ * Static reference data (boundary, brook, mousesweet, areas, roads, labels,
+ * greens, family colours) is imported from JSON and passed to the client
+ * script via `define:vars`. House data is fetched at runtime from
+ * `/households.json` (built by households.json.ts).
  *
- * Visual fidelity with legacy/Map/mushroom_green_1865_v10_9_3.html is the spec.
+ * Visual fidelity with legacy/Map/mushroom_green_1865_v10_11_35_28.html is
+ * the spec.
  *
  * Note on innerHTML: the compass SVG and divIcon HTML below are constructed
- * from data we author ourselves (boundary/brook/greens/families JSON, and the
- * authored content collection). No user-supplied input flows in. The legacy
- * file uses the same approach.
+ * from data we author ourselves (boundary/brook/mousesweet/areas/roads/labels/
+ * greens/families JSON, and the authored content collection). No user-supplied
+ * input flows in. The legacy file uses the same approach, and Leaflet's
+ * `divIcon` accepts an `html` field that ends up as innerHTML internally —
+ * there's no safer Leaflet API for HTML markers.
  */
 import boundary from '../data/boundary.json';
 import brook from '../data/brook.json';
 import greens from '../data/greens.json';
 import families from '../data/families.json';
+import areas from '../data/areas.json';
+import mousesweet from '../data/mousesweet.json';
+import roads from '../data/roads.json';
+import labels from '../data/labels.json';
 ---
 
 <link
@@ -116,21 +124,19 @@ import families from '../data/families.json';
 </style>
 
 <script
-  define:vars={{ boundary, brook, greens, families }}
+  define:vars={{ boundary, brook, greens, families, areas, mousesweet, roads, labels }}
   is:inline
 >
-  // ── Map setup ──────────────────────────────────────────────────────────
-  const SW = [52.4723, -2.0987];
-  const NE = [52.4797, -2.0909];
-  const viewBounds = [SW, NE];
-
+  // ── Map setup (per v10_11_35_28 lines 222-257) ────────────────────────
+  // No maxBounds — users pan freely. setView at zoom 18.25 with finer
+  // zoomSnap/zoomDelta and minZoom 15 (was 16 in v10_9_3) for more reach.
   const map = L.map('map', {
-    maxBounds: viewBounds,
-    maxBoundsViscosity: 1.0,
-    minZoom: 16,
+    minZoom: 15,
     maxZoom: 21,
     zoomControl: true,
     scrollWheelZoom: true,
+    zoomSnap: 0.25,
+    zoomDelta: 0.25,
   });
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -139,6 +145,19 @@ import families from '../data/families.json';
     subdomains: 'abcd',
     maxZoom: 21,
   }).addTo(map);
+
+  // ── Area polygons — watercolour land-use beneath everything else ──────
+  // (per v10_11_35_28 lines 356-368). Non-interactive — they're context.
+  areas.forEach((a) => {
+    L.polygon(a.polygon, {
+      fillColor: a.fill,
+      fillOpacity: a.opacity,
+      color: a.border,
+      weight: 1.2,
+      fillRule: 'nonzero',
+      interactive: false,
+    }).addTo(map);
+  });
 
   // ── Inverse mask: world rectangle with the settlement polygon punched out
   const outerRing = [[-90, -180], [-90, 180], [90, 180], [90, -180]];
@@ -157,58 +176,19 @@ import families from '../data/families.json';
     fill: false,
   }).addTo(map);
 
-  map.fitBounds(viewBounds, { padding: [0, 0] });
-
-  // ── Compass control (top-right, see spec) ─────────────────────────────
-  const compassSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">'
-    + '<defs><filter id="cds"><feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="rgba(60,20,0,0.4)"/></filter></defs>'
-    + '<g filter="url(#cds)">'
-    + '<circle cx="44" cy="44" r="42" fill="none" stroke="#6b3a10" stroke-width="1.5" opacity="0.7"/>'
-    + '<circle cx="44" cy="44" r="38" fill="rgba(245,230,195,0.90)" stroke="#6b3a10" stroke-width="0.8" opacity="0.7"/>'
-    + '<polygon points="44,4 47,38 44,30 41,38" fill="#2c1008"/>'
-    + '<polygon points="44,84 41,50 44,58 47,50" fill="#7a3a18"/>'
-    + '<polygon points="4,44 38,41 30,44 38,47" fill="#7a3a18"/>'
-    + '<polygon points="84,44 50,47 58,44 50,41" fill="#7a3a18"/>'
-    + '<polygon points="44,44 18,18 42,40" fill="#b87820"/>'
-    + '<polygon points="44,44 70,18 46,40" fill="#b87820"/>'
-    + '<polygon points="44,44 18,70 42,48" fill="#b87820"/>'
-    + '<polygon points="44,44 70,70 46,48" fill="#b87820"/>'
-    + '<polygon points="44,44 27,22 43,39" fill="#d4a848"/>'
-    + '<polygon points="44,44 61,22 45,39" fill="#d4a848"/>'
-    + '<polygon points="44,44 22,27 39,43" fill="#d4a848"/>'
-    + '<polygon points="44,44 66,27 49,43" fill="#d4a848"/>'
-    + '<polygon points="44,44 22,61 39,45" fill="#d4a848"/>'
-    + '<polygon points="44,44 66,61 49,45" fill="#d4a848"/>'
-    + '<polygon points="44,44 27,66 43,49" fill="#d4a848"/>'
-    + '<polygon points="44,44 61,66 45,49" fill="#d4a848"/>'
-    + '<circle cx="44" cy="44" r="4.5" fill="#2c1008" stroke="#f5e6c8" stroke-width="1.2"/>'
-    + '<circle cx="44" cy="44" r="2" fill="#f5e6c8"/>'
-    + '<text x="44" y="15" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#2c1008">N</text>'
-    + '</g></svg>';
-
-  const CompassControl = L.Control.extend({
-    options: { position: 'topright' },
-    onAdd: function () {
-      const div = L.DomUtil.create('div', '');
-      div.style.cssText =
-        'background:none;border:none;box-shadow:none;margin:0 8px 8px 0;line-height:0;';
-      // Trusted: the SVG is a literal string above, not user input.
-      div.innerHTML = compassSvg;
-      L.DomEvent.disableClickPropagation(div);
-      return div;
-    },
-  });
-  new CompassControl().addTo(map);
+  map.setView([52.4757932163071, -2.0936364426410514], 18.25);
 
   // ── Black Brook — three stacked polylines for soft river effect ───────
+  // Colours/weights/opacities match v10_11_35_28 lines 524-526 (richer blue,
+  // denser than v10_9_3's pale band).
   L.polyline(brook, {
-    color: '#a8d8f0', weight: 9, opacity: 0.35, interactive: false,
+    color: '#7ab8d8', weight: 8, opacity: 0.45, interactive: false,
   }).addTo(map);
   L.polyline(brook, {
-    color: '#4a90d9', weight: 4.5, opacity: 0.8, interactive: false,
+    color: '#4a90d9', weight: 4.5, opacity: 0.85, interactive: false,
   }).addTo(map);
   L.polyline(brook, {
-    color: '#c8eaf8', weight: 1.8, opacity: 0.65, interactive: false,
+    color: '#c8eaf8', weight: 1.8, opacity: 0.70, interactive: false,
   }).addTo(map);
 
   // Brook labels — italic, rotated 22deg, halo'd. Two fixed positions per spec.
@@ -220,6 +200,26 @@ import families from '../data/families.json';
   }).addTo(map);
   L.marker([52.47508, -2.0948], {
     icon: L.divIcon({ className: '', html: brookLabelHtml, iconAnchor: [0, 6] }),
+    interactive: false,
+  }).addTo(map);
+
+  // ── Mousesweet Brook — joins Black Brook from the east ────────────────
+  // Same triple-line styling as Black Brook (per v10_11_35_28 lines 536-538).
+  L.polyline(mousesweet.polyline, {
+    color: '#7ab8d8', weight: 8, opacity: 0.45, interactive: false,
+  }).addTo(map);
+  L.polyline(mousesweet.polyline, {
+    color: '#4a90d9', weight: 4.5, opacity: 0.85, interactive: false,
+  }).addTo(map);
+  L.polyline(mousesweet.polyline, {
+    color: '#c8eaf8', weight: 1.8, opacity: 0.70, interactive: false,
+  }).addTo(map);
+
+  // Mousesweet Brook label — italic, rotated, halo'd (per source line 542-548).
+  const msLabelHtml =
+    `<div style="font-family:Georgia,serif;font-size:10px;color:#1a5a90;font-style:italic;font-weight:bold;white-space:nowrap;transform:rotate(${mousesweet.label.rotation_deg}deg);transform-origin:left center;text-shadow:0 0 4px #fff,0 0 4px #fff,0 0 4px #fff;">Mousesweet Brook</div>`;
+  L.marker(mousesweet.label.position, {
+    icon: L.divIcon({ className: '', html: msLabelHtml, iconAnchor: [0, 6] }),
     interactive: false,
   }).addTo(map);
 
@@ -364,9 +364,128 @@ ${estBlock}
         poly.on('mouseover', function () { this.openPopup(); });
         poly.on('mouseout', function () { this.closePopup(); });
       });
+
+      // ── Settlement roads — drawn AFTER houses so they sit on top ──────
+      // (per v10_11_35_28 lines 510-521). Cream highlight inside dark base
+      // for the engraved hand-drawn look. Order matters: dark first, cream
+      // second. Source uses 0.9 opacity on the dark base, 1.0 on the cream.
+      // Drawn inside the .then() so they always render above households even
+      // though the fetch is async — Leaflet adds in z-order of addTo() calls.
+      roads.forEach((r) => {
+        L.polyline(r.polyline, {
+          color: '#4a3010', weight: 5, opacity: 0.9, interactive: false,
+        }).addTo(map);
+        L.polyline(r.polyline, {
+          color: '#e8dfc0', weight: 2.5, opacity: 1.0, interactive: false,
+        }).addTo(map);
+      });
+
+      // ── Place / area labels — drawn after roads ───────────────────────
+      // Per v10_11_35_28 lines 372-387 (boundary roads) and 550-573 (areas/
+      // greens). Style varies by `kind`; per-label `style` overrides.
+      labels.forEach((lab) => {
+        const k = lab.kind;
+        const s = lab.style ?? {};
+        // Defaults per kind, then override from lab.style.
+        const defaults =
+          k === 'road'
+            ? { font_size_px: 10, color: '#4a3010', italic: true, text_align: 'left' }
+            : k === 'area'
+            ? { font_size_px: 10, color: '#5a4030', italic: true, text_align: 'left' }
+            : /* 'green' */
+              { font_size_px: 7.5, color: '#2d5a1b', italic: true, text_align: 'center' };
+        const fontSize = s.font_size_px ?? defaults.font_size_px;
+        const color = s.color ?? defaults.color;
+        const italic = s.italic ?? defaults.italic;
+        const textAlign = s.text_align ?? defaults.text_align;
+        const rot = lab.rotation_deg ?? 0;
+
+        // Greens use a thinner halo; road/area use the heavier triple halo.
+        const halo =
+          k === 'green'
+            ? '0 0 2px #fff,0 0 2px #fff'
+            : '0 0 3px #fff,0 0 3px #fff,0 0 3px #fff';
+        const transform = rot !== 0
+          ? `transform:rotate(${rot}deg);transform-origin:left center;`
+          : '';
+        // Newlines in label text (e.g. "Village\nGreen") become <br>.
+        const html = lab.text.replace(/\n/g, '<br>');
+        // Greens centre on the position; road/area labels anchor at left.
+        const iconAnchor = k === 'green' ? [16, 10] : [0, 5];
+
+        L.marker(lab.position, {
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="font-family:Georgia,serif;font-size:${fontSize}px;color:${color};${italic ? 'font-style:italic;' : ''}text-align:${textAlign};white-space:nowrap;${transform}text-shadow:${halo};pointer-events:none;">${html}</div>`,
+            iconAnchor,
+          }),
+          interactive: false,
+        }).addTo(map);
+      });
     })
     .catch((err) => {
       // Fail loudly in the console; the rest of the map is still usable.
       console.error('VillageMap: failed to load /households.json', err);
     });
+
+  // ── Compass control (bottom-right per v10_11_35_28 line 261) ──────────
+  // Compass SVG with fleur-de-lis ornament on the N point (source lines
+  // 271-277). Lifted verbatim. The fleur-de-lis sits inside the same <g>
+  // filter group as the rest of the rose so it gets the same drop-shadow.
+  const compassSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">'
+    + '<defs><filter id="cds"><feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="rgba(60,20,0,0.4)"/></filter></defs>'
+    + '<g filter="url(#cds)">'
+    + '<circle cx="44" cy="44" r="42" fill="none" stroke="#6b3a10" stroke-width="1.5" opacity="0.7"/>'
+    + '<circle cx="44" cy="44" r="38" fill="rgba(245,230,195,0.90)" stroke="#6b3a10" stroke-width="0.8" opacity="0.7"/>'
+    + '<polygon points="44,4 47,38 44,30 41,38" fill="#2c1008"/>'
+    // Fleur-de-lis on N point (verbatim from v10_11_35_28 lines 271-277).
+    + '<g transform="translate(44,2) scale(0.55)">'
+    + '<path d="M0,-12 C0,-8 -3,-6 -3,-3 C-3,0 0,1 0,1 C0,1 3,0 3,-3 C3,-6 0,-8 0,-12Z" fill="#2c1008"/>'
+    + '<path d="M-6,-5 C-9,-5 -10,-2 -8,0 C-6,2 -3,1 0,1 C-3,1 -5,3 -5,5 C-5,7 -3,8 0,8 L0,1Z" fill="#2c1008"/>'
+    + '<path d="M6,-5 C9,-5 10,-2 8,0 C6,2 3,1 0,1 C3,1 5,3 5,5 C5,7 3,8 0,8 L0,1Z" fill="#2c1008"/>'
+    + '<rect x="-1.5" y="5" width="3" height="4" fill="#2c1008"/>'
+    + '</g>'
+    + '<polygon points="44,84 41,50 44,58 47,50" fill="#7a3a18"/>'
+    + '<polygon points="4,44 38,41 30,44 38,47" fill="#7a3a18"/>'
+    + '<polygon points="84,44 50,47 58,44 50,41" fill="#7a3a18"/>'
+    + '<polygon points="44,44 18,18 42,40" fill="#b87820"/>'
+    + '<polygon points="44,44 70,18 46,40" fill="#b87820"/>'
+    + '<polygon points="44,44 18,70 42,48" fill="#b87820"/>'
+    + '<polygon points="44,44 70,70 46,48" fill="#b87820"/>'
+    + '<polygon points="44,44 27,22 43,39" fill="#d4a848"/>'
+    + '<polygon points="44,44 61,22 45,39" fill="#d4a848"/>'
+    + '<polygon points="44,44 22,27 39,43" fill="#d4a848"/>'
+    + '<polygon points="44,44 66,27 49,43" fill="#d4a848"/>'
+    + '<polygon points="44,44 22,61 39,45" fill="#d4a848"/>'
+    + '<polygon points="44,44 66,61 49,45" fill="#d4a848"/>'
+    + '<polygon points="44,44 27,66 43,49" fill="#d4a848"/>'
+    + '<polygon points="44,44 61,66 45,49" fill="#d4a848"/>'
+    + '<circle cx="44" cy="44" r="4.5" fill="#2c1008" stroke="#f5e6c8" stroke-width="1.2"/>'
+    + '<circle cx="44" cy="44" r="2" fill="#f5e6c8"/>'
+    + '<text x="44" y="15" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#2c1008">N</text>'
+    + '</g></svg>';
+
+  const CompassControl = L.Control.extend({
+    options: { position: 'bottomright' },
+    onAdd: function () {
+      const div = L.DomUtil.create('div', '');
+      div.style.cssText =
+        'background:none;border:none;box-shadow:none;margin:0 8px 8px 0;line-height:0;';
+      // Trusted: the SVG is a literal string above, not user input.
+      div.innerHTML = compassSvg;
+      L.DomEvent.disableClickPropagation(div);
+      return div;
+    },
+  });
+  new CompassControl().addTo(map);
+
+  // ── Sepia tile filter — vintage tone over the base map ────────────────
+  // (per v10_11_35_28 lines 605-608). Applied after the map is ready so
+  // the .leaflet-tile-pane element exists.
+  map.whenReady(() => {
+    const tilePane = document.querySelector('.leaflet-tile-pane');
+    if (tilePane) {
+      tilePane.style.filter = 'sepia(0.2) brightness(0.98) contrast(0.97)';
+    }
+  });
 </script>
