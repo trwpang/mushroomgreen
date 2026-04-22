@@ -372,3 +372,47 @@ This becomes the prose body of `src/content/households/22-henry-weaver-1789.md`,
 Father drafts content (Word, email, plain text — whatever's comfortable) and hands it to Tom. Tom edits the matching `.md` file: drops prose into the body, adds `photos`, `sources`, `related_households`. Tom commits, Netlify deploys, Tom shares the preview link with father for sign-off, then merges.
 
 No CMS. No login. The friction is intentional — every change goes through Tom's review, which keeps the archive consistent.
+
+---
+
+## 13. Update 2026-04-22 — source switched to v10_11_35_28
+
+**What changed:** Initial implementation ported the legacy file `mushroom_green_1865_v10_9_3.html`. Tom's father confirmed the canonical source is the later `mushroom_green_1865_v10_11_35_28.html` (extracted from the `Mushroom Green — 1865 —interactive online version.webarchive`, now also stored as a plain `.html` in `legacy/Map/` for reference). The newer file shifts the map from a clean digital plot toward a Victorian-era surveyed-map aesthetic.
+
+**Households are unchanged** — same 59 entries, same OSM polygons, same census fields. The schema, the migration script, the household pages, the content collection, the deploy plumbing — all remain.
+
+**What's added:**
+
+- **Homer family** — 10th family colour (light purple `#d8c8f0` / border `#6844b0`). Households #28, #35, #44, #49, #52 (all surnamed Homer) recolour from "Other" beige to Homer purple. Schema enum + `families.json` + legend + migration script update.
+- **Mousesweet Brook** — second river. ~46 lat/lon points joining Black Brook. New `src/data/mousesweet.json`. Same triple-line styling as Black Brook.
+- **Black Brook** — densified from 29 to 44 points; outer band weight 9→8, colour `#a8d8f0`→`#7ab8d8`, opacity 0.35→0.45; mid opacity 0.80→0.85; inner opacity 0.65→0.70.
+- **12 area polygons (A–M)** — watercolour land-use context drawn beneath houses: Mushroom Green Valley, MG Settlement, Saltwells Nature Reserve, two Village Greens, Industrial Area, four Residential zones (W, NE, SE, Central, S), West H, Pond. New `src/data/areas.json`. Total ~600 lat/lon points.
+- **6 settlement road centrelines** — drawn atop houses with cream-on-dark double-line for hand-engraved look. New `src/data/roads.json`.
+- **Victorian title cartouche** — fixed bottom-left, triple-inset border, contains title + byline + household count.
+- **Decorative outer map border** — 3px outer frame with triple inset rings + 4 corner cross-pattée SVG ornaments.
+- **"SCALE OF CHAINS" bar** — bottom-right, 4 alternating black/cream chain segments with 0/1/2/3/4 ch. tick labels.
+- **"Surveyed by Michael Weaver from Census Returns, 1861 · Parish of Rowley Regis"** — bottom-right italic attribution.
+- **Place labels** — "Oxley Close", "Quarry Road" (boundary roads); "Mushroom Green Valley", "Saltwells Nature Reserve" (area context).
+- **Compass** — fleur-de-lis ornament on the N point.
+- **Sepia tile filter** — `sepia(0.2) brightness(0.98) contrast(0.97)` applied to `.leaflet-tile-pane` for a vintage tone.
+- **IM Fell English** — Google Fonts antique serif applied globally as primary font (Georgia falls back). The new source imports the font but never wires it; we wire it globally as the most likely intent.
+- **Map view changes:** explicit `setView([52.4757932163071, -2.0936364426410514], 18.25)` instead of `fitBounds`. `minZoom: 15` (was 17) for more zoom-out reach. `zoomSnap: 0.25, zoomDelta: 0.25` for finer-grained zoom. `maxBounds` removed — users can now pan freely.
+- **Header** — taller (48 → 72px), bigger title font (1.05em → 1.2em), bigger subtitle (0.7em → 0.8em). Print CSS still collapses header to 36px for A4 landscape.
+
+**What's deliberately stripped:**
+
+- **`window.changeArea` / `resetArea` / `listAreas`** — console-only authoring API. Removed from production. (Father can edit `areas.json` directly to recolour.)
+- **`#area-key` debug panel** — `display:none` in source; not built.
+- **`outerBoundary` const** — declared but unused in source (~100 dead lat/lon pairs); not ported.
+
+**Decisions made (bias: trust father's intent, strip authoring scaffolding):**
+
+- IM Fell English applied globally — the file imports it but never wires it; the most defensible interpretation is "Dad meant to apply it everywhere but didn't finish."
+- All 12 area polygons kept — they're the Victorian land-use story. Area B (Settlement) overlaps the dashed brown boundary; both retained because they have different visual weight (B is a soft fill, the boundary outline is the dashed marker).
+- Console editing API removed — production page should not expose authoring affordances.
+
+**Implementation phases (executed 2026-04-22):**
+
+- **Phase A** — Data files + schema: add Homer to families.json + schema + legend, densify brook.json, add mousesweet.json + areas.json + roads.json, re-run migration to re-detect Homer households.
+- **Phase B** — VillageMap re-port: add area-polygon layer (beneath houses), mousesweet polyline, settlement-road double-lines (atop houses), boundary + area labels, fleur-de-lis on compass, sepia tile filter, switch view to setView at zoom 18.25, minZoom 15, zoomSnap 0.25, remove maxBounds.
+- **Phase C** — Page chrome: import IM Fell English in BaseLayout and wire it globally, add Victorian title cartouche / decorative border / scale-of-chains / surveyed-by annotation as components, update index.astro header to 72px + bigger fonts.
