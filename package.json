@@ -8,12 +8,14 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
+    "build:clusters": "node --input-type=module src/scripts/build-clusters.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",
-    "astro": "^5.0.0"
+    "astro": "^5.0.0",
+    "phaser": "^3.90.0"
   },
   "devDependencies": {
     "typescript": "^5.6.0"
