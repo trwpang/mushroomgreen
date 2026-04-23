@@ -1,60 +1,50 @@
-# Pointing mushroomgreen.uk at Netlify
+# DNS rollout — done 2026-04-23
 
-The site is live at <https://mushroom-green.netlify.app>. To make `mushroomgreen.uk` serve the same content:
+`mushroomgreen.uk` now serves the Netlify-hosted Astro site with a Let's Encrypt certificate, and pushes to `master` deploy automatically. This document records what was done so future re-points (or troubleshooting) are easy.
 
-## 1. Add the custom domain in Netlify
+## Live as of 2026-04-23
 
-1. Open <https://app.netlify.com/projects/mushroom-green>
-2. **Project configuration → Domain management → Production domains → Add a domain**
-3. Enter `mushroomgreen.uk` and confirm
-4. Netlify will display the DNS records you need to add
+- <https://mushroomgreen.uk> — primary, HTTP 200, served by Netlify Edge with HSTS
+- <https://www.mushroomgreen.uk> — 301 redirect to apex
+- <https://mushroom-green.netlify.app> — Netlify subdomain, also serves the same site
 
-## 2. Update DNS at your registrar
+## Squarespace DNS records (custom)
 
-You bought `mushroomgreen.uk` — log in to whichever registrar you used. Add **two records**:
+Existing Squarespace presets that conflicted (`Squarespace Defaults` — 4 A records, CNAME `www → ext-sq.squarespace.com`, HTTPS record) were deleted. Two preset blocks were kept because they don't conflict with web routing:
 
-| Type | Host | Value |
-|------|------|-------|
-| `A` | `@` (apex) | The Netlify load-balancer IP shown in the Domain settings page (usually `75.2.60.5`, but always copy from Netlify's UI in case it changes) |
-| `CNAME` | `www` | `mushroom-green.netlify.app` |
+- **Squarespace Domain Connect** — CNAME `_domainconnect → _domainconnect.domains.squarespace.com` (lets Squarespace re-onboard if Tom ever wants to host on Squarespace again)
+- **Email Security** — TXT records for DKIM / DMARC / SPF (email-related, no conflict)
 
-If the registrar's UI doesn't have an `@` for the apex, leave the host field blank.
+Custom records added:
 
-## 3. Wait for DNS propagation
+| Type | Host | Value | TTL |
+|------|------|-------|-----|
+| ALIAS | `@` | `apex-loadbalancer.netlify.com` | 4 hrs |
+| CNAME | `www` | `mushroom-green.netlify.app` | 4 hrs |
 
-Usually a few minutes; can take up to a few hours. Check with:
+ALIAS preferred over a fixed A record because Netlify can change load-balancer IPs without breaking DNS.
 
-```sh
-dig mushroomgreen.uk +short
-dig www.mushroomgreen.uk +short
-```
+## Netlify domain configuration
 
-Once both resolve to Netlify's IP / CNAME, you're done.
+- Site: `mushroom-green` (project URL `https://mushroom-green.netlify.app`)
+- Primary domain: `mushroomgreen.uk`
+- Alias: `www.mushroomgreen.uk` (auto-redirects to apex)
+- HTTPS: Let's Encrypt provisioned automatically once DNS resolved
 
-## 4. Let's Encrypt certificate
+## GitHub auto-deploy
 
-Netlify auto-provisions an SSL certificate once DNS resolves. Should appear under Domain settings → HTTPS within a minute of DNS resolving. No action needed.
+- Repository: `trwpang/mushroomgreen` (public)
+- Branch: `master`
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Trigger: push to `master`
 
-## 5. Set primary domain + redirect
+Settings come from `netlify.toml` at the repo root; the Netlify GitHub App is installed on the `trwpang/mushroomgreen` repo.
 
-In Netlify → Domain settings:
+## If something breaks
 
-- Set `mushroomgreen.uk` as the **primary domain**
-- Choose redirect direction — recommend `www.mushroomgreen.uk → mushroomgreen.uk` (apex as canonical)
-
-## 6. Verify
-
-Visit each URL and confirm:
-
-- <https://mushroomgreen.uk> → loads the site, padlock present
-- <https://www.mushroomgreen.uk> → redirects to apex
-- <http://mushroomgreen.uk> → redirects to https
-- <https://mushroom-green.netlify.app> → still works (or set up a redirect to the apex)
-
-## Updating the site
-
-The Netlify site is currently linked but **not** wired to the GitHub repo for auto-deploy. Two options:
-
-**A. CLI deploys (current setup):** run `netlify deploy --build --prod` from this directory whenever you want to ship.
-
-**B. Auto-deploy on git push (recommended once stable):** in Netlify → Project configuration → Build & deploy → Continuous deployment, link the `trwpang/mushroomgreen` GitHub repo. After that, every `git push` to `master` triggers a deploy. Branch pushes get preview URLs.
+1. **Site down / 404 on apex** — check Netlify project overview for the latest deploy status; check that the ALIAS record at Squarespace still points to `apex-loadbalancer.netlify.com`.
+2. **HTTPS cert error** — Netlify auto-renews. If renewal fails, "Renew certificate" button is in Netlify → Domain management → SSL/TLS certificate.
+3. **DNS not resolving** — `dig +short mushroomgreen.uk @1.1.1.1` should return Netlify load-balancer IPs (e.g. `75.2.60.5`, `99.83.231.61`). If not, check Squarespace DNS Settings for the `@` ALIAS row.
+4. **Push doesn't deploy** — Netlify → Project configuration → Build & deploy → Continuous deployment should show `mushroomgreen` as Current repository. If not linked, click "Link repository" and re-select.
+5. **Want to host on Squarespace again later** — delete the custom ALIAS + CNAME, re-add the `Squarespace Defaults` preset.
