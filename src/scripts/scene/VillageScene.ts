@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { drawBrook, drawRoads } from './brookAndRoads';
-import { isoBounds, latLngToIso } from './projection';
+import { buildPlacements, placeSprites, preloadSprites, type Placement } from './clusterLayout';
+import { isoBounds } from './projection';
 
 export interface SceneData {
   clusters: Array<{
@@ -33,6 +34,8 @@ export default class VillageScene extends Phaser.Scene {
   private isDragging = false;
   private dragStart: Point = { x: 0, y: 0 };
   private cameraStart: Point = { x: 0, y: 0 };
+  private clusterSpriteMap: Map<number, Phaser.GameObjects.Image> = new Map();
+  private forgePlacements: Placement[] = [];
 
   constructor() {
     super('VillageScene');
@@ -44,6 +47,7 @@ export default class VillageScene extends Phaser.Scene {
 
   preload(): void {
     this.load.image('meadow', '/spike-sprites/meadow.png');
+    preloadSprites(this);
   }
 
   create(): void {
@@ -85,13 +89,9 @@ export default class VillageScene extends Phaser.Scene {
     drawBrook(this, this.sceneData.brook, -50);
     drawRoads(this, this.sceneData.roads, -40);
 
-    const markers = this.add.graphics();
-    markers.fillStyle(0xff3366, 0.9);
-
-    for (const cluster of this.sceneData.clusters) {
-      const point = latLngToIso(cluster.centroid[0], cluster.centroid[1]);
-      markers.fillCircle(point.x, point.y, 24);
-    }
+    const placements = buildPlacements(this.sceneData.clusters);
+    this.clusterSpriteMap = placeSprites(this, placements.all);
+    this.forgePlacements = placements.forges;
 
     this.setupPanZoom();
   }
