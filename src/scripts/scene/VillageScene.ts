@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { drawBrook, drawRoads } from './brookAndRoads';
 import { isoBounds, latLngToIso } from './projection';
 
 export interface SceneData {
@@ -41,6 +42,10 @@ export default class VillageScene extends Phaser.Scene {
     this.sceneData = data.sceneData;
   }
 
+  preload(): void {
+    this.load.image('meadow', '/spike-sprites/meadow.png');
+  }
+
   create(): void {
     if (this.sceneData.boundary.length === 0) {
       this.setupPanZoom();
@@ -67,6 +72,18 @@ export default class VillageScene extends Phaser.Scene {
     //    final zoom. Also use the centre of the *padded* bounds so the view is framed
     //    symmetrically.
     camera.centerOn((minX + maxX) / 2, (minY + maxY) / 2);
+
+    // Meadow ground sprite — sized to the padded world bounds
+    const meadow = this.add.image(
+      (minX + maxX) / 2,
+      (minY + maxY) / 2,
+      'meadow',
+    ).setDepth(-100);
+    meadow.setDisplaySize(width + 2 * pad, height + 2 * pad);
+
+    // Brook + roads drawn via Graphics
+    drawBrook(this, this.sceneData.brook, -50);
+    drawRoads(this, this.sceneData.roads, -40);
 
     const markers = this.add.graphics();
     markers.fillStyle(0xff3366, 0.9);
