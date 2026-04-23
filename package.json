@@ -8,7 +8,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "build:clusters": "node --input-type=module src/scripts/build-clusters.ts",
+    "build:clusters": "node src/scripts/build-clusters.ts",
     "preview": "astro preview",
     "astro": "astro"
   },

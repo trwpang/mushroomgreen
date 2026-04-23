@@ -1,0 +1,233 @@
+{
+  "generatedAt": "2026-04-23T21:39:45.468Z",
+  "thresholdMetres": 27,
+  "clusters": [
+    {
+      "id": 1,
+      "centroid": [
+        52.4755079,
+        -2.0926533899999997
+      ],
+      "members": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "primaryFamily": "Other",
+      "spriteKey": "cottage-terrace",
+      "hasForge": false
+    },
+    {
+      "id": 2,
+      "centroid": [
+        52.47522421156566,
+        -2.0932865279292927
+      ],
+      "members": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "primaryFamily": "Other",
+      "spriteKey": "cottage-lshape",
+      "hasForge": false
+    },
+    {
+      "id": 3,
+      "centroid": [
+        52.47540794,
+        -2.0937948983333334
+      ],
+      "members": [
+        9,
+        10
+      ],
+      "primaryFamily": "Kendrick",
+      "spriteKey": "forge",
+      "hasForge": true
+    },
+    {
+      "id": 4,
+      "centroid": [
+        52.47567674333334,
+        -2.0938588555555553
+      ],
+      "members": [
+        11,
+        12,
+        13
+      ],
+      "primaryFamily": "Other",
+      "spriteKey": "cottage-master",
+      "hasForge": false
+    },
+    {
+      "id": 5,
+      "centroid": [
+        52.47564454,
+        -2.0931518
+      ],
+      "members": [
+        14,
+        19
+      ],
+      "primaryFamily": "Dimmock",
+      "spriteKey": "cottage-terrace",
+      "hasForge": false
+    },
+    {
+      "id": 6,
+      "centroid": [
+        52.475844849999994,
+        -2.092570686428571
+      ],
+      "members": [
+        15,
+        16,
+        17,
+        18
+      ],
+      "primaryFamily": "Other",
+      "spriteKey": "forge",
+      "hasForge": true
+    },
+    {
+      "id": 7,
+      "centroid": [
+        52.47625768684808,
+        -2.0934070244444447
+      ],
+      "members": [
+        20,
+        24,
+        25,
+        28,
+        37,
+        38,
+        39
+      ],
+      "primaryFamily": "Weaver",
+      "spriteKey": "cottage-small",
+      "hasForge": false
+    },
+    {
+      "id": 8,
+      "centroid": [
+        52.47588851375001,
+        -2.093633161875
+      ],
+      "members": [
+        21,
+        22,
+        26,
+        27
+      ],
+      "primaryFamily": "Founder",
+      "spriteKey": "cottage-large",
+      "hasForge": false
+    },
+    {
+      "id": 9,
+      "centroid": [
+        52.47624541555555,
+        -2.0929509755555555
+      ],
+      "members": [
+        23,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "primaryFamily": "Other",
+      "spriteKey": "forge",
+      "hasForge": true
+    },
+    {
+      "id": 10,
+      "centroid": [
+        52.47640422285714,
+        -2.093999965714286
+      ],
+      "members": [
+        40,
+        41,
+        42,
+        43,
+        50,
+        51,
+        52
+      ],
+      "primaryFamily": "Billingham",
+      "spriteKey": "cottage-lshape",
+      "hasForge": false
+    },
+    {
+      "id": 11,
+      "centroid": [
+        52.476676864761906,
+        -2.093633443809524
+      ],
+      "members": [
+        44,
+        58,
+        59
+      ],
+      "primaryFamily": "Homer",
+      "spriteKey": "cottage-small",
+      "hasForge": false
+    },
+    {
+      "id": 12,
+      "centroid": [
+        52.476499516000004,
+        -2.094451071428572
+      ],
+      "members": [
+        45,
+        46,
+        47,
+        48,
+        49
+      ],
+      "primaryFamily": "Other",
+      "spriteKey": "cottage-master",
+      "hasForge": false
+    },
+    {
+      "id": 13,
+      "centroid": [
+        52.47674413888889,
+        -2.0941311233333333
+      ],
+      "members": [
+        53,
+        54,
+        56,
+        57
+      ],
+      "primaryFamily": "Hancox",
+      "spriteKey": "cottage-terrace",
+      "hasForge": false
+    },
+    {
+      "id": 14,
+      "centroid": [
+        52.476828985714285,
+        -2.0944661
+      ],
+      "members": [
+        55
+      ],
+      "primaryFamily": "Pearson",
+      "spriteKey": "cottage-lshape",
+      "hasForge": false
+    }
+  ]
+}
