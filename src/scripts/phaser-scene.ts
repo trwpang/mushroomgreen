@@ -1,11 +1,5 @@
 import Phaser from 'phaser';
-
-type SceneData = {
-  clusters: unknown[];
-  brook: unknown[];
-  roads: unknown[];
-  boundary: unknown[];
-};
+import VillageScene, { type SceneData } from './scene/VillageScene';
 
 function readSceneData(): SceneData {
   const dataElement = document.getElementById('scene-data');
@@ -24,14 +18,10 @@ const game = new Phaser.Game({
   width: window.innerWidth,
   height: window.innerHeight,
   backgroundColor: '#8cb459',
-  scene: {
-    preload() {},
-    create() {
-      this.registry.set('sceneData', sceneData);
-    },
-    update() {},
-  },
+  scene: [VillageScene],
 });
+
+game.scene.start('VillageScene', { sceneData });
 
 window.addEventListener('resize', () => {
   game.scale.resize(window.innerWidth, window.innerHeight);

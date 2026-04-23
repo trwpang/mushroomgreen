@@ -1,12 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-
-const sceneData = {
-  clusters: [],
-  brook: [],
-  roads: [],
-  boundary: [],
-};
+import clusters from '../data/clusters.json';
+import boundary from '../data/boundary.json';
+import brook from '../data/brook.json';
+import roads from '../data/roads.json';
 ---
 
 <BaseLayout title="Phaser Spike — Mushroom Green">
@@ -14,7 +11,12 @@ const sceneData = {
   <script
     type="application/json"
     id="scene-data"
-    set:html={JSON.stringify(sceneData)}
+    set:html={JSON.stringify({
+      clusters: clusters.clusters,
+      boundary,
+      brook,
+      roads,
+    })}
   />
   <script>
     import '../scripts/phaser-scene.ts';

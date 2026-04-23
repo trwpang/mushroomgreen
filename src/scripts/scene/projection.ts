@@ -46,8 +46,10 @@ export function isoBounds(points: [number, number][], k = 10): {
   return { minX, maxX, minY, maxY };
 }
 
-// Manual sanity check — run with: npx tsx src/scripts/scene/projection.ts
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Manual sanity check — run with: node src/scripts/scene/projection.ts
+// Guarded with `typeof process` so this module stays safe to import in the
+// browser, where `process` is undefined.
+if (typeof process !== 'undefined' && import.meta.url === `file://${process.argv[1]}`) {
   console.log('centre:', latLngToIso(HAMLET_CENTRE[0], HAMLET_CENTRE[1]));
   const M = 111320;
   const lngOffset = 10 / (M * Math.cos(HAMLET_CENTRE[0] * Math.PI / 180));
