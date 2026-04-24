@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { drawBrook, drawRoads } from './brookAndRoads';
 import { buildPlacements, placeSprites, preloadSprites, type Placement } from './clusterLayout';
-import { isoBounds } from './projection';
+import { isoBounds, latLngToIso } from './projection';
 
 export interface SceneData {
   clusters: Array<{
@@ -90,8 +90,33 @@ export default class VillageScene extends Phaser.Scene {
     drawRoads(this, this.sceneData.roads, -40);
 
     const placements = buildPlacements(this.sceneData.clusters);
+    const pg = this.add.graphics();
+    pg.fillStyle(0xffffff, 1);
+    pg.fillCircle(16, 16, 14);
+    pg.generateTexture('smoke-puff', 32, 32);
+    pg.destroy();
+
     this.clusterSpriteMap = placeSprites(this, placements.all);
     this.forgePlacements = placements.forges;
+
+    for (const f of this.forgePlacements) {
+      const { x, y } = latLngToIso(f.lat, f.lng);
+      const emitter = this.add.particles(x - 8, y - 60, 'smoke-puff', {
+        lifespan: 2800,
+        speedY: { min: -42, max: -28 },
+        speedX: { min: -8, max: 8 },
+        scale: { start: 0.9, end: 2.6 },
+        alpha: { start: 0.85, end: 0 },
+        frequency: 140,
+        tint: [0x3c2e22, 0x5b463a, 0x7a6454],
+        blendMode: 'NORMAL',
+      });
+      emitter.setDepth(y + 100);
+      // Phaser 3.90 + Astro/Vite: the ParticleEmitter's addedToScene hook
+      // doesn't auto-register the emitter on scene.sys.updateList, so
+      // preUpdate never fires and no particles emit. Manual add unblocks it.
+      this.sys.updateList.add(emitter);
+    }
 
     this.setupPanZoom();
   }

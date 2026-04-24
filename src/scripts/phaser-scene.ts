@@ -23,6 +23,9 @@ const game = new Phaser.Game({
 
 game.scene.start('VillageScene', { sceneData });
 
+// Dev-only: expose for browser-harness introspection.
+(window as unknown as { __phaserGame: Phaser.Game }).__phaserGame = game;
+
 window.addEventListener('resize', () => {
   game.scale.resize(window.innerWidth, window.innerHeight);
 });
