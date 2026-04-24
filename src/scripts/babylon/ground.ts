@@ -76,3 +76,63 @@ export async function buildGround(
     }
   }
 }
+
+/**
+ * Procedurally build a dirt-path tile template — same diamond footprint
+ * as the grass tile so they interlock on the same grid. Colour keyed to
+ * Staffordshire dirt (warmer than generic brown).
+ */
+function makeDirtTileTemplate(scene: Scene): Mesh {
+  const m = new Mesh('tile-dirt-template', scene);
+  const vd = new VertexData();
+  vd.positions = [
+    1, 0, 0,
+    0, 0, 0.5,
+    -1, 0, 0,
+    0, 0, -0.5,
+  ];
+  vd.indices = [0, 1, 2, 0, 2, 3];
+  vd.normals = [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0];
+  vd.uvs = [1, 0.5, 0.5, 1, 0, 0.5, 0.5, 0];
+  vd.applyToMesh(m);
+
+  const mat = new StandardMaterial('mat-dirt-path', scene);
+  mat.diffuseColor = new Color3(0.58, 0.44, 0.28);
+  mat.specularColor = new Color3(0.04, 0.03, 0.02);
+  const noise = new NoiseProceduralTexture('dirt-noise', 256, scene);
+  noise.brightness = 0.5;
+  noise.octaves = 4;
+  noise.persistence = 0.55;
+  noise.animationSpeedFactor = 0;
+  mat.diffuseTexture = noise;
+  mat.backFaceCulling = false;
+  m.material = mat;
+  m.setEnabled(false);
+  return m;
+}
+
+/**
+ * Stamp dirt-path tiles along road polylines, quantised to the same grid
+ * as the grass carpet so paths interlock without gaps or overlaps. Tiles
+ * are lifted 1 mm above grass to avoid z-fighting.
+ */
+export function paintRoads(
+  scene: Scene,
+  roads: Array<{ polyline: [number, number][] }>,
+): void {
+  const template = makeDirtTileTemplate(scene);
+  const stamped = new Set<string>();
+  for (const road of roads) {
+    for (const [lat, lng] of road.polyline) {
+      const { x, z } = latLngToScene(lat, lng);
+      // Quantise to the same diamond grid used by buildGround
+      const qx = Math.round(x / (TILE_W / 2)) * (TILE_W / 2);
+      const qz = Math.round(z / TILE_D) * TILE_D;
+      const key = `${qx}:${qz}`;
+      if (stamped.has(key)) continue;
+      stamped.add(key);
+      const inst = template.createInstance(`dirt-${qx}-${qz}`);
+      inst.position = new Vector3(qx, 0.001, qz);
+    }
+  }
+}

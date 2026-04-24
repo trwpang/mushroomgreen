@@ -6,7 +6,7 @@ import { Camera } from '@babylonjs/core/Cameras/camera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
-import { buildGround } from './ground';
+import { buildGround, paintRoads } from './ground';
 import { latLngToScene } from './projection';
 
 const canvas = document.getElementById('babylon-root') as HTMLCanvasElement | null;
@@ -78,6 +78,7 @@ void (async () => {
   sun.intensity = 0.6;
 
   await buildGround(scene, data.boundary);
+  paintRoads(scene, data.roads);
 
   // DEBUG: expose for inspection while the ground+cottages are being wired
   (window as unknown as Record<string, unknown>).__babylon = { engine, scene, camera };
