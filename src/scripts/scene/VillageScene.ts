@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { drawBrook, drawRoads } from './brookAndRoads';
+import { createBrookShimmer, drawBrook, drawRoads } from './brookAndRoads';
 import { buildPlacements, placeSprites, preloadSprites, type Placement } from './clusterLayout';
 import { wireInteractions, type HouseholdLookup } from './interactions';
 import { isoBounds, latLngToIso } from './projection';
@@ -39,6 +39,8 @@ export default class VillageScene extends Phaser.Scene {
   private cameraStart: Point = { x: 0, y: 0 };
   private clusterSpriteMap: Map<number, Phaser.GameObjects.Image> = new Map();
   private forgePlacements: Placement[] = [];
+  private willows: Phaser.GameObjects.Image[] = [];
+  private brookShimmerTick?: (time: number) => void;
 
   constructor() {
     super('VillageScene');
@@ -54,6 +56,9 @@ export default class VillageScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.willows = [];
+    this.brookShimmerTick = undefined;
+
     if (this.sceneData.boundary.length === 0) {
       this.setupPanZoom();
       return;
@@ -119,6 +124,7 @@ export default class VillageScene extends Phaser.Scene {
 
     // Brook + roads drawn via Graphics
     drawBrook(this, this.sceneData.brook, -50);
+    this.brookShimmerTick = createBrookShimmer(this, this.sceneData.brook, -45);
     drawRoads(this, this.sceneData.roads, -40);
 
     const placements = buildPlacements(this.sceneData.clusters);
@@ -128,7 +134,9 @@ export default class VillageScene extends Phaser.Scene {
     pg.generateTexture('smoke-puff', 32, 32);
     pg.destroy();
 
-    this.clusterSpriteMap = placeSprites(this, placements.all);
+    const spritePlacement = placeSprites(this, placements.all);
+    this.clusterSpriteMap = spritePlacement.clusterSpriteMap;
+    this.willows = spritePlacement.willows;
     this.forgePlacements = placements.forges;
     wireInteractions(this, this.clusterSpriteMap, this.sceneData.clusters, this.sceneData.byNumber ?? {});
 
@@ -152,6 +160,17 @@ export default class VillageScene extends Phaser.Scene {
     }
 
     this.setupPanZoom();
+  }
+
+  update(time: number, delta: number): void {
+    void delta;
+    for (const w of this.willows) {
+      const phase = w.getData('phase') as number;
+      const ox = w.getData('origX') as number;
+      w.rotation = Math.sin(time * 0.0008 + phase) * 0.015;
+      w.x = ox + Math.sin(time * 0.0006 + phase) * 2;
+    }
+    this.brookShimmerTick?.(time);
   }
 
   private setupPanZoom(): void {

@@ -48,6 +48,11 @@ export interface PlacementResult {
   forges: Placement[];
 }
 
+export interface SpritePlacementResult {
+  clusterSpriteMap: Map<number, Phaser.GameObjects.Image>;
+  willows: Phaser.GameObjects.Image[];
+}
+
 export function buildPlacements(
   clusters: Array<{ id: number; centroid: [number, number]; spriteKey: string }>,
 ): PlacementResult {
@@ -76,8 +81,9 @@ export function buildPlacements(
 export function placeSprites(
   scene: Phaser.Scene,
   placements: Placement[],
-): Map<number, Phaser.GameObjects.Image> {
+): SpritePlacementResult {
   const clusterSpriteMap = new Map<number, Phaser.GameObjects.Image>();
+  const willows: Phaser.GameObjects.Image[] = [];
   // Sort ascending by iso-Y so southern sprites sit on top of northern ones
   const sorted = placements
     .map((p) => ({ ...p, iso: latLngToIso(p.lat, p.lng) }))
@@ -92,9 +98,15 @@ export function placeSprites(
     sprite.setData('key', p.key);
     sprite.setData('lat', p.lat);
     sprite.setData('lng', p.lng);
+    if (p.key === 'willow') {
+      sprite.setData('origX', sprite.x);
+      sprite.setData('origY', sprite.y);
+      sprite.setData('phase', Math.random() * Math.PI * 2);
+      willows.push(sprite);
+    }
     if (p.clusterId !== undefined) {
       clusterSpriteMap.set(p.clusterId, sprite);
     }
   }
-  return clusterSpriteMap;
+  return { clusterSpriteMap, willows };
 }
