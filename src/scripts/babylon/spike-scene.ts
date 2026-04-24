@@ -8,6 +8,7 @@ import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { buildGround, paintRoads } from './ground';
 import { latLngToScene } from './projection';
+import { loadBuildingTemplates, placeCottage } from './building';
 
 const canvas = document.getElementById('babylon-root') as HTMLCanvasElement | null;
 if (!canvas) {
@@ -79,6 +80,18 @@ void (async () => {
 
   await buildGround(scene, data.boundary);
   paintRoads(scene, data.roads);
+
+  // Tasks 8-9: place 6 cottages at the first 6 cluster centroids.
+  const buildingTemplates = loadBuildingTemplates(scene);
+  for (const cluster of data.clusters) {
+    const { x, z } = latLngToScene(cluster.centroid[0], cluster.centroid[1]);
+    placeCottage(scene, buildingTemplates, { x, z }, String(cluster.id), {
+      clusterId: cluster.id,
+      primaryFamily: cluster.primaryFamily,
+      memberCount: cluster.members.length,
+      members: cluster.members,
+    });
+  }
 
   // DEBUG: expose for inspection while the ground+cottages are being wired
   (window as unknown as Record<string, unknown>).__babylon = { engine, scene, camera };
