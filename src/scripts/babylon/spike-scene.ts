@@ -10,6 +10,7 @@ import { buildGround, paintRoads } from './ground';
 import { latLngToScene } from './projection';
 import { loadBuildingTemplates, placeCottage } from './building';
 import { loadPropTemplates, attachProps, attachForgeSmoke } from './props';
+import { buildBrook } from './brook';
 
 const canvas = document.getElementById('babylon-root') as HTMLCanvasElement | null;
 if (!canvas) {
@@ -101,6 +102,9 @@ void (async () => {
       heroForgeAttached = true;
     }
   }
+
+  // Tasks 11-12: brook as UV-scrolling water ribbon
+  buildBrook(scene, engine, data.brook);
 
   // DEBUG: expose for inspection while the ground+cottages are being wired
   (window as unknown as Record<string, unknown>).__babylon = { engine, scene, camera };
