@@ -4,7 +4,7 @@ import VillageScene, { type SceneData } from './scene/VillageScene';
 function readSceneData(): SceneData {
   const dataElement = document.getElementById('scene-data');
   if (!dataElement?.textContent) {
-    return { clusters: [], brook: [], roads: [], boundary: [] };
+    return { clusters: [], brook: [], roads: [], boundary: [], byNumber: {} };
   }
 
   return JSON.parse(dataElement.textContent) as SceneData;

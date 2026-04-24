@@ -1,13 +1,23 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import clusters from '../data/clusters.json';
 import boundary from '../data/boundary.json';
 import brook from '../data/brook.json';
 import roads from '../data/roads.json';
+
+const households = await getCollection('households');
+const byNumber: Record<string, { id: string; name: string }> =
+  Object.fromEntries(households.map((h) => [
+    String(h.data.number),
+    { id: h.id, name: h.data.household_name },
+  ]));
 ---
 
 <BaseLayout title="Phaser Spike — Mushroom Green">
   <div id="phaser-root" style="width:100vw;height:100vh;"></div>
+  <div id="phaser-tooltip" hidden></div>
+  <div id="phaser-popup" hidden></div>
   <script
     type="application/json"
     id="scene-data"
@@ -16,6 +26,7 @@ import roads from '../data/roads.json';
       boundary,
       brook,
       roads,
+      byNumber,
     })}
   />
   <script>
@@ -27,5 +38,60 @@ import roads from '../data/roads.json';
   :global(body) {
     margin: 0;
     overflow: hidden;
+  }
+
+  :global(#phaser-tooltip) {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10;
+    background: #2c1810;
+    color: #f5e6c8;
+    font-size: 0.85em;
+    padding: 6px 10px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+
+  :global(#phaser-popup) {
+    position: fixed;
+    z-index: 10;
+    background: #2c1810;
+    color: #f5e6c8;
+    padding: 14px 18px;
+    border-radius: 6px;
+    min-width: 200px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+
+  :global(#phaser-popup ul) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  :global(#phaser-popup li) {
+    padding: 5px 0;
+    font-size: 0.9em;
+  }
+
+  :global(#phaser-popup a) {
+    color: #f5e6c8;
+    text-decoration: none;
+    border-bottom: 1px dotted #803303;
+  }
+
+  :global(#phaser-popup a:hover) {
+    color: #fff;
+    border-bottom-color: #fff;
+  }
+
+  :global(#phaser-popup .dismiss-hint) {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #4a2e1e;
+    font-size: 0.72em;
+    color: #a89478;
   }
 </style>

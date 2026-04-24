@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { drawBrook, drawRoads } from './brookAndRoads';
 import { buildPlacements, placeSprites, preloadSprites, type Placement } from './clusterLayout';
+import { wireInteractions, type HouseholdLookup } from './interactions';
 import { isoBounds, latLngToIso } from './projection';
 
 export interface SceneData {
@@ -15,6 +16,7 @@ export interface SceneData {
   boundary: [number, number][];
   brook: [number, number][];
   roads: { polyline: [number, number][] }[];
+  byNumber: HouseholdLookup;
 }
 
 const EMPTY_SCENE_DATA: SceneData = {
@@ -22,6 +24,7 @@ const EMPTY_SCENE_DATA: SceneData = {
   boundary: [],
   brook: [],
   roads: [],
+  byNumber: {},
 };
 
 type Point = {
@@ -98,6 +101,7 @@ export default class VillageScene extends Phaser.Scene {
 
     this.clusterSpriteMap = placeSprites(this, placements.all);
     this.forgePlacements = placements.forges;
+    wireInteractions(this, this.clusterSpriteMap, this.sceneData.clusters, this.sceneData.byNumber ?? {});
 
     for (const f of this.forgePlacements) {
       const { x, y } = latLngToIso(f.lat, f.lng);
