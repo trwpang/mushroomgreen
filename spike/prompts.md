@@ -149,3 +149,26 @@ nanaban --pro --ar 4:3 --size 2k -o public/spike-sprites/meadow.png "<prompt>"
 ```
 
 **Actual run:** First take accepted. 2048×1536, 633 KB, 18.4s via gemini-3-pro-image-preview. Warm olive-green palette, painterly brushwork, scattered red/blue/white/yellow wildflower specks, no baked-in objects.
+
+---
+
+## 14 — Single willow tree (Phaser spike polish)
+
+**Purpose:** Replace the original 3-tree willow cluster sprite (#03) when used in the scatter layer. 17 scatter positions × a 3-tree cluster felt crowded; 17 single trees reads as a properly wooded hamlet.
+
+**Filename:** `public/spike-sprites/14-willow-single-v1-keyed.png`
+
+**Prompt:**
+```
+An isometric 3/4 view sprite of a single mature English willow tree on a small tuft of rough grass, at the classic tactical RPG isometric angle. A slender trunk with drooping slender leaves, warm olive-green foliage with hints of grey-green, soft rounded canopy, visible twisted roots at the base, minimal clumpy grass at the base. Style: hand-painted, warm, illustrative, storybook, reminiscent of Final Fantasy Tactics and a painterly 2.5D Age of Empires asset — NOT pixel art, NOT photoreal. Chunky simple forms, strong silhouette, reads cleanly when downscaled. Background must be an exact flat chroma green #00FF00 everywhere, no gradient, no shadow. No other trees, no environment, no buildings, no people, no text, no labels, no frame, no cast shadow, no watermark.
+```
+
+**Generation:**
+```
+nanaban --pro -o spike/sprites/raw/14-willow-single-v1-nb2pro.png "<prompt>"
+magick spike/sprites/raw/14-willow-single-v1-nb2pro.png \
+  -fuzz 18% -transparent '#00FF00' -trim +repage \
+  public/spike-sprites/14-willow-single-v1-keyed.png
+```
+
+**Actual run:** First take accepted. 1024×1024 pre-trim, 17.9s. Single slender trunk with drooping olive-green fronds, gnarled visible roots, small grass base. Reads as one tree at every scatter position.

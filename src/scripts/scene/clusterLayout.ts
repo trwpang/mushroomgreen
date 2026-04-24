@@ -8,7 +8,7 @@ export const SPRITES: Record<string, { url: string; anchorY: number }> = {
   'cottage-lshape':  { url: '/spike-sprites/11-cottage-lshape-v1-nb2pro-keyed.png',  anchorY: 0.92 },
   'cottage-large':   { url: '/spike-sprites/06-cottage-large-v1-keyed.png',         anchorY: 0.92 },
   'forge':           { url: '/spike-sprites/02-forge-v3-nb2pro-keyed.png',          anchorY: 0.92 },
-  'willow':          { url: '/spike-sprites/03-willows-v1-keyed.png',               anchorY: 0.90 },
+  'willow':          { url: '/spike-sprites/14-willow-single-v1-keyed.png',        anchorY: 0.92 },
   'bridge':          { url: '/spike-sprites/12-bridge-v1-keyed.png',                anchorY: 0.85 },
 };
 
