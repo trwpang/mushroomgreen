@@ -6,6 +6,8 @@ import { Camera } from '@babylonjs/core/Cameras/camera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
+import { ShadowGenerator } from '@babylonjs/core/Lights/Shadows/shadowGenerator';
+import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent';
 import { buildGround, paintRoads } from './ground';
 import { latLngToScene } from './projection';
 import { loadBuildingTemplates, placeCottage } from './building';
@@ -113,6 +115,28 @@ void (async () => {
 
   // Task 17: arrow-key camera rotation (4 cardinal angles, eased)
   wireRotation(camera);
+
+  // Task 14: shadow generator on the directional sun. Cottage parts cast,
+  // ground tiles receive. Blur-exponential shadow map is softer than PCF
+  // and fast enough for ~450 instanced meshes at 1024².
+  const shadows = new ShadowGenerator(1024, sun);
+  shadows.useBlurExponentialShadowMap = true;
+  shadows.blurScale = 2;
+  shadows.setDarkness(0.35);
+  for (const m of scene.meshes) {
+    if (!m.name) continue;
+    if (m.name.startsWith('grass-') || m.name.startsWith('dirt-')) {
+      m.receiveShadows = true;
+    } else if (
+      m.name.includes('-corner-')
+      || m.name.includes('-roof')
+      || m.name.includes('-chimney')
+      || m.name.includes('-door')
+      || m.name.includes('-window-')
+    ) {
+      shadows.addShadowCaster(m);
+    }
+  }
 
   // DEBUG: expose for inspection while the ground+cottages are being wired
   (window as unknown as Record<string, unknown>).__babylon = { engine, scene, camera };
