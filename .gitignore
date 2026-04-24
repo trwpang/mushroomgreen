@@ -24,3 +24,14 @@ pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
+
+# Sprite spike — local only, not deployed
+spike/sprites/raw/
+spike/sprites/keyed/
+public/spike-sprites/
+
+# Brainstorming session files
+.superpowers/
+
+# Babylon spike assets — local only, not deployed
+public/babylon-sprites/

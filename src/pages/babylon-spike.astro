@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const sceneData = {
+  clusters: [],
+  brook: [],
+  roads: [],
+  boundary: [],
+  byNumber: {},
+};
+---
+
+<BaseLayout title="Babylon Spike — Mushroom Green">
+  <canvas id="babylon-root" style="width:100vw;height:100vh;display:block;"></canvas>
+  <script type="application/json" id="scene-data" set:html={JSON.stringify(sceneData)} />
+  <script type="module" src="/src/scripts/babylon/spike-scene.ts"></script>
+  <style is:global>
+    body { margin: 0; overflow: hidden; background: #0f1411; }
+    canvas#babylon-root:focus { outline: none; }
+  </style>
+</BaseLayout>
