@@ -181,6 +181,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 
 const canvas = document.getElementById('babylon-root') as HTMLCanvasElement | null;
 if (!canvas) {
@@ -201,6 +203,9 @@ const camera = new ArcRotateCamera(
   scene,
 );
 camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+// Babylon 8.x modular imports don't auto-bind the first camera as
+// activeCamera — scene.render() stays a no-op until we set it explicitly.
+scene.activeCamera = camera;
 
 function fitOrtho(halfExtent: number): void {
   const aspect = engine.getAspectRatio(camera);
@@ -216,8 +221,13 @@ new HemisphericLight('hemi', new Vector3(0, 1, 0), scene).intensity = 0.75;
 const sun = new DirectionalLight('sun', new Vector3(-0.5, -1, -0.3).normalize(), scene);
 sun.intensity = 0.6;
 
-// Test cube — removed in Task 5 once the ground replaces it
-MeshBuilder.CreateBox('test-cube', { size: 2 }, scene);
+// Test cube — removed in Task 5 once the ground replaces it.
+// Babylon 8.x modular imports don't auto-attach a default material, so
+// we create a StandardMaterial explicitly or the mesh renders invisibly.
+const testCube = MeshBuilder.CreateBox('test-cube', { size: 2 }, scene);
+const cubeMat = new StandardMaterial('mat-test-cube', scene);
+cubeMat.diffuseColor = new Color3(0.7, 0.7, 0.7);
+testCube.material = cubeMat;
 
 engine.runRenderLoop(() => scene.render());
 ```

@@ -1,6 +1,14 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Color4 } from '@babylonjs/core/Maths/math.color';
+import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
+import { Camera } from '@babylonjs/core/Cameras/camera';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
+import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 
 const canvas = document.getElementById('babylon-root') as HTMLCanvasElement | null;
 if (!canvas) {
@@ -9,14 +17,42 @@ if (!canvas) {
 
 const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 const scene = new Scene(engine);
-// Warm green, matches the Phaser spike background colour for the side-by-side frame
 scene.clearColor = new Color4(140 / 255, 180 / 255, 89 / 255, 1);
 
-// Task 1 has no camera yet — scene.render() is a no-op without one, so we
-// explicitly clear to scene.clearColor each frame. Task 2 adds the camera
-// and the scene.render() call below starts doing real work.
-engine.runRenderLoop(() => {
-  engine.clear(scene.clearColor, true, true, true);
-  scene.render();
-});
-window.addEventListener('resize', () => engine.resize());
+// Orthographic ArcRotateCamera — classic 2:1 iso look
+const camera = new ArcRotateCamera(
+  'camera',
+  -Math.PI / 4,       // alpha (azimuth) — rotates on arrow keys later
+  Math.PI / 3,        // beta (elevation from Y axis; 60° from vertical = 30° from horizontal)
+  50,
+  Vector3.Zero(),
+  scene,
+);
+camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+// Babylon 8.x does not auto-bind the first camera as activeCamera when using
+// modular imports — scene.render() stays a no-op until we set it explicitly.
+scene.activeCamera = camera;
+
+function fitOrtho(halfExtent: number): void {
+  const aspect = engine.getAspectRatio(camera);
+  camera.orthoTop = halfExtent;
+  camera.orthoBottom = -halfExtent;
+  camera.orthoLeft = -halfExtent * aspect;
+  camera.orthoRight = halfExtent * aspect;
+}
+fitOrtho(6);
+window.addEventListener('resize', () => { engine.resize(); fitOrtho(6); });
+
+new HemisphericLight('hemi', new Vector3(0, 1, 0), scene).intensity = 0.75;
+const sun = new DirectionalLight('sun', new Vector3(-0.5, -1, -0.3).normalize(), scene);
+sun.intensity = 0.6;
+
+// Test cube — removed in Task 5 once the ground replaces it.
+// Babylon 8.x modular imports don't auto-attach a default material, so
+// we create a StandardMaterial explicitly or the mesh renders invisibly.
+const testCube = MeshBuilder.CreateBox('test-cube', { size: 2 }, scene);
+const cubeMat = new StandardMaterial('mat-test-cube', scene);
+cubeMat.diffuseColor = new Color3(0.7, 0.7, 0.7);
+testCube.material = cubeMat;
+
+engine.runRenderLoop(() => scene.render());
