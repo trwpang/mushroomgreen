@@ -11,6 +11,8 @@ import { latLngToScene } from './projection';
 import { loadBuildingTemplates, placeCottage } from './building';
 import { loadPropTemplates, attachProps, attachForgeSmoke } from './props';
 import { buildBrook } from './brook';
+import { wireInteractions } from './interactions';
+import { wireRotation } from './rotation';
 
 const canvas = document.getElementById('babylon-root') as HTMLCanvasElement | null;
 if (!canvas) {
@@ -105,6 +107,12 @@ void (async () => {
 
   // Tasks 11-12: brook as UV-scrolling water ribbon
   buildBrook(scene, engine, data.brook);
+
+  // Tasks 15-16: hover tooltip + click → /households/[id]/
+  wireInteractions(scene, data.byNumber);
+
+  // Task 17: arrow-key camera rotation (4 cardinal angles, eased)
+  wireRotation(camera);
 
   // DEBUG: expose for inspection while the ground+cottages are being wired
   (window as unknown as Record<string, unknown>).__babylon = { engine, scene, camera };

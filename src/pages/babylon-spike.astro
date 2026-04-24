@@ -31,10 +31,25 @@ const sceneData = {
 
 <BaseLayout title="Babylon Spike — Mushroom Green">
   <canvas id="babylon-root" style="width:100vw;height:100vh;display:block;"></canvas>
+  <div id="babylon-tooltip" class="bbt-tooltip" role="status" aria-live="polite"></div>
   <script type="application/json" id="scene-data" set:html={JSON.stringify(sceneData)} />
   <script type="module" src="/src/scripts/babylon/spike-scene.ts"></script>
   <style is:global>
     body { margin: 0; overflow: hidden; background: #0f1411; }
     canvas#babylon-root:focus { outline: none; }
+    .bbt-tooltip {
+      position: fixed; top: 0; left: 0;
+      padding: 0.4rem 0.6rem;
+      background: rgba(15, 20, 17, 0.92);
+      color: #f0e4c8;
+      font: 13px/1.4 "IM Fell English", Georgia, serif;
+      border: 1px solid rgba(240, 228, 200, 0.3);
+      border-radius: 4px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 120ms ease;
+      z-index: 10;
+    }
+    .bbt-tooltip.visible { opacity: 1; }
   </style>
 </BaseLayout>
