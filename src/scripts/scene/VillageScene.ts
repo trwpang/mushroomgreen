@@ -59,26 +59,55 @@ export default class VillageScene extends Phaser.Scene {
       return;
     }
 
-    const { minX, maxX, minY, maxY } = isoBounds(this.sceneData.boundary);
-    const width  = maxX - minX;
-    const height = maxY - minY;
-    const pad    = Math.max(width, height) * 0.2;
+    // World bounds use the full hamlet boundary + padding — lets the camera
+    // pan outward to see greens / outer brook / far willows.
+    const boundaryIso = isoBounds(this.sceneData.boundary);
+    const bw = boundaryIso.maxX - boundaryIso.minX;
+    const bh = boundaryIso.maxY - boundaryIso.minY;
+    const boundaryPad = Math.max(bw, bh) * 0.2;
     const camera = this.cameras.main;
-
-    // 1) World bounds with padding
-    camera.setBounds(minX - pad, minY - pad, width + 2 * pad, height + 2 * pad);
-
-    // 2) Pick a fit zoom (clamped to [0.5, 2.5] so we don't start at extreme values)
-    const fitZoom = Math.min(
-      this.scale.width  / (width  + 2 * pad),
-      this.scale.height / (height + 2 * pad),
+    camera.setBounds(
+      boundaryIso.minX - boundaryPad,
+      boundaryIso.minY - boundaryPad,
+      bw + 2 * boundaryPad,
+      bh + 2 * boundaryPad,
     );
-    camera.setZoom(Phaser.Math.Clamp(fitZoom, 0.5, 2.5));
 
-    // 3) Center — MUST be called AFTER setZoom, so Phaser computes scroll using the
-    //    final zoom. Also use the centre of the *padded* bounds so the view is framed
-    //    symmetrically.
-    camera.centerOn((minX + maxX) / 2, (minY + maxY) / 2);
+    // Initial framing fits just the cluster centroids — the village itself
+    // lands dead-centre in the viewport. The bridge + far-north willows
+    // live just outside this frame by design; panning (right-click-drag)
+    // or scrolling up (wheel zoom out) exposes them.
+    const clusterCentroids = this.sceneData.clusters.map((c) => c.centroid);
+    const frameIso = clusterCentroids.length > 0
+      ? isoBounds(clusterCentroids)
+      : boundaryIso;
+    const fw = frameIso.maxX - frameIso.minX;
+    const fh = frameIso.maxY - frameIso.minY;
+    // 18% pad gives the village some breathing room without cropping the
+    // southernmost cottage or pulling the frame too wide.
+    const framePad = Math.max(fw, fh) * 0.18;
+
+    const fitZoom = Math.min(
+      this.scale.width  / (fw + 2 * framePad),
+      this.scale.height / (fh + 2 * framePad),
+    );
+    // Floor at 0.35 so a very wide hamlet can zoom out enough to fit every
+    // cluster. User can wheel back up to 2.5×.
+    camera.setZoom(Phaser.Math.Clamp(fitZoom, 0.35, 2.5));
+
+    // Centre on the frame midpoint — puts the village itself in the middle
+    // of the viewport. Set scrollX/scrollY directly (Phaser's centerOn has
+    // clamped our Y to outside the expected range in 3.90 under some zoom
+    // levels; scroll math against the camera view size is unambiguous).
+    const centerX = (frameIso.minX + frameIso.maxX) / 2;
+    const centerY = (frameIso.minY + frameIso.maxY) / 2;
+    camera.scrollX = centerX - this.scale.width  / (2 * camera.zoom);
+    camera.scrollY = centerY - this.scale.height / (2 * camera.zoom);
+
+    // Alias for downstream code that used the old `minX/maxX/minY/maxY/width/height/pad`.
+    const minX = boundaryIso.minX, maxX = boundaryIso.maxX;
+    const minY = boundaryIso.minY, maxY = boundaryIso.maxY;
+    const width = bw, height = bh, pad = boundaryPad;
 
     // Meadow ground sprite — sized to the padded world bounds
     const meadow = this.add.image(
@@ -135,7 +164,7 @@ export default class VillageScene extends Phaser.Scene {
         deltaY: number,
       ) => {
         const camera = this.cameras.main;
-        const nextZoom = Phaser.Math.Clamp(camera.zoom - deltaY * 0.001, 0.5, 2.5);
+        const nextZoom = Phaser.Math.Clamp(camera.zoom - deltaY * 0.001, 0.35, 2.5);
         const pointer = this.input.activePointer;
         const worldX = camera.scrollX + pointer.x / camera.zoom;
         const worldY = camera.scrollY + pointer.y / camera.zoom;

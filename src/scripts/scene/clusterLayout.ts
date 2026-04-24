@@ -51,19 +51,23 @@ export interface PlacementResult {
 export function buildPlacements(
   clusters: Array<{ id: number; centroid: [number, number]; spriteKey: string }>,
 ): PlacementResult {
+  // Scales chosen so the village reads as dense and hero at the cluster-
+  // framed camera: some sprites deliberately overlap (tight 1860s workers'
+  // terraces), but enough separation to count households. Willows a touch
+  // smaller so they read as set-dressing, not rivals to the cottages.
   const clusterItems: Placement[] = clusters.map((c) => ({
     key: c.spriteKey,
     lat: c.centroid[0],
     lng: c.centroid[1],
-    scale: 0.35, // first guess; may need adjustment after visual review
+    scale: 0.32,
     clusterId: c.id,
   }));
   const forges = clusterItems.filter((p) => p.key === 'forge');
   const bridge: Placement = {
-    key: 'bridge', lat: BRIDGE_POSITION[0], lng: BRIDGE_POSITION[1], scale: 0.3,
+    key: 'bridge', lat: BRIDGE_POSITION[0], lng: BRIDGE_POSITION[1], scale: 0.28,
   };
   const willows: Placement[] = WILLOW_POSITIONS.map(([lat, lng]) => ({
-    key: 'willow', lat, lng, scale: 0.28,
+    key: 'willow', lat, lng, scale: 0.25,
   }));
   const all = [...clusterItems, bridge, ...willows];
   return { all, clusters: clusterItems, forges };
