@@ -9,6 +9,7 @@ import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { buildGround, paintRoads } from './ground';
 import { latLngToScene } from './projection';
 import { loadBuildingTemplates, placeCottage } from './building';
+import { loadPropTemplates, attachProps, attachForgeSmoke } from './props';
 
 const canvas = document.getElementById('babylon-root') as HTMLCanvasElement | null;
 if (!canvas) {
@@ -81,16 +82,24 @@ void (async () => {
   await buildGround(scene, data.boundary);
   paintRoads(scene, data.roads);
 
-  // Tasks 8-9: place 6 cottages at the first 6 cluster centroids.
+  // Tasks 8-9-10-13: place 6 cottages at cluster centroids with props +
+  // smoke on the hero forge (first cluster with hasForge=true).
   const buildingTemplates = loadBuildingTemplates(scene);
+  const propTemplates = loadPropTemplates(scene);
+  let heroForgeAttached = false;
   for (const cluster of data.clusters) {
     const { x, z } = latLngToScene(cluster.centroid[0], cluster.centroid[1]);
-    placeCottage(scene, buildingTemplates, { x, z }, String(cluster.id), {
+    const cottage = placeCottage(scene, buildingTemplates, { x, z }, String(cluster.id), {
       clusterId: cluster.id,
       primaryFamily: cluster.primaryFamily,
       memberCount: cluster.members.length,
       members: cluster.members,
     });
+    attachProps(scene, propTemplates, cottage, String(cluster.id));
+    if (cluster.hasForge && !heroForgeAttached) {
+      attachForgeSmoke(scene, cottage, String(cluster.id));
+      heroForgeAttached = true;
+    }
   }
 
   // DEBUG: expose for inspection while the ground+cottages are being wired
