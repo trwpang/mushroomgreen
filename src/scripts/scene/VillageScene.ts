@@ -4,6 +4,14 @@ import { buildPlacements, placeSprites, preloadSprites, type Placement } from '.
 import { wireInteractions, type HouseholdLookup } from './interactions';
 import { isoBounds, latLngToIso } from './projection';
 
+function dist(p1: Phaser.Input.Pointer, p2: Phaser.Input.Pointer): number {
+  return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+}
+
+function mid(p1: Phaser.Input.Pointer, p2: Phaser.Input.Pointer): { x: number; y: number } {
+  return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+}
+
 export interface SceneData {
   clusters: Array<{
     id: number;
@@ -37,6 +45,8 @@ export default class VillageScene extends Phaser.Scene {
   private isDragging = false;
   private dragStart: Point = { x: 0, y: 0 };
   private cameraStart: Point = { x: 0, y: 0 };
+  private touchPan = { active: false, startX: 0, startY: 0, camX: 0, camY: 0 };
+  private touchPinch = { active: false, startDist: 0, startZoom: 0, startMidX: 0, startMidY: 0 };
   private clusterSpriteMap: Map<number, Phaser.GameObjects.Image> = new Map();
   private forgePlacements: Placement[] = [];
   private willows: Phaser.GameObjects.Image[] = [];
@@ -174,6 +184,9 @@ export default class VillageScene extends Phaser.Scene {
   }
 
   private setupPanZoom(): void {
+    this.input.addPointer(1);
+    this.game.canvas.style.touchAction = 'none';
+
     this.input.on(
       'wheel',
       (
@@ -195,6 +208,36 @@ export default class VillageScene extends Phaser.Scene {
     );
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      const isTouch = pointer.pointerType === 'touch';
+      if (isTouch) {
+        const pointer1 = this.input.pointer1;
+        const pointer2 = this.input.pointer2;
+        const camera = this.cameras.main;
+
+        if (pointer1.isDown && pointer2.isDown) {
+          const startMid = mid(pointer1, pointer2);
+          this.touchPan.active = false;
+          this.touchPinch = {
+            active: true,
+            startDist: dist(pointer1, pointer2),
+            startZoom: camera.zoom,
+            startMidX: startMid.x,
+            startMidY: startMid.y,
+          };
+        } else if (pointer1.isDown && !pointer2.isDown) {
+          this.touchPan = {
+            active: true,
+            startX: pointer1.x,
+            startY: pointer1.y,
+            camX: camera.scrollX,
+            camY: camera.scrollY,
+          };
+          this.touchPinch.active = false;
+        }
+
+        return;
+      }
+
       if (!pointer.rightButtonDown() && !pointer.middleButtonDown()) {
         return;
       }
@@ -206,6 +249,31 @@ export default class VillageScene extends Phaser.Scene {
     });
 
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (this.touchPinch.active) {
+        const pointer1 = this.input.pointer1;
+        const pointer2 = this.input.pointer2;
+        const camera = this.cameras.main;
+        const newDist = dist(pointer1, pointer2);
+        const ratio = newDist / this.touchPinch.startDist;
+        const newZoom = Phaser.Math.Clamp(this.touchPinch.startZoom * ratio, 0.35, 2.5);
+        const midpoint = mid(pointer1, pointer2);
+        const worldX = camera.scrollX + midpoint.x / camera.zoom;
+        const worldY = camera.scrollY + midpoint.y / camera.zoom;
+
+        camera.setZoom(newZoom);
+        camera.scrollX = worldX - midpoint.x / newZoom;
+        camera.scrollY = worldY - midpoint.y / newZoom;
+        return;
+      }
+
+      if (this.touchPan.active) {
+        const pointer1 = this.input.pointer1;
+        const camera = this.cameras.main;
+        camera.scrollX = this.touchPan.camX - (pointer1.x - this.touchPan.startX) / camera.zoom;
+        camera.scrollY = this.touchPan.camY - (pointer1.y - this.touchPan.startY) / camera.zoom;
+        return;
+      }
+
       if (!this.isDragging) {
         return;
       }
@@ -215,7 +283,33 @@ export default class VillageScene extends Phaser.Scene {
       camera.scrollY = this.cameraStart.y - (pointer.y - this.dragStart.y) / camera.zoom;
     });
 
-    this.input.on('pointerup', () => {
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      const isTouch = pointer.pointerType === 'touch';
+      if (isTouch) {
+        const pointer1 = this.input.pointer1;
+        const pointer2 = this.input.pointer2;
+        const camera = this.cameras.main;
+
+        if (pointer === pointer2 && pointer1.isDown) {
+          this.touchPinch.active = false;
+          this.touchPan = {
+            active: true,
+            startX: pointer1.x,
+            startY: pointer1.y,
+            camX: camera.scrollX,
+            camY: camera.scrollY,
+          };
+        } else if (!pointer1.isDown && !pointer2.isDown) {
+          this.touchPan.active = false;
+          this.touchPinch.active = false;
+        } else if (!pointer1.isDown) {
+          this.touchPan.active = false;
+          this.touchPinch.active = false;
+        }
+
+        return;
+      }
+
       this.isDragging = false;
     });
 
