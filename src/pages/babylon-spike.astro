@@ -1,12 +1,31 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import clustersJson from '../data/clusters.json';
+import brookJson from '../data/brook.json';
+import roadsJson from '../data/roads.json';
+import boundaryJson from '../data/boundary.json';
+
+const households = await getCollection('households');
+const spikeClusters = clustersJson.clusters.slice(0, 6);
+const spikeHouseholdNumbers = new Set(spikeClusters.flatMap((c: any) => c.members));
+const byNumber: Record<number, { name: string; family: string; id: string }> = {};
+for (const h of households) {
+  if (spikeHouseholdNumbers.has(h.data.number)) {
+    byNumber[h.data.number] = {
+      name: h.data.household_name,
+      family: h.data.family,
+      id: h.id.replace(/\.md$/, ''),
+    };
+  }
+}
 
 const sceneData = {
-  clusters: [],
-  brook: [],
-  roads: [],
-  boundary: [],
-  byNumber: {},
+  clusters: spikeClusters,
+  brook: brookJson,
+  roads: roadsJson,
+  boundary: boundaryJson,
+  byNumber,
 };
 ---
 

@@ -15,6 +15,23 @@ if (!canvas) {
   throw new Error('babylon-spike: #babylon-root canvas missing');
 }
 
+const dataEl = document.getElementById('scene-data');
+if (!dataEl || !dataEl.textContent) {
+  throw new Error('babylon-spike: #scene-data payload missing');
+}
+interface SceneData {
+  clusters: Array<{ id: number; centroid: [number, number]; members: number[]; primaryFamily: string; spriteKey: string; hasForge: boolean }>;
+  brook: [number, number][];
+  roads: Array<{ polyline: [number, number][] }>;
+  boundary: [number, number][];
+  byNumber: Record<number, { name: string; family: string; id: string }>;
+}
+const data: SceneData = JSON.parse(dataEl.textContent);
+console.log(
+  `babylon-spike: loaded ${data.clusters.length} clusters, ${data.clusters.length} selected for spike, ` +
+  `brook ${data.brook.length} pts, roads ${data.roads.length} pts, boundary ${data.boundary.length} pts`,
+);
+
 const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 const scene = new Scene(engine);
 scene.clearColor = new Color4(140 / 255, 180 / 255, 89 / 255, 1);
