@@ -1,0 +1,16 @@
+{
+  "keyColor": "#00ff00",
+  "fuzz": "16%",
+  "method": "helper",
+  "maxEdge": 512,
+  "sprites": [
+    { "name": "15-blue-stream-straight-imagegen", "x": 0, "y": 0, "width": 441, "height": 441, "anchorY": 0.78 },
+    { "name": "15-blue-stream-curve-imagegen", "x": 445, "y": 0, "width": 440, "height": 441, "anchorY": 0.82 },
+    { "name": "15-blue-water-ripple-imagegen", "x": 889, "y": 0, "width": 440, "height": 441, "anchorY": 0.62 },
+    { "name": "15-blue-bridge-imagegen", "x": 1333, "y": 0, "width": 441, "height": 441, "anchorY": 0.8 },
+    { "name": "15-dense-terrace-imagegen", "x": 0, "y": 445, "width": 441, "height": 442, "anchorY": 0.92 },
+    { "name": "15-yellow-cottage-imagegen", "x": 445, "y": 445, "width": 440, "height": 442, "anchorY": 0.92 },
+    { "name": "15-brown-cluster-imagegen", "x": 889, "y": 445, "width": 440, "height": 442, "anchorY": 0.92 },
+    { "name": "15-forge-imagegen", "x": 1333, "y": 445, "width": 441, "height": 442, "anchorY": 0.92 }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "adjacent-forge-4up",
+  "keyColor": "#FF00FF",
+  "fuzz": "20%",
+  "category": "building",
+  "anchorY": 0.92,
+  "method": "magick",
+  "sprites": [
+    { "name": "founder-forge-1", "x": 0,    "y": 0, "width": 543, "height": 724 },
+    { "name": "founder-forge-2", "x": 543,  "y": 0, "width": 543, "height": 724 },
+    { "name": "founder-forge-3", "x": 1086, "y": 0, "width": 543, "height": 724 },
+    { "name": "founder-forge-4", "x": 1629, "y": 0, "width": 543, "height": 724 }
+  ]
+}

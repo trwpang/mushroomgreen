@@ -1,0 +1,23 @@
+{
+  "method": "helper",
+  "keyColor": "#ff00ff",
+  "maxEdge": 512,
+  "sprites": [
+    { "name": "17-blue-stream-straight-imagegen", "x": 0, "y": 0, "width": 313, "height": 313, "anchorY": 0.78, "category": "water" },
+    { "name": "17-blue-stream-curve-imagegen", "x": 313, "y": 0, "width": 313, "height": 313, "anchorY": 0.8, "category": "water" },
+    { "name": "17-blue-stream-merge-imagegen", "x": 626, "y": 0, "width": 313, "height": 313, "anchorY": 0.8, "category": "water" },
+    { "name": "17-blue-pool-ripple-imagegen", "x": 939, "y": 0, "width": 313, "height": 313, "anchorY": 0.65, "category": "water" },
+    { "name": "17-wood-footbridge-imagegen", "x": 0, "y": 313, "width": 313, "height": 313, "anchorY": 0.8, "category": "bridge" },
+    { "name": "17-muddy-track-straight-imagegen", "x": 313, "y": 313, "width": 313, "height": 313, "anchorY": 0.78, "category": "road" },
+    { "name": "17-muddy-track-bend-imagegen", "x": 626, "y": 313, "width": 313, "height": 313, "anchorY": 0.78, "category": "road" },
+    { "name": "17-muddy-track-fork-imagegen", "x": 939, "y": 313, "width": 313, "height": 313, "anchorY": 0.78, "category": "road" },
+    { "name": "17-soot-yard-patch-imagegen", "x": 0, "y": 626, "width": 313, "height": 313, "anchorY": 0.78, "category": "road" },
+    { "name": "17-cobbled-yard-patch-imagegen", "x": 313, "y": 626, "width": 313, "height": 313, "anchorY": 0.78, "category": "road" },
+    { "name": "17-coal-pile-imagegen", "x": 626, "y": 626, "width": 313, "height": 313, "anchorY": 0.92, "category": "prop" },
+    { "name": "17-wood-handcart-imagegen", "x": 939, "y": 626, "width": 313, "height": 313, "anchorY": 0.88, "category": "prop" },
+    { "name": "17-barrels-crates-imagegen", "x": 0, "y": 939, "width": 313, "height": 313, "anchorY": 0.9, "category": "prop" },
+    { "name": "17-broken-fence-imagegen", "x": 313, "y": 939, "width": 313, "height": 313, "anchorY": 0.86, "category": "prop" },
+    { "name": "17-muddy-puddle-imagegen", "x": 626, "y": 939, "width": 313, "height": 313, "anchorY": 0.66, "category": "prop" },
+    { "name": "17-scrubby-hedge-imagegen", "x": 939, "y": 939, "width": 313, "height": 313, "anchorY": 0.9, "category": "vegetation" }
+  ]
+}

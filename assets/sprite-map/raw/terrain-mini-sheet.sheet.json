@@ -1,0 +1,13 @@
+{
+  "name": "terrain-mini",
+  "keyColor": "#FF00FF",
+  "fuzz": "20%",
+  "category": "detail",
+  "anchorY": 0.5,
+  "method": "magick",
+  "sprites": [
+    { "name": "grass",     "x": 0,    "y": 0, "width": 724, "height": 724, "anchorY": 0.5 },
+    { "name": "dirt-path", "x": 724,  "y": 0, "width": 724, "height": 724, "anchorY": 0.5 },
+    { "name": "dirt-yard", "x": 1448, "y": 0, "width": 724, "height": 724, "anchorY": 0.5 }
+  ]
+}

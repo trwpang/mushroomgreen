@@ -1,0 +1,16 @@
+{
+  "name": "forge-smoke",
+  "keyColor": "#FF00FF",
+  "fuzz": "20%",
+  "category": "detail",
+  "anchorY": 1.0,
+  "method": "magick",
+  "sprites": [
+    { "name": "forge-smoke-frame-1", "x": 0,    "y": 0,   "width": 512, "height": 512 },
+    { "name": "forge-smoke-frame-2", "x": 512,  "y": 0,   "width": 512, "height": 512 },
+    { "name": "forge-smoke-frame-3", "x": 1024, "y": 0,   "width": 512, "height": 512 },
+    { "name": "forge-smoke-frame-4", "x": 0,    "y": 512, "width": 512, "height": 512 },
+    { "name": "forge-smoke-frame-5", "x": 512,  "y": 512, "width": 512, "height": 512 },
+    { "name": "forge-smoke-frame-6", "x": 1024, "y": 512, "width": 512, "height": 512 }
+  ]
+}

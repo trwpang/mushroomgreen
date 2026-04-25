@@ -1,0 +1,11 @@
+{
+  "name": "cat",
+  "keyColor": "#FF00FF",
+  "fuzz": "20%",
+  "category": "detail",
+  "anchorY": 0.92,
+  "method": "magick",
+  "sprites": [
+    { "name": "cat", "x": 0, "y": 0, "width": 1254, "height": 1254 }
+  ]
+}
