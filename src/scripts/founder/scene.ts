@@ -4,9 +4,17 @@ import { createRotation, rotateLeft, rotateRight } from './rotation.mjs';
 import { detailTier } from './zoom-detail.mjs';
 import sceneData from '../../data/founder-scene.json';
 
-const HEX_SIZE = 96;
+const HEX_SIZE = 144;
 const PATCH_RADIUS = 2;
 const SPRITE_BASE = '/sprite-map/generated/founder';
+
+// Scales tuned for HEX_SIZE 144 (so cell spacing ≈ 216px).
+// Native sprite sizes vary; these put each sprite at its right footprint.
+const BUILDING_SCALE = 0.65;   // cottage/forge — span ~2 hex cells
+const SMOKE_SCALE    = 0.45;   // sits on the forge chimney
+const CAT_SCALE      = 0.18;   // prop, ~75 px tall
+const BARREL_SCALE   = 0.13;   // prop, ~50 px wide
+const TERRAIN_SCALE  = 1.05;   // 256 px native → ~270 px painted hex
 
 type CellQR = { q: number; r: number };
 type Building = {
@@ -81,7 +89,9 @@ class FounderScene extends Phaser.Scene {
       const { x, y } = axialToPixel(cell, HEX_SIZE);
       const key = `${cell.q},${cell.r}`;
       const terrain = data.terrain.overrides[key] ?? data.terrain.default;
-      this.add.image(cx + (x - originPx.x), cy + (y - originPx.y), terrain).setOrigin(0.5, 0.5);
+      this.add.image(cx + (x - originPx.x), cy + (y - originPx.y), terrain)
+        .setOrigin(0.5, 0.5)
+        .setScale(TERRAIN_SCALE);
     }
 
     // Helper to convert a building/prop's cell + offset into screen pixels.
@@ -102,16 +112,26 @@ class FounderScene extends Phaser.Scene {
       const pos = cellToScreen(b.cellQR);
       drawables.push({
         y: pos.y,
-        draw: () => { this.add.image(pos.x, pos.y, key).setOrigin(0.5, 0.92); },
+        draw: () => {
+          this.add.image(pos.x, pos.y, key)
+            .setOrigin(0.5, 0.92)
+            .setScale(BUILDING_SCALE);
+        },
       });
     }
 
     // 3) Props (cat, barrel) — orientation-agnostic, anchored at base
+    const PROP_SCALE: Record<string, number> = { cat: CAT_SCALE, barrel: BARREL_SCALE };
     for (const p of data.props) {
       const pos = cellToScreen(p.cellQR, p.offset ?? [0, 0]);
+      const scale = PROP_SCALE[p.spriteKey] ?? 0.2;
       drawables.push({
         y: pos.y,
-        draw: () => { this.add.image(pos.x, pos.y, p.spriteKey).setOrigin(0.5, 0.92); },
+        draw: () => {
+          this.add.image(pos.x, pos.y, p.spriteKey)
+            .setOrigin(0.5, 0.92)
+            .setScale(scale);
+        },
       });
     }
 
@@ -128,8 +148,9 @@ class FounderScene extends Phaser.Scene {
     });
     const forge = data.buildings.find(b => b.id === 'adjacent-forge')!;
     const forgePos = cellToScreen(forge.cellQR);
-    this.add.sprite(forgePos.x + 8, forgePos.y - HEX_SIZE * 1.6, 'forge-smoke-frame-1')
+    this.add.sprite(forgePos.x + 8, forgePos.y - HEX_SIZE * 1.4, 'forge-smoke-frame-1')
       .setOrigin(0.5, 1.0)
+      .setScale(SMOKE_SCALE)
       .play('forge-smoke')
       .setDepth(1000);
 
