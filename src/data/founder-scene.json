@@ -1,0 +1,50 @@
+{
+  "description": "M0 founder vignette layout. Henry Weaver household #22 sits in cluster 8 at hex (0, -1). The 'adjacent forge' here is an artistic placement at (1, -1) for narrative compression — the literal nearest forge in 1865 is cluster 3 (~3 hexes south), which will appear at its real position in M2. The M0 patch is a vignette, not a map fragment.",
+  "patchOriginQR": { "q": 0, "r": -1 },
+  "patchRadius": 2,
+  "buildings": [
+    {
+      "id": "founder",
+      "clusterId": 8,
+      "spriteKey": "founder-cottage",
+      "footprint": "cottage-large",
+      "cellQR": { "q": 0, "r": -1 },
+      "primaryHouseholdId": 22,
+      "primaryFamily": "Weaver"
+    },
+    {
+      "id": "adjacent-forge",
+      "spriteKey": "adjacent-forge",
+      "footprint": "forge",
+      "cellQR": { "q": 1, "r": -1 },
+      "artisticPlacement": true,
+      "note": "Compressed for the M0 vignette. The literal nearest forge cluster (3) sits at q=-1, r=2 in M2."
+    }
+  ],
+  "props": [
+    {
+      "id": "cat",
+      "spriteKey": "cat",
+      "cellQR": { "q": 0, "r": 0 },
+      "offset": [0.3, -0.2]
+    },
+    {
+      "id": "barrel",
+      "spriteKey": "barrel",
+      "cellQR": { "q": 0, "r": -1 },
+      "offset": [0.4, 0.3]
+    }
+  ],
+  "terrain": {
+    "default": "grass",
+    "overrides": {
+      "0,-1": "dirt-yard",
+      "1,-1": "dirt-yard",
+      "0,0": "dirt-path",
+      "1,0": "dirt-path",
+      "-1,0": "pasture",
+      "1,-2": "pasture",
+      "-1,-1": "pasture"
+    }
+  }
+}
