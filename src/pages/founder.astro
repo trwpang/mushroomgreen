@@ -1,0 +1,47 @@
+---
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Founder Cottage — Mushroom Green 1865</title>
+    <meta name="description" content="The Henry Weaver founder cottage in 1865 Mushroom Green, viewable from four cardinal angles." />
+  </head>
+  <body>
+    <div id="founder-canvas" class="founder-canvas" data-astro-cid-founder>
+      <noscript>JavaScript is required to view the founder vignette.</noscript>
+    </div>
+
+    <script>
+      import Phaser from 'phaser';
+      import { createScene } from '../scripts/founder/scene.ts';
+
+      const game = new Phaser.Game({
+        type: Phaser.AUTO,
+        parent: 'founder-canvas',
+        backgroundColor: '#dde7d4',
+        scale: {
+          mode: Phaser.Scale.RESIZE,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+        },
+        scene: createScene(),
+      });
+      // Expose for debug
+      (window as any).__founderGame = game;
+    </script>
+  </body>
+</html>
+
+<style>
+  :global(body) {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .founder-canvas {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+</style>
