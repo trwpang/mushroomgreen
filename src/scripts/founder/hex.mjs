@@ -34,3 +34,32 @@ export function neighbours({ q, r }) {
     { q: q + 1, r: r - 1 }, { q: q - 1, r: r + 1 },
   ];
 }
+
+export function oddQNeighbours({ q, r }) {
+  const odd = (q & 1) !== 0;
+  return [
+    { q: q + 1, r: r + (odd ? 1 : 0) },
+    { q: q + 1, r: r + (odd ? 0 : -1) },
+    { q, r: r - 1 },
+    { q: q - 1, r: r + (odd ? 1 : 0) },
+    { q: q - 1, r: r + (odd ? 0 : -1) },
+    { q, r: r + 1 },
+  ];
+}
+
+export function oddQToPlane({ q, r }, radiusM) {
+  return {
+    xM: q * radiusM * 1.5,
+    yM: (r + ((q & 1) !== 0 ? 0.5 : 0)) * SQRT3 * radiusM,
+  };
+}
+
+export function planeHexCorners({ xM, yM }, radiusM) {
+  return [0, 60, 120, 180, 240, 300].map((degrees) => {
+    const angle = degrees * Math.PI / 180;
+    return {
+      xM: xM + Math.cos(angle) * radiusM,
+      yM: yM + Math.sin(angle) * radiusM,
+    };
+  });
+}

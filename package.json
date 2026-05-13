@@ -9,6 +9,7 @@
     "start": "astro dev",
     "build": "astro build",
     "build:clusters": "node src/scripts/build-clusters.ts",
+    "sprites:pipeline": "node scripts/sprite-pipeline.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -17,7 +18,8 @@
     "@babylonjs/core": "^9.4.1",
     "@babylonjs/loaders": "^9.4.1",
     "astro": "^5.0.0",
-    "phaser": "^3.90.0"
+    "phaser": "^3.90.0",
+    "phaser4": "npm:phaser@^4.0.0"
   },
   "devDependencies": {
     "typescript": "^5.6.0"

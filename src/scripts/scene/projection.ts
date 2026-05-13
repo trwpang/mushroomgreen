@@ -22,6 +22,17 @@ export function metresToIso(xM: number, yM: number, k = 10): { x: number; y: num
   };
 }
 
+export function isoToMetres(x: number, y: number, k = 10): { xM: number; yM: number } {
+  const cos30 = Math.cos(Math.PI / 6);
+  const sin30 = Math.sin(Math.PI / 6);
+  const diff = x / (cos30 * k);
+  const sum = y / (sin30 * k);
+  return {
+    xM: (diff + sum) * 0.5,
+    yM: (sum - diff) * 0.5,
+  };
+}
+
 // Convenience: full pipeline.
 export function latLngToIso(lat: number, lng: number, k = 10): { x: number; y: number } {
   const { xM, yM } = latLngToMetres(lat, lng);

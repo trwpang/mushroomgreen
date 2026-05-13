@@ -25,23 +25,25 @@
     {
       "id": "cat",
       "spriteKey": "cat",
-      "cellQR": { "q": 0, "r": 0 },
-      "offset": [0.3, -0.2]
+      "cellQR": { "q": 1, "r": -1 },
+      "offset": [0.58, 0.18],
+      "stackOrder": 2
     },
     {
       "id": "barrel",
       "spriteKey": "barrel",
-      "cellQR": { "q": 0, "r": -1 },
-      "offset": [0.4, 0.3]
+      "cellQR": { "q": 1, "r": -1 },
+      "offset": [0.22, 0.34],
+      "stackOrder": 1
     }
   ],
   "terrain": {
     "default": "grass",
     "overrides": {
-      "0,-1": "dirt-yard",
-      "1,-1": "dirt-yard",
-      "0,0": "dirt-path",
-      "1,0": "dirt-path",
+      "0,-1": "cottage-yard",
+      "1,-1": "forge-yard",
+      "0,0": "road-bend",
+      "1,0": "road-straight",
       "-1,0": "pasture",
       "1,-2": "pasture",
       "-1,-1": "pasture"

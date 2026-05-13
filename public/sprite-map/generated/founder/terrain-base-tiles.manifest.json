@@ -1,0 +1,61 @@
+{
+  "source": "assets/sprite-map/raw/founder-base-tiles-flat-v1.png",
+  "canvas": [
+    324,
+    194
+  ],
+  "anchor": [
+    0.5,
+    0.5
+  ],
+  "tiles": [
+    {
+      "key": "tile-cottage-yard",
+      "file": "public/sprite-map/generated/founder/tile-cottage-yard.png",
+      "size": [
+        324,
+        194
+      ]
+    },
+    {
+      "key": "tile-forge-yard",
+      "file": "public/sprite-map/generated/founder/tile-forge-yard.png",
+      "size": [
+        324,
+        194
+      ]
+    },
+    {
+      "key": "tile-pasture",
+      "file": "public/sprite-map/generated/founder/tile-pasture.png",
+      "size": [
+        324,
+        194
+      ]
+    },
+    {
+      "key": "tile-road-straight",
+      "file": "public/sprite-map/generated/founder/tile-road-straight.png",
+      "size": [
+        324,
+        194
+      ]
+    },
+    {
+      "key": "tile-road-bend",
+      "file": "public/sprite-map/generated/founder/tile-road-bend.png",
+      "size": [
+        324,
+        194
+      ]
+    },
+    {
+      "key": "tile-yard-road",
+      "file": "public/sprite-map/generated/founder/tile-yard-road.png",
+      "size": [
+        324,
+        194
+      ]
+    }
+  ]
+}
