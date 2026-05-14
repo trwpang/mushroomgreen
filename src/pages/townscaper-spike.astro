@@ -1,0 +1,210 @@
+---
+/**
+ * Spike — procedural Townscaper-style hamlet.
+ *
+ * This is intentionally separate from /phaser-spike and Claude's Babylon /
+ * Blender work. It tests whether the Mushroom Green data can drive a beautiful
+ * game-engine map replacement without waiting on a sprite-production pipeline.
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import clusters from '../data/clusters.json';
+import boundary from '../data/boundary.json';
+import brook from '../data/brook.json';
+import roads from '../data/roads.json';
+
+const households = await getCollection('households');
+const byNumber: Record<string, { id: string; name: string }> =
+  Object.fromEntries(households.map((h) => [
+    String(h.data.number),
+    { id: h.id, name: h.data.household_name },
+  ]));
+---
+
+<BaseLayout title="Townscaper Spike — Mushroom Green">
+  <main id="townscaper-shell">
+    <section id="townscaper-stage" aria-label="Townscaper-style Mushroom Green prototype"></section>
+
+    <aside id="spike-panel" aria-label="Spike notes">
+      <p class="eyebrow">Engine spike</p>
+      <h1>Townscaper-style map</h1>
+      <p>
+        Procedural stacked cottages generated from the real 1861 household
+        clusters. No sprite pipeline; just Phaser drawing commands.
+      </p>
+      <dl>
+        <div><dt>Input</dt><dd>14 settlement clusters</dd></div>
+        <div><dt>Mode</dt><dd>Painterly 2.5D blocks</dd></div>
+        <div><dt>Test</dt><dd>Can it replace the map?</dd></div>
+      </dl>
+    </aside>
+
+    <div id="townscaper-tooltip" hidden></div>
+    <div id="townscaper-popup" hidden></div>
+  </main>
+
+  <script
+    type="application/json"
+    id="townscaper-data"
+    set:html={JSON.stringify({
+      clusters: clusters.clusters,
+      boundary,
+      brook,
+      roads,
+      byNumber,
+    })}
+  />
+  <script>
+    import '../scripts/townscaper-spike.ts';
+  </script>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    margin: 0;
+    overflow: hidden;
+    background: #f6efd8;
+  }
+
+  #townscaper-shell {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background:
+      radial-gradient(circle at 28% 18%, rgba(246, 223, 153, 0.38), transparent 34%),
+      linear-gradient(180deg, #cfe5db 0%, #f4e8c8 48%, #f6efd8 100%);
+  }
+
+  #townscaper-stage {
+    position: absolute;
+    inset: 0;
+  }
+
+  #spike-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: min(330px, calc(100vw - 40px));
+    padding: 18px 18px 16px;
+    color: #2b1b12;
+    background: rgba(255, 249, 229, 0.78);
+    border: 1px solid rgba(112, 78, 43, 0.22);
+    border-radius: 8px;
+    box-shadow: 0 16px 46px rgba(61, 48, 31, 0.18);
+    backdrop-filter: blur(12px);
+    pointer-events: none;
+  }
+
+  #spike-panel .eyebrow {
+    font: 700 0.72rem/1.1 system-ui, sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7a552c;
+  }
+
+  #spike-panel h1 {
+    margin-top: 6px;
+    font-size: clamp(1.8rem, 4vw, 3.1rem);
+    line-height: 0.95;
+    letter-spacing: 0;
+  }
+
+  #spike-panel p {
+    margin-top: 12px;
+    font: 0.95rem/1.45 system-ui, sans-serif;
+    color: #4b3828;
+  }
+
+  #spike-panel dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 15px;
+  }
+
+  #spike-panel dl div {
+    min-width: 0;
+    padding-top: 9px;
+    border-top: 1px solid rgba(112, 78, 43, 0.24);
+  }
+
+  #spike-panel dt {
+    font: 700 0.62rem/1 system-ui, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a6945;
+  }
+
+  #spike-panel dd {
+    margin-top: 5px;
+    font: 0.78rem/1.25 system-ui, sans-serif;
+    color: #2b1b12;
+  }
+
+  :global(#townscaper-tooltip),
+  :global(#townscaper-popup) {
+    position: fixed;
+    z-index: 10;
+    background: #2c1810;
+    color: #fff7df;
+    font-family: system-ui, sans-serif;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(#townscaper-tooltip) {
+    pointer-events: none;
+    max-width: 260px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  :global(#townscaper-popup) {
+    min-width: 230px;
+    max-width: min(320px, calc(100vw - 28px));
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+
+  :global(#townscaper-popup h2) {
+    margin: 0 0 8px;
+    font-size: 0.94rem;
+    line-height: 1.25;
+  }
+
+  :global(#townscaper-popup ul) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  :global(#townscaper-popup li) {
+    padding: 4px 0;
+    font-size: 0.86rem;
+  }
+
+  :global(#townscaper-popup a) {
+    color: #fff7df;
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(255, 247, 223, 0.6);
+  }
+
+  @media (max-width: 720px) {
+    #spike-panel {
+      top: 10px;
+      left: 10px;
+      width: calc(100vw - 20px);
+      padding: 12px;
+    }
+
+    #spike-panel h1 {
+      font-size: 1.65rem;
+    }
+
+    #spike-panel p,
+    #spike-panel dl {
+      display: none;
+    }
+  }
+</style>

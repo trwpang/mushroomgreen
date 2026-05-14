@@ -1,0 +1,58 @@
+{
+  "clusterDefaults": {
+    "forge": "forge-yard-3",
+    "cottage-small": "cottage-1",
+    "cottage-master": "family-cluster-3",
+    "cottage-terrace": "terrace-2",
+    "cottage-lshape": "workshop-l-3",
+    "cottage-large": "family-cluster-3"
+  },
+  "sprites": {
+    "02-forge-v1": "forge-yard-3",
+    "02-forge-v2-gi2": "forge-yard-3",
+    "02-forge-v3-nb2pro": "forge-yard-3",
+    "16-worn-forge-redbrick-imagegen": "forge-yard-3",
+    "16-worn-workshop-slate-imagegen": "workshop-l-3",
+    "16-worn-lshape-workshop-imagegen": "workshop-l-3",
+    "16-worn-redbrick-terrace-imagegen": "terrace-2",
+    "16-worn-family-cluster-imagegen": "family-cluster-3",
+    "16-worn-yellow-cottage-imagegen": "cottage-1"
+  },
+  "footprints": {
+    "cottage-1": {
+      "cells": [[0, 0]],
+      "anchor": [0, 0],
+      "baseline": "anchor-cell",
+      "defaultScale": 0.27,
+      "depthBias": 118
+    },
+    "terrace-2": {
+      "cells": [[0, 0], [1, 0]],
+      "anchor": [0, 0],
+      "baseline": "centroid",
+      "defaultScale": 0.31,
+      "depthBias": 124
+    },
+    "family-cluster-3": {
+      "cells": [[0, 0], [1, 0], [0, 1]],
+      "anchor": [0, 0],
+      "baseline": "centroid",
+      "defaultScale": 0.33,
+      "depthBias": 128
+    },
+    "workshop-l-3": {
+      "cells": [[0, 0], [1, 0], [0, 1]],
+      "anchor": [0, 0],
+      "baseline": "centroid",
+      "defaultScale": 0.34,
+      "depthBias": 132
+    },
+    "forge-yard-3": {
+      "cells": [[0, 0], [1, 0], [0, 1]],
+      "anchor": [0, 0],
+      "baseline": "centroid",
+      "defaultScale": 0.33,
+      "depthBias": 136
+    }
+  }
+}

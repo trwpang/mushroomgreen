@@ -1,0 +1,745 @@
+{
+  "generatedAt": "2026-04-24T14:51:04.717Z",
+  "input": "assets/sprite-map/raw",
+  "output": "public/sprite-map/generated",
+  "keyColor": "#00ff00",
+  "fuzz": "18%",
+  "audit": {
+    "spriteCount": 52,
+    "warningCount": 2,
+    "rejectedCount": 1,
+    "categories": {
+      "building": 23,
+      "vegetation": 5,
+      "road": 8,
+      "water": 8,
+      "bridge": 3,
+      "prop": 5
+    },
+    "statuses": {
+      "accepted": 51,
+      "rejected": 1
+    }
+  },
+  "sprites": [
+    {
+      "key": "01-cottage-master-v1-nb2pro",
+      "url": "/sprite-map/generated/01-cottage-master-v1-nb2pro-keyed.png",
+      "source": "assets/sprite-map/raw/01-cottage-master-v1-nb2pro.png",
+      "width": 368,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "01-cottage-master-v2-gi2",
+      "url": "/sprite-map/generated/01-cottage-master-v2-gi2-keyed.png",
+      "source": "assets/sprite-map/raw/01-cottage-master-v2-gi2.png",
+      "width": 337,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "01-cottage-master-v3-nb2pro",
+      "url": "/sprite-map/generated/01-cottage-master-v3-nb2pro-keyed.png",
+      "source": "assets/sprite-map/raw/01-cottage-master-v3-nb2pro.png",
+      "width": 512,
+      "height": 495,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "02-forge-v1",
+      "url": "/sprite-map/generated/02-forge-v1-keyed.png",
+      "source": "assets/sprite-map/raw/02-forge-v1.png",
+      "width": 454,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "02-forge-v2-gi2",
+      "url": "/sprite-map/generated/02-forge-v2-gi2-keyed.png",
+      "source": "assets/sprite-map/raw/02-forge-v2-gi2.png",
+      "width": 447,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "02-forge-v3-nb2pro",
+      "url": "/sprite-map/generated/02-forge-v3-nb2pro-keyed.png",
+      "source": "assets/sprite-map/raw/02-forge-v3-nb2pro.png",
+      "width": 512,
+      "height": 495,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "03-willows-v1",
+      "url": "/sprite-map/generated/03-willows-v1-keyed.png",
+      "source": "assets/sprite-map/raw/03-willows-v1.png",
+      "width": 512,
+      "height": 495,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "vegetation",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "04-path-v1",
+      "url": "/sprite-map/generated/04-path-v1-keyed.png",
+      "source": "assets/sprite-map/raw/04-path-v1.png",
+      "width": 512,
+      "height": 485,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "road",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "04-path-v2",
+      "url": "/sprite-map/generated/04-path-v2-keyed.png",
+      "source": "assets/sprite-map/raw/04-path-v2.png",
+      "width": 512,
+      "height": 345,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "road",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "05-cottage-small-v1",
+      "url": "/sprite-map/generated/05-cottage-small-v1-keyed.png",
+      "source": "assets/sprite-map/raw/05-cottage-small-v1.png",
+      "width": 368,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "05-cottage-small-v2-nb2pro",
+      "url": "/sprite-map/generated/05-cottage-small-v2-nb2pro-keyed.png",
+      "source": "assets/sprite-map/raw/05-cottage-small-v2-nb2pro.png",
+      "width": 512,
+      "height": 504,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "06-cottage-large-v1",
+      "url": "/sprite-map/generated/06-cottage-large-v1-keyed.png",
+      "source": "assets/sprite-map/raw/06-cottage-large-v1.png",
+      "width": 427,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "06-cottage-large-v2-gi2",
+      "url": "/sprite-map/generated/06-cottage-large-v2-gi2-keyed.png",
+      "source": "assets/sprite-map/raw/06-cottage-large-v2-gi2.png",
+      "width": 493,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "07-chapel-v1",
+      "url": "/sprite-map/generated/07-chapel-v1-keyed.png",
+      "source": "assets/sprite-map/raw/07-chapel-v1.png",
+      "width": 485,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "08-hedge-v1",
+      "url": "/sprite-map/generated/08-hedge-v1-keyed.png",
+      "source": "assets/sprite-map/raw/08-hedge-v1.png",
+      "width": 512,
+      "height": 377,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "vegetation",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "09-stream-v1",
+      "url": "/sprite-map/generated/09-stream-v1-keyed.png",
+      "source": "assets/sprite-map/raw/09-stream-v1.png",
+      "width": 512,
+      "height": 361,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "water",
+      "status": "rejected",
+      "warnings": [
+        "rejected-black-water",
+        "water-anchor-too-low"
+      ],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "10-cottage-terrace-v1-nb2pro",
+      "url": "/sprite-map/generated/10-cottage-terrace-v1-nb2pro-keyed.png",
+      "source": "assets/sprite-map/raw/10-cottage-terrace-v1-nb2pro.png",
+      "width": 512,
+      "height": 344,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "11-cottage-lshape-v1-nb2pro",
+      "url": "/sprite-map/generated/11-cottage-lshape-v1-nb2pro-keyed.png",
+      "source": "assets/sprite-map/raw/11-cottage-lshape-v1-nb2pro.png",
+      "width": 512,
+      "height": 333,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "12-bridge-v1-nb2pro",
+      "url": "/sprite-map/generated/12-bridge-v1-nb2pro-keyed.png",
+      "source": "assets/sprite-map/raw/12-bridge-v1-nb2pro.png",
+      "width": 512,
+      "height": 309,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "bridge",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "14-willow-single-v1-nb2pro",
+      "url": "/sprite-map/generated/14-willow-single-v1-nb2pro-keyed.png",
+      "source": "assets/sprite-map/raw/14-willow-single-v1-nb2pro.png",
+      "width": 411,
+      "height": 512,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "vegetation",
+      "status": "accepted",
+      "warnings": [],
+      "notes": [
+        "max-edge-normalized"
+      ]
+    },
+    {
+      "key": "15-blue-stream-straight-imagegen",
+      "url": "/sprite-map/generated/15-blue-stream-straight-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/15-townscaper-sheet-imagegen.png",
+      "width": 373,
+      "height": 328,
+      "anchorX": 0.5,
+      "anchorY": 0.78,
+      "category": "water",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "15-blue-stream-curve-imagegen",
+      "url": "/sprite-map/generated/15-blue-stream-curve-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/15-townscaper-sheet-imagegen.png",
+      "width": 438,
+      "height": 441,
+      "anchorX": 0.5,
+      "anchorY": 0.82,
+      "category": "water",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "15-blue-water-ripple-imagegen",
+      "url": "/sprite-map/generated/15-blue-water-ripple-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/15-townscaper-sheet-imagegen.png",
+      "width": 439,
+      "height": 441,
+      "anchorX": 0.5,
+      "anchorY": 0.62,
+      "category": "water",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "15-blue-bridge-imagegen",
+      "url": "/sprite-map/generated/15-blue-bridge-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/15-townscaper-sheet-imagegen.png",
+      "width": 323,
+      "height": 228,
+      "anchorX": 0.5,
+      "anchorY": 0.8,
+      "category": "bridge",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "15-dense-terrace-imagegen",
+      "url": "/sprite-map/generated/15-dense-terrace-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/15-townscaper-sheet-imagegen.png",
+      "width": 441,
+      "height": 343,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "15-yellow-cottage-imagegen",
+      "url": "/sprite-map/generated/15-yellow-cottage-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/15-townscaper-sheet-imagegen.png",
+      "width": 439,
+      "height": 441,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "15-brown-cluster-imagegen",
+      "url": "/sprite-map/generated/15-brown-cluster-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/15-townscaper-sheet-imagegen.png",
+      "width": 439,
+      "height": 441,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "15-forge-imagegen",
+      "url": "/sprite-map/generated/15-forge-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/15-townscaper-sheet-imagegen.png",
+      "width": 441,
+      "height": 344,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "16-worn-forge-redbrick-imagegen",
+      "url": "/sprite-map/generated/16-worn-forge-redbrick-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/16-worn-black-country-sheet-imagegen.png",
+      "width": 441,
+      "height": 413,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "16-worn-workshop-slate-imagegen",
+      "url": "/sprite-map/generated/16-worn-workshop-slate-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/16-worn-black-country-sheet-imagegen.png",
+      "width": 439,
+      "height": 440,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "16-worn-redbrick-terrace-imagegen",
+      "url": "/sprite-map/generated/16-worn-redbrick-terrace-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/16-worn-black-country-sheet-imagegen.png",
+      "width": 438,
+      "height": 440,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "16-worn-yellow-cottage-imagegen",
+      "url": "/sprite-map/generated/16-worn-yellow-cottage-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/16-worn-black-country-sheet-imagegen.png",
+      "width": 441,
+      "height": 348,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "16-worn-family-cluster-imagegen",
+      "url": "/sprite-map/generated/16-worn-family-cluster-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/16-worn-black-country-sheet-imagegen.png",
+      "width": 381,
+      "height": 350,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "16-worn-lshape-workshop-imagegen",
+      "url": "/sprite-map/generated/16-worn-lshape-workshop-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/16-worn-black-country-sheet-imagegen.png",
+      "width": 425,
+      "height": 442,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "building",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "16-worn-willow-imagegen",
+      "url": "/sprite-map/generated/16-worn-willow-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/16-worn-black-country-sheet-imagegen.png",
+      "width": 438,
+      "height": 442,
+      "anchorX": 0.5,
+      "anchorY": 0.94,
+      "category": "vegetation",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "16-muddy-lane-imagegen",
+      "url": "/sprite-map/generated/16-muddy-lane-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/16-worn-black-country-sheet-imagegen.png",
+      "width": 387,
+      "height": 249,
+      "anchorX": 0.5,
+      "anchorY": 0.8,
+      "category": "road",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-blue-stream-straight-imagegen",
+      "url": "/sprite-map/generated/17-blue-stream-straight-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 251,
+      "height": 179,
+      "anchorX": 0.5,
+      "anchorY": 0.78,
+      "category": "water",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-blue-stream-curve-imagegen",
+      "url": "/sprite-map/generated/17-blue-stream-curve-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 220,
+      "height": 170,
+      "anchorX": 0.5,
+      "anchorY": 0.8,
+      "category": "water",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-blue-stream-merge-imagegen",
+      "url": "/sprite-map/generated/17-blue-stream-merge-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 243,
+      "height": 177,
+      "anchorX": 0.5,
+      "anchorY": 0.8,
+      "category": "water",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-blue-pool-ripple-imagegen",
+      "url": "/sprite-map/generated/17-blue-pool-ripple-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 206,
+      "height": 139,
+      "anchorX": 0.5,
+      "anchorY": 0.65,
+      "category": "water",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-wood-footbridge-imagegen",
+      "url": "/sprite-map/generated/17-wood-footbridge-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 255,
+      "height": 212,
+      "anchorX": 0.5,
+      "anchorY": 0.8,
+      "category": "bridge",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-muddy-track-straight-imagegen",
+      "url": "/sprite-map/generated/17-muddy-track-straight-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 247,
+      "height": 195,
+      "anchorX": 0.5,
+      "anchorY": 0.78,
+      "category": "road",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-muddy-track-bend-imagegen",
+      "url": "/sprite-map/generated/17-muddy-track-bend-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 192,
+      "height": 186,
+      "anchorX": 0.5,
+      "anchorY": 0.78,
+      "category": "road",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-muddy-track-fork-imagegen",
+      "url": "/sprite-map/generated/17-muddy-track-fork-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 265,
+      "height": 216,
+      "anchorX": 0.5,
+      "anchorY": 0.78,
+      "category": "road",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-soot-yard-patch-imagegen",
+      "url": "/sprite-map/generated/17-soot-yard-patch-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 235,
+      "height": 179,
+      "anchorX": 0.5,
+      "anchorY": 0.78,
+      "category": "road",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-cobbled-yard-patch-imagegen",
+      "url": "/sprite-map/generated/17-cobbled-yard-patch-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 244,
+      "height": 178,
+      "anchorX": 0.5,
+      "anchorY": 0.78,
+      "category": "road",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-coal-pile-imagegen",
+      "url": "/sprite-map/generated/17-coal-pile-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 212,
+      "height": 148,
+      "anchorX": 0.5,
+      "anchorY": 0.92,
+      "category": "prop",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-wood-handcart-imagegen",
+      "url": "/sprite-map/generated/17-wood-handcart-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 213,
+      "height": 148,
+      "anchorX": 0.5,
+      "anchorY": 0.88,
+      "category": "prop",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-barrels-crates-imagegen",
+      "url": "/sprite-map/generated/17-barrels-crates-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 211,
+      "height": 214,
+      "anchorX": 0.5,
+      "anchorY": 0.9,
+      "category": "prop",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-broken-fence-imagegen",
+      "url": "/sprite-map/generated/17-broken-fence-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 217,
+      "height": 170,
+      "anchorX": 0.5,
+      "anchorY": 0.86,
+      "category": "prop",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-muddy-puddle-imagegen",
+      "url": "/sprite-map/generated/17-muddy-puddle-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 226,
+      "height": 180,
+      "anchorX": 0.5,
+      "anchorY": 0.66,
+      "category": "prop",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    },
+    {
+      "key": "17-scrubby-hedge-imagegen",
+      "url": "/sprite-map/generated/17-scrubby-hedge-imagegen-keyed.png",
+      "source": "assets/sprite-map/raw/17-road-water-props-sheet-imagegen.png",
+      "width": 223,
+      "height": 158,
+      "anchorX": 0.5,
+      "anchorY": 0.9,
+      "category": "vegetation",
+      "status": "accepted",
+      "warnings": [],
+      "notes": []
+    }
+  ]
+}

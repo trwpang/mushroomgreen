@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import brook from '../data/brook.json';
+import boundary from '../data/boundary.json';
+import manifest from '../data/generated-sprite-manifest.json';
+---
+
+<BaseLayout title="Water Spike — Mushroom Green">
+  <main id="water-shell">
+    <div id="water-stage" aria-label="Water rendering comparison"></div>
+    <header>
+      <p>Water treatment spike</p>
+      <h1>Drawn brook vs sprite water vs combo</h1>
+    </header>
+  </main>
+  <script
+    type="application/json"
+    id="water-data"
+    set:html={JSON.stringify({ brook, boundary, manifest })}
+  />
+  <script>
+    import '../scripts/water-spike.ts';
+  </script>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    margin: 0;
+    overflow: hidden;
+    background: #d8e7d6;
+  }
+
+  #water-shell,
+  #water-stage {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #water-shell {
+    position: relative;
+    background: linear-gradient(180deg, #cbe2dd, #eef0d4);
+  }
+
+  header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: min(620px, calc(100vw - 40px));
+    padding: 16px 18px;
+    color: #29190f;
+    background: rgba(255, 250, 230, 0.82);
+    border: 1px solid rgba(112, 78, 43, 0.22);
+    border-radius: 8px;
+    box-shadow: 0 16px 48px rgba(60, 45, 25, 0.18);
+    backdrop-filter: blur(12px);
+    pointer-events: none;
+  }
+
+  header p {
+    font: 700 0.72rem/1.1 system-ui, sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #795732;
+  }
+
+  h1 {
+    margin-top: 7px;
+    font-size: clamp(1.8rem, 4vw, 3.3rem);
+    line-height: 0.94;
+    letter-spacing: 0;
+  }
+</style>

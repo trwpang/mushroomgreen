@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(codex:rescue)",
+      "Bash(curl -s -o /dev/null -w \"phaser-spike   HTTP %{http_code}\\\\n\" http://localhost:4321/phaser-spike)",
+      "Bash(curl -s -o /dev/null -w \"22-weaver-1789 HTTP %{http_code}\\\\n\" http://localhost:4321/households/22-weaver-1789/)",
+      "Bash(curl -s -o /dev/null -w \"01-frost       HTTP %{http_code}\\\\n\" http://localhost:4321/households/01-frost/)",
+      "Bash(curl -s -o /dev/null -w \"/              HTTP %{http_code}\\\\n\" http://localhost:4321/)",
+      "Skill(last30days)",
+      "Read(//Users/tomweaver/Library/Application Support/Blender/5.1/scripts/addons/**)",
+      "mcp__scheduled-tasks__list_scheduled_tasks"
+    ]
+  }
+}

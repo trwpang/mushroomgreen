@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import clusters from '../data/clusters.json';
+import boundary from '../data/boundary.json';
+import roads from '../data/roads.json';
+import manifest from '../data/generated-sprite-manifest.json';
+---
+
+<BaseLayout title="Phaser 4 Spike — Mushroom Green">
+  <main id="phaser4-shell">
+    <section id="phaser4-stage" aria-label="Phaser 4 generated sprite comparison"></section>
+    <aside>
+      <p>Phaser 4 spike</p>
+      <h1>Same data, new renderer</h1>
+      <dl>
+        <div><dt>Engine</dt><dd>Phaser 4.0.0 alias</dd></div>
+        <div><dt>Assets</dt><dd>{manifest.sprites.length} generated sprites</dd></div>
+        <div><dt>Scope</dt><dd>Renderer comparison</dd></div>
+      </dl>
+    </aside>
+  </main>
+  <script
+    type="application/json"
+    id="phaser4-data"
+    set:html={JSON.stringify({
+      clusters: clusters.clusters,
+      boundary,
+      roads,
+      manifest,
+    })}
+  />
+  <script>
+    import '../scripts/phaser4-spike.ts';
+  </script>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    margin: 0;
+    overflow: hidden;
+    background: #f4ead0;
+  }
+
+  #phaser4-shell,
+  #phaser4-stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #phaser4-shell {
+    background: linear-gradient(180deg, #cadfd8, #f5ead1);
+  }
+
+  aside {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: min(350px, calc(100vw - 40px));
+    padding: 16px 17px;
+    color: #29190f;
+    background: rgba(255, 250, 230, 0.82);
+    border: 1px solid rgba(112, 78, 43, 0.22);
+    border-radius: 8px;
+    box-shadow: 0 16px 48px rgba(60, 45, 25, 0.18);
+    backdrop-filter: blur(12px);
+    pointer-events: none;
+  }
+
+  aside p {
+    font: 700 0.72rem/1.1 system-ui, sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #795732;
+  }
+
+  h1 {
+    margin-top: 7px;
+    font-size: clamp(1.8rem, 4vw, 3.35rem);
+    line-height: 0.94;
+    letter-spacing: 0;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  dl div {
+    min-width: 0;
+    padding-top: 9px;
+    border-top: 1px solid rgba(112, 78, 43, 0.24);
+  }
+
+  dt {
+    font: 700 0.62rem/1 system-ui, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #866746;
+  }
+
+  dd {
+    margin-top: 5px;
+    font: 0.78rem/1.25 system-ui, sans-serif;
+  }
+</style>

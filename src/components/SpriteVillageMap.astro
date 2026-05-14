@@ -1,0 +1,349 @@
+---
+import { getCollection } from 'astro:content';
+import clusters from '../data/clusters.json';
+import boundary from '../data/boundary.json';
+import brook from '../data/brook.json';
+import roads from '../data/roads.json';
+import manifest from '../data/generated-sprite-manifest.json';
+import clusterTilePlacements from '../data/cluster-tile-placements.json';
+import overrides from '../data/sprite-map-overrides.json';
+import footprints from '../data/sprite-footprints.json';
+import scene from '../data/sprite-scene.json';
+
+interface Props {
+  editor?: boolean;
+}
+
+const { editor = false } = Astro.props;
+const acceptedSpriteCount = manifest.sprites.filter((sprite) => sprite.status !== 'rejected').length;
+const households = await getCollection('households');
+const byNumber: Record<string, { id: string; name: string; family?: string; occupation?: string }> =
+  Object.fromEntries(households.map((h) => [
+    String(h.data.number),
+    {
+      id: h.id,
+      name: h.data.household_name,
+      family: h.data.family,
+      occupation: h.data.occupation,
+    },
+  ]));
+---
+
+<main id="sprite-village-shell" data-editor={editor ? 'true' : 'false'}>
+  <section id="sprite-village-stage" aria-label="Mushroom Green isometric sprite map"></section>
+  <aside id="sprite-village-panel">
+    <p>{editor ? 'Placement editor' : 'Mushroom Green 1865'}</p>
+    <h1>{editor ? 'Art direct the hamlet' : 'Mushroom Green'}</h1>
+    <dl>
+      <div><dt>Households</dt><dd>59 linked records</dd></div>
+      <div><dt>Sprites</dt><dd>{acceptedSpriteCount} accepted assets</dd></div>
+      <div><dt>Water</dt><dd>Blue sprite brook</dd></div>
+    </dl>
+    <nav>
+      {editor ? <a href="/">View map</a> : <a href="/sprite-map-editor/">Edit placement</a>}
+      <a href="/legacy-map/">Legacy map</a>
+    </nav>
+  </aside>
+
+  {editor && (
+    <aside id="sprite-village-editor">
+      <p class="eyebrow">Selected cluster</p>
+      <h2 id="editor-cluster-title">None</h2>
+      <label>
+        Sprite
+        <select id="editor-sprite-select"></select>
+      </label>
+      <label>
+        Scale
+        <input id="editor-scale-input" type="range" min="0.16" max="0.58" step="0.01" />
+      </label>
+      <div class="editor-cell-grid">
+        <label>
+          Cell Q
+          <input id="editor-cell-q-input" type="number" step="1" />
+        </label>
+        <label>
+          Cell R
+          <input id="editor-cell-r-input" type="number" step="1" />
+        </label>
+      </div>
+      <div class="editor-actions">
+        <button id="editor-apply-button" type="button">Apply JSON</button>
+        <button id="editor-copy-button" type="button">Copy JSON</button>
+        <button id="editor-reset-button" type="button">Reset local</button>
+      </div>
+      <textarea id="editor-export" spellcheck="false"></textarea>
+    </aside>
+  )}
+
+  <div id="sprite-village-tooltip" hidden></div>
+  <div id="sprite-village-popup" hidden></div>
+</main>
+
+<script
+  type="application/json"
+  id="sprite-village-data"
+  set:html={JSON.stringify({
+    clusters: clusters.clusters,
+    boundary,
+    brook,
+    roads,
+    byNumber,
+    manifest,
+    clusterTilePlacements,
+    overrides,
+    footprints,
+    scene,
+    editor,
+  })}
+/>
+<script>
+  import '../scripts/sprite-village-map.ts';
+</script>
+
+<style>
+  :global(body) {
+    margin: 0;
+    overflow: hidden;
+    background: #cadfd8;
+  }
+
+  #sprite-village-shell,
+  #sprite-village-stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #sprite-village-shell {
+    background: linear-gradient(180deg, #c9dfd8 0%, #edf0d7 54%, #f5e8c8 100%);
+  }
+
+  #sprite-village-panel,
+  #sprite-village-editor {
+    position: absolute;
+    z-index: 5;
+    color: #28180f;
+    background: rgba(255, 250, 230, 0.84);
+    border: 1px solid rgba(112, 78, 43, 0.24);
+    border-radius: 8px;
+    box-shadow: 0 16px 48px rgba(60, 45, 25, 0.18);
+    backdrop-filter: blur(12px);
+  }
+
+  #sprite-village-panel {
+    top: 20px;
+    left: 20px;
+    width: min(322px, calc(100vw - 40px));
+    padding: 14px 16px;
+  }
+
+  #sprite-village-panel p,
+  .eyebrow {
+    margin: 0;
+    font: 700 0.72rem/1.1 system-ui, sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #795732;
+  }
+
+  #sprite-village-panel h1 {
+    margin: 8px 0 0;
+    font-size: clamp(2rem, 3.4vw, 3.25rem);
+    line-height: 0.94;
+    letter-spacing: 0;
+  }
+
+  #sprite-village-panel dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 15px 0 0;
+  }
+
+  #sprite-village-panel dl div {
+    min-width: 0;
+    padding-top: 9px;
+    border-top: 1px solid rgba(112, 78, 43, 0.24);
+  }
+
+  #sprite-village-panel dt {
+    font: 700 0.62rem/1 system-ui, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #866746;
+  }
+
+  #sprite-village-panel dd {
+    margin: 5px 0 0;
+    font: 0.78rem/1.25 system-ui, sans-serif;
+  }
+
+  #sprite-village-panel nav {
+    display: flex;
+    gap: 14px;
+    margin-top: 13px;
+    font: 700 0.74rem/1 system-ui, sans-serif;
+  }
+
+  #sprite-village-panel a {
+    color: #693f1d;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(105, 63, 29, 0.45);
+    pointer-events: auto;
+  }
+
+  #sprite-village-editor {
+    right: 18px;
+    top: 18px;
+    width: min(360px, calc(100vw - 36px));
+    padding: 14px;
+    font-family: system-ui, sans-serif;
+  }
+
+  #sprite-village-editor h2 {
+    margin: 5px 0 12px;
+    font: 700 1.1rem/1.15 system-ui, sans-serif;
+  }
+
+  #sprite-village-editor label {
+    display: grid;
+    gap: 5px;
+    margin-top: 10px;
+    font: 700 0.72rem/1 system-ui, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #6f5436;
+  }
+
+  #sprite-village-editor input,
+  #sprite-village-editor select,
+  #sprite-village-editor textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(112, 78, 43, 0.35);
+    border-radius: 6px;
+    background: #fffaf0;
+    color: #24150d;
+    font: 0.78rem/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  #sprite-village-editor input {
+    min-height: 32px;
+    padding: 5px 7px;
+  }
+
+  #sprite-village-editor select {
+    min-height: 34px;
+    font-family: system-ui, sans-serif;
+  }
+
+  .editor-cell-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  #sprite-village-editor textarea {
+    min-height: 190px;
+    margin-top: 10px;
+    padding: 8px;
+    resize: vertical;
+  }
+
+  .editor-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .editor-actions button {
+    border: 1px solid rgba(80, 50, 28, 0.4);
+    border-radius: 6px;
+    background: #2c1810;
+    color: #fff7df;
+    padding: 8px 10px;
+    font: 700 0.76rem/1 system-ui, sans-serif;
+    cursor: pointer;
+  }
+
+  :global(#sprite-village-tooltip),
+  :global(#sprite-village-popup) {
+    position: fixed;
+    z-index: 10;
+    background: #2c1810;
+    color: #fff7df;
+    font-family: system-ui, sans-serif;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(#sprite-village-tooltip) {
+    pointer-events: none;
+    max-width: 300px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    white-space: pre-line;
+  }
+
+  :global(#sprite-village-popup) {
+    min-width: 230px;
+    max-width: min(330px, calc(100vw - 28px));
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+
+  :global(#sprite-village-popup h2) {
+    margin: 0 0 8px;
+    font-size: 0.94rem;
+    line-height: 1.25;
+  }
+
+  :global(#sprite-village-popup ul) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  :global(#sprite-village-popup li) {
+    padding: 4px 0;
+    font-size: 0.86rem;
+  }
+
+  :global(#sprite-village-popup a) {
+    color: #fff7df;
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(255, 247, 223, 0.6);
+  }
+
+  @media (max-width: 760px) {
+    #sprite-village-panel {
+      top: 10px;
+      left: 10px;
+      width: min(330px, calc(100vw - 20px));
+      padding: 10px 12px;
+    }
+
+    #sprite-village-panel h1 {
+      font-size: 1.55rem;
+      line-height: 0.96;
+    }
+
+    #sprite-village-panel dl {
+      display: none;
+    }
+
+    #sprite-village-panel nav {
+      margin-top: 9px;
+      font-size: 0.7rem;
+    }
+
+    #sprite-village-editor {
+      top: auto;
+      bottom: 10px;
+      right: 10px;
+      width: calc(100vw - 20px);
+    }
+  }
+</style>

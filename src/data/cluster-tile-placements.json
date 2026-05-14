@@ -1,0 +1,21 @@
+{
+  "description": "Explicit cluster-to-hex assignments generated from 1865 cluster centroids. q/r use the renderer odd-q hex coordinate system.",
+  "generatedFrom": "src/data/clusters.json",
+  "radiusM": 9,
+  "clusters": {
+    "1": { "q": 5, "r": 2 },
+    "2": { "q": 2, "r": 4 },
+    "3": { "q": -1, "r": 2 },
+    "4": { "q": -1, "r": 0 },
+    "5": { "q": 2, "r": 1 },
+    "6": { "q": 5, "r": -1 },
+    "7": { "q": 1, "r": -4 },
+    "8": { "q": 0, "r": -1 },
+    "9": { "q": 3, "r": -4 },
+    "10": { "q": -2, "r": -4 },
+    "11": { "q": 0, "r": -6 },
+    "12": { "q": -4, "r": -5 },
+    "13": { "q": -2, "r": -7 },
+    "14": { "q": -4, "r": -7 }
+  }
+}

@@ -1,0 +1,511 @@
+---
+/**
+ * Spike — isometric sprite overlay over the existing Leaflet map.
+ *
+ * Explores whether AI-generated 2.5D building sprites can sit on the real
+ * OSM polygons without losing the site's "real map" grounding. Non-canonical,
+ * dev-only, not linked from anywhere. Sprites live in public/spike-sprites/
+ * which is gitignored — this page will 404 the images in production.
+ *
+ * Sprite assignment is a coarse demo mapping based on family, not historical
+ * research. The goal here is read-through (does it feel like a village?), not
+ * accuracy.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import boundary from '../data/boundary.json';
+import brook from '../data/brook.json';
+import greens from '../data/greens.json';
+import families from '../data/families.json';
+import areas from '../data/areas.json';
+import mousesweet from '../data/mousesweet.json';
+import roads from '../data/roads.json';
+---
+<BaseLayout title="Spike — Isometric Sprites">
+  <div id="header">
+    <div>
+      <h1>Spike &mdash; Isometric Sprite Overlay</h1>
+      <p>Local dev only &middot; Sprites anchored to real 1861 OSM polygons &middot; Not for deploy</p>
+    </div>
+    <div id="controls">
+      <label><input type="checkbox" id="show-sprites" checked /> Sprites</label>
+      <label><input type="checkbox" id="show-polygons" /> Polygons</label>
+      <label><input type="checkbox" id="sepia-sprites" /> Sepia sprites</label>
+      <label>
+        Set
+        <select id="sprite-set">
+          <option value="nb2pro">Nano Banana Pro</option>
+          <option value="gi2">GPT Image 2</option>
+        </select>
+      </label>
+      <label>
+        Scale
+        <input type="range" id="scale" min="0.6" max="2.4" step="0.1" value="0.9" />
+        <span id="scale-val">0.9&times;</span>
+      </label>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+  />
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+    is:inline
+  ></script>
+
+  <style is:global>
+    :root { --header-h: 88px; }
+    #header {
+      background: #2c1810;
+      color: #f5e6c8;
+      padding: 10px 16px;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #803303;
+      gap: 16px;
+    }
+    #header h1 { font-size: 1.1em; letter-spacing: 0.03em; }
+    #header p { font-size: 0.75em; color: #c8a87a; margin-top: 2px; }
+    #controls {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      font-size: 0.8em;
+      color: #f5e6c8;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    #controls label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+    #controls input[type=range] { width: 100px; }
+    #controls select {
+      background: #3a2418; color: #f5e6c8; border: 1px solid #803303;
+      font-size: 0.95em; padding: 2px 4px; border-radius: 3px;
+    }
+    #map { width: 100%; height: calc(100vh - var(--header-h)); background: #ffffff; }
+    .leaflet-container { background: #ffffff !important; }
+    /* Subtle drop-shadow on every sprite so buildings and willows feel
+       grounded on the painted meadow rather than floating. Offset down-right
+       matches the sprite's own isometric light source. */
+    .sprite-overlay {
+      pointer-events: none; image-rendering: auto; transition: opacity 0.15s;
+      filter: drop-shadow(3px 5px 2px rgba(30, 24, 14, 0.25));
+    }
+    .sprite-overlay.sepia {
+      filter: sepia(0.25) brightness(0.96) contrast(0.98)
+              drop-shadow(3px 5px 2px rgba(30, 24, 14, 0.25));
+    }
+  </style>
+
+  <script
+    define:vars={{ boundary, brook, greens, families, areas, mousesweet, roads }}
+    is:inline
+  >
+    const map = L.map('map', {
+      minZoom: 15, maxZoom: 21,
+      zoomSnap: 0.25, zoomDelta: 0.25,
+      // Disable zoom animation — the leaflet-zoom-animated class Leaflet adds
+      // to imageOverlay img elements puts them in a separate compositor layer
+      // that CDP Page.captureScreenshot misses on macOS. Also plays nicer with
+      // headless capture in general.
+      zoomAnimation: false,
+      fadeAnimation: false,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 21,
+    }).addTo(map);
+
+    // Painterly warm green groundplane inside the boundary. The Stitch target
+    // image has meadow-green grass under every building — flat map tiles
+    // (even sepia'd) break the storybook feel. Layer order:
+    //   1. solid warm green base fills the boundary (masks tiles inside)
+    //   2. 4 irregular patchwork blobs in darker/lighter greens give texture
+    //   3. area polygons (cultivated plots) still render on top for variation
+    //   4. outer ring fills the rest of the world white so tiles disappear
+    L.polygon(boundary, {
+      color: 'none', fillColor: '#8cb459', fillOpacity: 1.0, interactive: false,
+    }).addTo(map);
+
+    // Patchwork blobs — irregular polygons hand-positioned across the hamlet.
+    // Each shifts the underlying meadow green slightly warmer or cooler so the
+    // groundplane stops reading as a single flat colour.
+    const patchwork = [
+      { color: '#7e9a4f', opacity: 0.55, points: [
+        [52.4780, -2.0960], [52.4782, -2.0950], [52.4779, -2.0942],
+        [52.4774, -2.0946], [52.4772, -2.0955], [52.4776, -2.0962],
+      ]},
+      { color: '#d1df92', opacity: 0.55, points: [
+        [52.4766, -2.0948], [52.4770, -2.0940], [52.4768, -2.0930],
+        [52.4762, -2.0928], [52.4758, -2.0935], [52.4761, -2.0945],
+      ]},
+      { color: '#6f8945', opacity: 0.55, points: [
+        [52.4758, -2.0925], [52.4762, -2.0915], [52.4758, -2.0905],
+        [52.4752, -2.0910], [52.4750, -2.0920],
+      ]},
+      { color: '#c2d378', opacity: 0.55, points: [
+        [52.4752, -2.0948], [52.4755, -2.0938], [52.4751, -2.0928],
+        [52.4746, -2.0932], [52.4747, -2.0945],
+      ]},
+      { color: '#8aa558', opacity: 0.50, points: [
+        [52.4772, -2.0925], [52.4776, -2.0918], [52.4772, -2.0912],
+        [52.4765, -2.0918], [52.4768, -2.0926],
+      ]},
+    ];
+    patchwork.forEach((p) => L.polygon(p.points, {
+      color: 'none', fillColor: p.color, fillOpacity: p.opacity, interactive: false,
+    }).addTo(map));
+
+    // Areas (cultivated plots, nature reserve, etc.) — at production opacity
+    // they mask the new painterly green groundplane. Here we keep them as
+    // subtle tinted overlays so the plots are hinted but the meadow colour
+    // still reads through.
+    areas.forEach((a) => L.polygon(a.polygon, {
+      fillColor: a.fill, fillOpacity: Math.min(a.opacity, 0.18),
+      color: a.border, weight: 0.8, opacity: 0.45,
+      fillRule: 'nonzero', interactive: false,
+    }).addTo(map));
+
+    // Black Brook — drawn BEFORE the outer white mask so portions that leave
+    // the hamlet boundary are cleanly hidden. Five stacked polylines: two
+    // wide soft-green riverside bands then the triple-line blue water ribbon.
+    // Using the full brook polyline (no manual clipping needed).
+    L.polyline(brook, {
+      color: '#8fb06a', weight: 36, opacity: 0.60, interactive: false, lineCap: 'round', lineJoin: 'round',
+    }).addTo(map);
+    L.polyline(brook, {
+      color: '#a9c480', weight: 22, opacity: 0.65, interactive: false, lineCap: 'round', lineJoin: 'round',
+    }).addTo(map);
+    [[12, 0.70, '#4a90d9'], [6.5, 0.92, '#3d7cbd'], [2.4, 0.95, '#c8eaf8']]
+      .forEach(([w, o, c]) => L.polyline(brook, {
+        color: c, weight: w, opacity: o, interactive: false, lineCap: 'round', lineJoin: 'round',
+      }).addTo(map));
+
+    const outerRing = [[-90, -180], [-90, 180], [90, 180], [90, -180]];
+    L.polygon([outerRing, boundary], {
+      color: 'none', fillColor: '#ffffff', fillOpacity: 1.0, interactive: false,
+    }).addTo(map);
+    // Boundary stroke removed — at this zoom it reads too admin/cartographic
+    // against the painterly hamlet. The green-to-white transition alone is
+    // enough to separate the hamlet from the outside world.
+
+    map.setView([52.4757932163071, -2.0936364426410514], 18.25);
+
+    // Greens.
+    greens.forEach((g) => L.polygon(g.polygon, {
+      color: '#5a8a3c', weight: 1.5, fillColor: '#8db86a', fillOpacity: 0.55,
+    }).addTo(map));
+
+    // Roads — painterly dirt paths matching the Stitch reference. Three
+    // stacked strokes: (1) darker brown "trampled grass" edge blending with
+    // the meadow, (2) warm earthy dirt body, (3) lighter cream walked strip.
+    // Drawn after polygons + sprites so the path sits on top of the
+    // groundplane but under buildings.
+    function drawRoads() {
+      roads.forEach((r) => {
+        L.polyline(r.polyline, { color: '#7a6040', weight: 9, opacity: 0.55, interactive: false, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+        L.polyline(r.polyline, { color: '#b5884c', weight: 6, opacity: 0.85, interactive: false, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+        L.polyline(r.polyline, { color: '#e8d69a', weight: 2.5, opacity: 0.9, interactive: false, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+      });
+    }
+
+    // ── DivOverlay — a background-image <div> replacement for L.imageOverlay.
+    // Leaflet's default uses an <img> element; those render fine in real
+    // browsers but are missed by headless CDP Page.captureScreenshot on macOS.
+    // A plain <div> with CSS background-image captures reliably and positions
+    // identically. No visual difference in the real browser.
+    const DivOverlay = L.Layer.extend({
+      initialize(url, bounds, opts) {
+        this._url = url;
+        this._bounds = L.latLngBounds(bounds);
+        L.setOptions(this, opts);
+      },
+      onAdd(map) {
+        this._map = map;
+        const cls = 'sprite-overlay' + (this.options.className ? ' ' + this.options.className : '');
+        this._div = L.DomUtil.create('div', cls);
+        // z-index:500 sits the sprite above the default overlay pane (400) so
+        // SVG polygons below act as grounding shadows. Without this, headless
+        // Chromium renders the div into a compositor layer that doesn't
+        // appear in CDP screenshots, even when the real browser shows it fine.
+        this._div.style.cssText = `position:absolute;z-index:500;background-image:url('${this._url}');background-size:100% 100%;background-repeat:no-repeat;pointer-events:none;`;
+        map.getPanes().overlayPane.appendChild(this._div);
+        map.on('zoomend moveend viewreset', this._reset, this);
+        this._reset();
+      },
+      onRemove(map) {
+        if (this._div) L.DomUtil.remove(this._div);
+        map.off('zoomend moveend viewreset', this._reset, this);
+      },
+      _reset() {
+        const tl = this._map.latLngToLayerPoint(this._bounds.getNorthWest());
+        const br = this._map.latLngToLayerPoint(this._bounds.getSouthEast());
+        this._div.style.left = tl.x + 'px';
+        this._div.style.top = tl.y + 'px';
+        this._div.style.width = (br.x - tl.x) + 'px';
+        this._div.style.height = (br.y - tl.y) + 'px';
+      },
+    });
+
+    // ── Sprite catalogues ───────────────────────────────────────────────
+    // Two sets for A/B comparison: Nano Banana Pro (first-pass baseline) and
+    // GPT Image 2 (tighter tilt-shift render, regenerated for hero sprites).
+    // Small cottage and chapel have no GI2 variant yet — GI2 set falls back
+    // to the nb2-pro assets so the village still fills out.
+    // Intrinsic footprints: w/h in meters, tuned so sprite roofs sit over the
+    // real OSM polygons at zoom 18.25. Squatter sprites (terrace, lshape) have
+    // a larger w:h ratio to match their wider-than-tall real shapes.
+    const SPRITES_SETS = {
+      nb2pro: {
+        'cottage-small':   { url: '/spike-sprites/05-cottage-small-v2-nb2pro-keyed.png',  w: 11, h: 12 },
+        'cottage-master':  { url: '/spike-sprites/01-cottage-master-v3-nb2pro-keyed.png', w: 14, h: 13 },
+        'cottage-terrace': { url: '/spike-sprites/10-cottage-terrace-v1-nb2pro-keyed.png', w: 15, h: 13 },
+        'cottage-lshape':  { url: '/spike-sprites/11-cottage-lshape-v1-nb2pro-keyed.png', w: 16, h: 13 },
+        'cottage-large':   { url: '/spike-sprites/06-cottage-large-v1-keyed.png',         w: 14, h: 17 },
+        'forge':           { url: '/spike-sprites/02-forge-v3-nb2pro-keyed.png',         w: 15, h: 14 },
+        'chapel':          { url: '/spike-sprites/07-chapel-v1-keyed.png',                w: 18, h: 19 },
+      },
+      gi2: {
+        'cottage-small':   { url: '/spike-sprites/05-cottage-small-v1-keyed.png',             w: 11, h: 15 },
+        'cottage-master':  { url: '/spike-sprites/01-cottage-master-v2-gi2-keyed.png',        w: 12, h: 17 },
+        'cottage-terrace': { url: '/spike-sprites/10-cottage-terrace-v1-nb2pro-keyed.png',    w: 15, h: 13 },
+        'cottage-lshape':  { url: '/spike-sprites/11-cottage-lshape-v1-nb2pro-keyed.png',     w: 16, h: 13 },
+        'cottage-large':   { url: '/spike-sprites/06-cottage-large-v2-gi2-keyed.png',         w: 14, h: 17 },
+        'forge':           { url: '/spike-sprites/02-forge-v2-gi2-keyed.png',                 w: 14, h: 16 },
+        'chapel':          { url: '/spike-sprites/07-chapel-v1-keyed.png',                    w: 18, h: 19 },
+      },
+    };
+    let SPRITES = SPRITES_SETS.nb2pro;
+
+    // Coarse demo mapping: family → sprite type. Founder gets the prosperous
+    // double-fronted cottage. Chainmaker families (Billingham, Weaver) get
+    // forges mixed in. The rest cycle through four cottage variants by
+    // household number so neighbours don't look identical.
+    function spriteKeyFor(h) {
+      if (h.founder) return 'cottage-large';
+      if (h.family === 'Billingham' && h.number % 2 === 0) return 'forge';
+      if (h.family === 'Weaver' && h.number % 3 === 0) return 'forge';
+      const variants = ['cottage-master', 'cottage-terrace', 'cottage-lshape', 'cottage-small'];
+      return variants[h.number % variants.length];
+    }
+
+    // ── Leaflet layer groups for toggles ──────────────────────────────
+    // Initial visibility matches the checkbox state in the header, so
+    // unchecked defaults (Polygons) don't briefly render on first paint.
+    const spriteLayer = L.layerGroup();
+    const polygonLayer = L.layerGroup();
+    if (document.getElementById('show-sprites').checked) spriteLayer.addTo(map);
+    if (document.getElementById('show-polygons').checked) polygonLayer.addTo(map);
+
+    // ── Math helpers ───────────────────────────────────────────────────
+    // Convert meters to lat/lng degrees at a given latitude.
+    const M_PER_DEG_LAT = 111320;
+    function metersToLat(m) { return m / M_PER_DEG_LAT; }
+    function metersToLng(m, lat) {
+      return m / (M_PER_DEG_LAT * Math.cos(lat * Math.PI / 180));
+    }
+
+    function polygonCentroid(poly) {
+      let sLat = 0, sLng = 0;
+      poly.forEach(([lat, lng]) => { sLat += lat; sLng += lng; });
+      return { lat: sLat / poly.length, lng: sLng / poly.length };
+    }
+
+    function polygonBBox(poly) {
+      let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+      poly.forEach(([lat, lng]) => {
+        minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
+        minLng = Math.min(minLng, lng); maxLng = Math.max(maxLng, lng);
+      });
+      return { minLat, maxLat, minLng, maxLng };
+    }
+
+    // Global scale multiplier (user-adjustable).
+    let scaleFactor = 0.9;
+
+    // Build one sprite imageOverlay over a household polygon.
+    // Anchoring strategy: sprite bottom = polygon south edge + small offset,
+    // centered on polygon centroid's lng. Size = sprite intrinsic * scale.
+    // Sprite extends northward (upward on screen) to show building height.
+    function buildSprite(h, sprite) {
+      const centroid = polygonCentroid(h.polygon);
+      const bbox = polygonBBox(h.polygon);
+
+      const widthM = sprite.w * scaleFactor;
+      const heightM = sprite.h * scaleFactor;
+
+      const halfW = metersToLng(widthM / 2, centroid.lat);
+      const heightDeg = metersToLat(heightM);
+
+      // Sprite bottom anchors to the polygon's south edge + tiny overlap down
+      // so the building visually sits on the ground plane, not floating.
+      const southLat = bbox.minLat - metersToLat(0.5);
+      const northLat = southLat + heightDeg;
+      const westLng = centroid.lng - halfW;
+      const eastLng = centroid.lng + halfW;
+
+      const bounds = [[southLat, westLng], [northLat, eastLng]];
+      const overlay = new DivOverlay(sprite.url, bounds, {
+        className: document.getElementById('sepia-sprites').checked ? 'sepia' : '',
+      });
+      return overlay;
+    }
+
+    // Ray-casting point-in-polygon for filtering willow positions to the
+    // hamlet interior. `poly` is an array of [lat, lng].
+    function pointInPolygon(lat, lng, poly) {
+      let inside = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const [latI, lngI] = poly[i];
+        const [latJ, lngJ] = poly[j];
+        const intersect = ((lngI > lng) !== (lngJ > lng)) &&
+          (lat < (latJ - latI) * (lng - lngI) / (lngJ - lngI) + latI);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    // Landscape sprites — willows scattered inside the hamlet in open spots
+    // between households. Hand-picked positions from eyeballing the polygon
+    // layout; also clamped to the boundary so edge cases can't escape.
+    const WILLOW = { url: '/spike-sprites/03-willows-v1-keyed.png', w: 10, h: 9 };
+    const WILLOW_CANDIDATES = [
+      // Riverside (west edge, along the Black Brook corridor)
+      { lat: 52.4780, lng: -2.0958 },
+      { lat: 52.4775, lng: -2.0957 },
+      { lat: 52.4771, lng: -2.0958 },
+      { lat: 52.4766, lng: -2.0955 },
+      { lat: 52.4761, lng: -2.0952 },
+      { lat: 52.4756, lng: -2.0948 },
+      { lat: 52.4751, lng: -2.0945 },
+      // Hamlet interior — open spots between household clusters
+      { lat: 52.4770, lng: -2.0947 },
+      { lat: 52.4764, lng: -2.0943 },
+      { lat: 52.4758, lng: -2.0938 },
+      { lat: 52.4754, lng: -2.0933 },
+      { lat: 52.4763, lng: -2.0928 },
+      { lat: 52.4768, lng: -2.0935 },
+      { lat: 52.4759, lng: -2.0922 },
+      { lat: 52.4767, lng: -2.0920 },
+      // South open ground (Saltwells edge)
+      { lat: 52.4750, lng: -2.0930 },
+      { lat: 52.4747, lng: -2.0938 },
+    ];
+    function willowAnchors() {
+      return WILLOW_CANDIDATES.filter((p) => pointInPolygon(p.lat, p.lng, boundary));
+    }
+
+    function buildLandscape(pos, sprite) {
+      const widthM = sprite.w * Math.max(scaleFactor, 0.8);
+      const heightM = sprite.h * Math.max(scaleFactor, 0.8);
+      const halfW = metersToLng(widthM / 2, pos.lat);
+      const heightDeg = metersToLat(heightM);
+      const southLat = pos.lat - metersToLat(0.5);
+      const northLat = southLat + heightDeg;
+      const westLng = pos.lng - halfW;
+      const eastLng = pos.lng + halfW;
+      return new DivOverlay(sprite.url, [[southLat, westLng], [northLat, eastLng]], {
+        className: document.getElementById('sepia-sprites').checked ? 'sepia' : '',
+      });
+    }
+
+    // ── Render ─────────────────────────────────────────────────────────
+    let currentHouseholds = [];
+
+    function render() {
+      spriteLayer.clearLayers();
+      polygonLayer.clearLayers();
+
+      // Polygons draw in original order — they sit under everything.
+      currentHouseholds.forEach((h) => {
+        const isFounder = !!h.founder;
+        const swatch = isFounder ? families.Founder : (families[h.family] ?? families.Other);
+        const poly = L.polygon(h.polygon, {
+          fillColor: swatch.fill,
+          fillOpacity: isFounder ? 0.55 : 0.32,
+          color: swatch.border,
+          weight: isFounder ? 2 : 1,
+          interactive: false,
+        });
+        polygonLayer.addLayer(poly);
+      });
+
+      // Sprites painter's-algorithm: sort buildings AND landscape by anchor
+      // latitude DESCENDING so northernmost (furthest back) is added first and
+      // southernmost (closest to the viewer) is added last. Willows and
+      // buildings interleave correctly so a willow in front of a cottage
+      // paints on top of it, and a willow behind paints behind.
+      const buildingItems = currentHouseholds
+        .map((h) => {
+          const key = spriteKeyFor(h);
+          const sprite = SPRITES[key];
+          if (!sprite) return null;
+          return { kind: 'b', h, sprite, sortLat: polygonBBox(h.polygon).minLat };
+        })
+        .filter(Boolean);
+
+      const landscapeItems = willowAnchors().map((pos) => ({
+        kind: 'l', pos, sprite: WILLOW, sortLat: pos.lat - metersToLat(0.5),
+      }));
+
+      const ordered = [...buildingItems, ...landscapeItems]
+        .sort((a, b) => b.sortLat - a.sortLat);
+
+      ordered.forEach((item) => {
+        if (item.kind === 'b') {
+          spriteLayer.addLayer(buildSprite(item.h, item.sprite));
+        } else {
+          spriteLayer.addLayer(buildLandscape(item.pos, item.sprite));
+        }
+      });
+      // No chapel — Mushroom Green was a hamlet, not a chapel site. Sprite
+      // kept in the catalogue for future use on a larger settlement.
+    }
+
+    // ── Wire up toggles ────────────────────────────────────────────────
+    document.getElementById('show-sprites').addEventListener('change', (e) => {
+      if (e.target.checked) spriteLayer.addTo(map); else map.removeLayer(spriteLayer);
+    });
+    document.getElementById('show-polygons').addEventListener('change', (e) => {
+      if (e.target.checked) polygonLayer.addTo(map); else map.removeLayer(polygonLayer);
+    });
+    document.getElementById('sepia-sprites').addEventListener('change', (e) => {
+      document.querySelectorAll('.sprite-overlay').forEach((el) => {
+        if (e.target.checked) el.classList.add('sepia'); else el.classList.remove('sepia');
+      });
+    });
+    document.getElementById('sprite-set').addEventListener('change', (e) => {
+      SPRITES = SPRITES_SETS[e.target.value] ?? SPRITES_SETS.gi2;
+      render();
+    });
+    const scaleSlider = document.getElementById('scale');
+    const scaleVal = document.getElementById('scale-val');
+    scaleSlider.addEventListener('input', (e) => {
+      scaleFactor = parseFloat(e.target.value);
+      scaleVal.textContent = scaleFactor.toFixed(1) + '×';
+      render();
+    });
+
+    // ── Fetch and render ───────────────────────────────────────────────
+    fetch('/households.json')
+      .then((r) => r.json())
+      .then((households) => {
+        currentHouseholds = households;
+        render();
+        drawRoads();
+      })
+      .catch((err) => console.error('failed to load households.json', err));
+
+    // Mild sepia on the basemap tiles — same as production.
+    map.whenReady(() => {
+      const tilePane = document.querySelector('.leaflet-tile-pane');
+      if (tilePane) tilePane.style.filter = 'sepia(0.2) brightness(0.98) contrast(0.97)';
+    });
+  </script>
+</BaseLayout>

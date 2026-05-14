@@ -1,0 +1,97 @@
+{
+  "camera": {
+    "desktop": { "minWidth": 1040, "minHeight": 720, "offsetX": 20, "offsetY": 395, "minZoom": 0.74, "maxZoom": 1.55 },
+    "editor": { "minWidth": 1120, "minHeight": 760, "offsetX": -220, "offsetY": 380, "minZoom": 0.62, "maxZoom": 1.55 },
+    "mobile": { "minWidth": 920, "minHeight": 940, "offsetX": -80, "offsetY": 545, "minZoom": 0.48, "maxZoom": 1.4 }
+  },
+  "water": {
+    "step": 2,
+    "scale": 0.26,
+    "curveEvery": 8,
+    "depthOffset": -18,
+    "alpha": 0.94,
+    "accents": [
+      { "index": 19, "keyIndex": 3, "scale": 0.38, "angle": -4, "alpha": 1 },
+      { "index": 12, "keyIndex": 2, "scale": 0.18, "angle": 0, "alpha": 0.78 },
+      { "index": 27, "keyIndex": 2, "scale": 0.18, "angle": 0, "alpha": 0.78 },
+      { "index": 39, "keyIndex": 2, "scale": 0.18, "angle": 0, "alpha": 0.78 }
+    ]
+  },
+  "roads": {
+    "sprite": "17-muddy-track-straight-imagegen",
+    "curveSprite": "17-muddy-track-bend-imagegen",
+    "forkSprite": "17-muddy-track-fork-imagegen",
+    "step": 2,
+    "scale": 0.18,
+    "alpha": 0.52,
+    "drawnAlpha": 0.28,
+    "depthOffset": -34
+  },
+  "tiles": {
+    "enabled": true,
+    "shape": "hex",
+    "width": 156,
+    "height": 92,
+    "radiusM": 9,
+    "alpha": 0.22,
+    "lineAlpha": 0.24,
+    "lineWidth": 1.35,
+    "colorA": "#a7bf72",
+    "colorB": "#9fb66b",
+    "lineColor": "#6f8d49",
+    "snapClusters": true,
+    "snapInfill": true
+  },
+  "hamletInfill": {
+    "enabled": true,
+    "maxPerCluster": 5,
+    "radiusX": 112,
+    "radiusY": 48,
+    "scale": 0.12,
+    "alpha": 0.96,
+    "depthOffset": 74
+  },
+  "vegetation": [
+    { "id": "willow-brook-01", "key": "14-willow-single-v1-nb2pro", "latLng": [52.47564, -2.09464], "scale": 0.17, "alpha": 0.86, "flipX": true },
+    { "id": "willow-brook-02", "key": "14-willow-single-v1-nb2pro", "latLng": [52.47534, -2.09454], "scale": 0.16, "alpha": 0.84 },
+    { "id": "willow-brook-03", "key": "14-willow-single-v1-nb2pro", "latLng": [52.4750, -2.09438], "scale": 0.15, "alpha": 0.82, "flipX": true },
+    { "id": "willow-south-bank", "key": "14-willow-single-v1-nb2pro", "latLng": [52.47482, -2.09402], "scale": 0.16, "alpha": 0.82 },
+    { "id": "willow-east-yard", "key": "14-willow-single-v1-nb2pro", "latLng": [52.4761, -2.09324], "scale": 0.15, "alpha": 0.78, "flipX": true },
+    { "id": "scrub-yard-01", "key": "17-scrubby-hedge-imagegen", "latLng": [52.4759, -2.0941], "scale": 0.2, "angle": -18, "alpha": 0.78, "depthOffset": 8 },
+    { "id": "scrub-road-01", "key": "17-scrubby-hedge-imagegen", "latLng": [52.4752, -2.0932], "scale": 0.18, "angle": 20, "alpha": 0.72, "depthOffset": 8 },
+    { "id": "scrub-east-01", "key": "17-scrubby-hedge-imagegen", "latLng": [52.47605, -2.0929], "scale": 0.17, "angle": 8, "alpha": 0.72, "depthOffset": 8 },
+    { "id": "scrub-brook-bank-01", "key": "17-scrubby-hedge-imagegen", "latLng": [52.47552, -2.09458], "scale": 0.14, "angle": 24, "alpha": 0.66, "depthOffset": 8 },
+    { "id": "scrub-brook-bank-02", "key": "17-scrubby-hedge-imagegen", "latLng": [52.4751, -2.09424], "scale": 0.13, "angle": -16, "alpha": 0.62, "depthOffset": 8, "flipX": true }
+  ],
+  "props": [
+    { "id": "brook-visible-west-01", "key": "17-blue-stream-curve-imagegen", "latLng": [52.47603, -2.09476], "scale": 0.24, "angle": 21, "alpha": 0.9, "depthOffset": -42, "motion": "water" },
+    { "id": "brook-visible-west-02", "key": "17-blue-stream-straight-imagegen", "latLng": [52.47574, -2.09462], "scale": 0.23, "angle": 22, "alpha": 0.88, "depthOffset": -42, "motion": "water" },
+    { "id": "brook-visible-south-01", "key": "17-blue-pool-ripple-imagegen", "latLng": [52.47518, -2.09448], "scale": 0.28, "angle": -4, "alpha": 0.86, "depthOffset": -42, "motion": "water" },
+    { "id": "brook-glimpse-forge", "key": "17-blue-stream-curve-imagegen", "latLng": [52.47532, -2.09418], "scale": 0.22, "angle": 22, "alpha": 0.84, "depthOffset": -42, "motion": "water", "flipX": true },
+    { "id": "brook-glimpse-centre", "key": "17-blue-stream-straight-imagegen", "latLng": [52.47554, -2.09433], "scale": 0.2, "angle": 22, "alpha": 0.76, "depthOffset": -42, "motion": "water" },
+    { "id": "brook-bank-ripple", "key": "17-blue-pool-ripple-imagegen", "latLng": [52.4754, -2.09434], "scale": 0.18, "angle": 8, "alpha": 0.66, "depthOffset": -43, "motion": "water" },
+    { "id": "brook-footbridge-west", "key": "17-wood-footbridge-imagegen", "latLng": [52.47568, -2.09486], "scale": 0.22, "angle": 20, "alpha": 0.96, "depthOffset": 10 },
+    { "id": "muddy-lane-west", "key": "17-muddy-track-bend-imagegen", "latLng": [52.4752, -2.0945], "scale": 0.24, "angle": -18, "alpha": 0.66, "depthOffset": -35 },
+    { "id": "muddy-lane-east", "key": "17-muddy-track-fork-imagegen", "latLng": [52.4757, -2.0935], "scale": 0.22, "angle": 11, "alpha": 0.56, "depthOffset": -35 },
+    { "id": "muddy-lane-forge-approach", "key": "17-muddy-track-straight-imagegen", "latLng": [52.47534, -2.09362], "scale": 0.24, "angle": 11, "alpha": 0.62, "depthOffset": -35 },
+    { "id": "muddy-lane-brook-crossing", "key": "17-muddy-track-bend-imagegen", "latLng": [52.47542, -2.09428], "scale": 0.2, "angle": 24, "alpha": 0.5, "depthOffset": -35, "flipX": true },
+    { "id": "muddy-yard-forge", "key": "17-soot-yard-patch-imagegen", "latLng": [52.47503, -2.09302], "scale": 0.28, "angle": -7, "alpha": 0.56, "depthOffset": -45 },
+    { "id": "muddy-yard-forge-west", "key": "17-soot-yard-patch-imagegen", "latLng": [52.47525, -2.09342], "scale": 0.23, "angle": 14, "alpha": 0.48, "depthOffset": -46, "flipX": true },
+    { "id": "cobbled-yard-main", "key": "17-cobbled-yard-patch-imagegen", "latLng": [52.47558, -2.09355], "scale": 0.24, "angle": 12, "alpha": 0.52, "depthOffset": -45 },
+    { "id": "coal-pile-forge", "key": "17-coal-pile-imagegen", "latLng": [52.47513, -2.09311], "scale": 0.2, "angle": -12, "alpha": 0.92, "depthOffset": 22 },
+    { "id": "coal-pile-forge-bank", "key": "17-coal-pile-imagegen", "latLng": [52.47536, -2.09378], "scale": 0.16, "angle": 18, "alpha": 0.82, "depthOffset": 20, "flipX": true },
+    { "id": "cart-yard", "key": "17-wood-handcart-imagegen", "latLng": [52.47542, -2.09402], "scale": 0.18, "angle": 28, "alpha": 0.9, "depthOffset": 20 },
+    { "id": "cart-yard-small", "key": "17-wood-handcart-imagegen", "latLng": [52.47558, -2.0938], "scale": 0.14, "angle": -16, "alpha": 0.78, "depthOffset": 18, "flipX": true },
+    { "id": "barrels-workshop", "key": "17-barrels-crates-imagegen", "latLng": [52.47582, -2.09318], "scale": 0.17, "angle": -8, "alpha": 0.9, "depthOffset": 18 },
+    { "id": "barrels-bank", "key": "17-barrels-crates-imagegen", "latLng": [52.4755, -2.09408], "scale": 0.14, "angle": 12, "alpha": 0.78, "depthOffset": 16, "flipX": true },
+    { "id": "broken-fence-south", "key": "17-broken-fence-imagegen", "latLng": [52.47498, -2.09372], "scale": 0.2, "angle": 18, "alpha": 0.8, "depthOffset": 8 },
+    { "id": "broken-fence-brook", "key": "17-broken-fence-imagegen", "latLng": [52.47542, -2.09452], "scale": 0.18, "angle": -20, "alpha": 0.72, "depthOffset": 8, "flipX": true },
+    { "id": "puddle-road", "key": "17-muddy-puddle-imagegen", "latLng": [52.47534, -2.09422], "scale": 0.19, "angle": 0, "alpha": 0.66, "depthOffset": -42 },
+    { "id": "puddle-forge-yard", "key": "17-muddy-puddle-imagegen", "latLng": [52.47518, -2.0936], "scale": 0.15, "angle": 12, "alpha": 0.5, "depthOffset": -42 },
+    { "id": "hedge-west", "key": "08-hedge-v1", "latLng": [52.4762, -2.0947], "scale": 0.16, "angle": -26, "alpha": 0.72, "depthOffset": -28 },
+    { "id": "hedge-east", "key": "08-hedge-v1", "latLng": [52.4754, -2.0929], "scale": 0.15, "angle": 18, "alpha": 0.62, "depthOffset": -28 }
+  ],
+  "labels": [
+    { "id": "black-brook-forge", "text": "Black Brook", "latLng": [52.4751, -2.09472], "angle": 22 }
+  ]
+}

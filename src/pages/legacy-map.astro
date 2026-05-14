@@ -1,0 +1,115 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import VillageMap from '../components/VillageMap.astro';
+import VictorianBorder from '../components/VictorianBorder.astro';
+import VictorianTitleCartouche from '../components/VictorianTitleCartouche.astro';
+import ScaleOfChains from '../components/ScaleOfChains.astro';
+import SurveyedBy from '../components/SurveyedBy.astro';
+import families from '../data/families.json';
+
+const legendFamilies: Array<{ key: keyof typeof families; label: string; textColor?: string }> = [
+  { key: 'Founder', label: '\u2605 Founder' },
+  { key: 'Weaver', label: 'Weaver' },
+  { key: 'Billingham', label: 'Billingham' },
+  { key: 'Hancox', label: 'Hancox' },
+  { key: 'Dimmock', label: 'Dimmock' },
+  { key: 'Griffiths', label: 'Griffiths' },
+  { key: 'Nicklin', label: 'Nicklin' },
+  { key: 'Pearson', label: 'Pearson' },
+  { key: 'Sidaway', label: 'Sidaway' },
+  { key: 'Kendrick', label: 'Kendrick' },
+  { key: 'Other', label: 'Other', textColor: '#e8e0cc' },
+];
+---
+
+<BaseLayout title="Mushroom Green — 1865 Occupants Legacy Map">
+  <div id="header">
+    <div>
+      <h1>Mushroom Green &mdash; 1865 Occupants</h1>
+      <p>Legacy Leaflet map &middot; <a href="/">Return to sprite map</a></p>
+    </div>
+    <div id="legend">
+      {legendFamilies.map(({ key, label, textColor }) => {
+        const swatch = families[key];
+        const borderWidth = key === 'Founder' ? 2 : key === 'Other' ? 1 : 1.5;
+        return (
+          <div class="li">
+            <div class="lb" style={`background:${swatch.fill};border:${borderWidth}px solid ${swatch.border};`}></div>
+            <span style={`color:${textColor ?? swatch.fill}`}>{label}</span>
+          </div>
+        );
+      })}
+      <div class="li">
+        <div class="lbd"></div>
+        <span style="color:#c8a87a">Boundary</span>
+      </div>
+    </div>
+  </div>
+  <VillageMap />
+  <VictorianBorder />
+  <VictorianTitleCartouche />
+  <ScaleOfChains />
+  <SurveyedBy />
+</BaseLayout>
+
+<style>
+  #header {
+    background: #2c1810;
+    color: #f5e6c8;
+    padding: 12px 16px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #803303;
+  }
+
+  #header h1 {
+    font-size: 1.2em;
+    letter-spacing: 0.03em;
+  }
+
+  #header p {
+    font-size: 0.8em;
+    color: #c8a87a;
+    margin-top: 1px;
+  }
+
+  #header a {
+    color: #f5e6c8;
+  }
+
+  :global(#map) {
+    height: calc(100vh - 72px);
+  }
+
+  #legend {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.7em;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 55%;
+  }
+
+  .li {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .lb {
+    width: 13px;
+    height: 9px;
+    border-radius: 2px;
+  }
+
+  .lbd {
+    width: 13px;
+    height: 9px;
+    border-radius: 2px;
+    border: 2px dashed #803303;
+  }
+</style>
