@@ -30,6 +30,12 @@ Quick-reference notes Claude should internalize on every session start. Update w
 
 ## Patterns that work
 
+- The `/forge` study uses Python → Blender → GLB → Three.js. Run `npm run forge:model` to regenerate and validate. The original map routes stay independent.
+- Blender 5.2 can crash at startup inside the restricted sandbox on this host. An approved external run works. The `game-dev` CLI is not installed; validate GLB with `scripts/forge/optimize.mjs`.
+- `sips` converted these HEIC references to black pixels. `pillow-heif` decoded the originals correctly. Always inspect converted pixels before using them.
+- Three.js r186 removes `PCFSoftShadowMap`; use `PCFShadowMap`. GTAOPass treats sprites as opaque in its normal pass. Keep smoke on layer 1 and use a layer-0 camera for AO.
+- Meshopt quantization can add translations to glTF nodes. Preserve roof mesh base positions before animating them.
+
 - Slug derivation (`src/lib/slug.ts`): split on `/` first, then per-side tokenize. Drop secondary first names by hardcoded set ({mariah, isaac}) — there are only two compound households so a regex isn't worth it. "wm" is dropped wherever it appears (non-distinguishing). Other abbreviations (sml, jos, thos, geo, jas, amb, benj) are kept because they uniquely identify a primary household entry and there's no clean way to distinguish them from real first names.
 - Node 22 can `import` `.ts` files directly with `--input-type=module` — useful for one-shot verification scripts without spinning up a test runner.
 - `npx astro check` requires `@astrojs/check` — install non-interactively with `npm install --no-save @astrojs/check` (the interactive prompt is shell-bound and won't auto-confirm).
@@ -38,3 +44,42 @@ Quick-reference notes Claude should internalize on every session start. Update w
 - Astro scopes class names with `data-astro-cid-*` attributes per component. To override a child component's element (e.g. VillageMap's `#map` height) without editing it, use `:global(#selector)` in the parent's `<style>` block — same pattern the existing print CSS uses.
 - Multi-ring decorative borders (the title cartouche + outer frame) are built with a single layered `box-shadow: inset 0 0 0 Npx COLOR, ...` declaration rather than nested `<div>`s. One element, no DOM bloat, and the rings stay perfectly centred even at fractional pixel widths (e.g. 1.5px, 3.5px from the source).
 - Astro renders `.astro` components statically — for fixed-position decorative chrome there's no need to mirror the legacy file's inline-JS `document.createElement` pattern. Just author the markup in the template and use scoped styles. Legacy did it via JS only because the script was the bootstrapping mechanism for the whole page.
+
+- Blender needs `--python-exit-code 1`: otherwise a Python failure can return success and optimize a stale GLB. Ground changes its material batch key, so optional per-face UV lookup must allow missing keys.
+
+- `/village` uses the original geographic data in local metres, east +X / north -Z, Henry #22 at origin. Building forms and terrain are interpretations. The old `founder-scene.json` forge placement was explicitly fictional; do not present it as surveyed.
+- Dudley Planning Guidance Note 22 describes Mushroom Green’s modest brick/rendered homes and dark clay tiles. The BCLM Chainmaker’s House dates from 1886 and depicts a prosperous 1914 household; it is not the default for 1865 cottages.
+- Three.js village cameras need distance-aware fog and phone-specific framing. Disable controls until async assets and listeners are ready.
+
+- Tom prefers the village to open steeply from above, north-up. Modern chainshop pin: 52.4754217, -2.0931022; suppress cottage mesh #5 but retain its historical household record. The forge’s earlier (-14,43) placement was wrong.
+- Paint lane surfaces before wheel tracks; painting overlapping circles with tracks in one pass makes a repeated scalloped arc pattern. Stream carving and water meshes must share the same rounded source lines.
+- Dwelling character uses a separate household seed in `dwellings.ts`; do not consume the global landscape RNG. Clone materials before per-house changes, and cache joinery separately when doors share oak with structural timber.
+
+- Day 1 comparison views are `/village?view=approach` and `?view=forge`. Yard detail in `showcase.ts` uses its own seed. Keep the ordinary `/village` opening north-up. Tiny grass clumps read better than tall paired triangles at low sun angles.
+
+- The forge entry is the right gable at local X +4.6, not the front open shutter. Local Blender Y maps to negative glTF Z. Aim approach paths at the gable.
+- Transparent yard overlays can hide a puddle unless its renderOrder is greater. Planar reflectors must skip scene.overrideMaterial passes, or an AO/normal render can contaminate their texture.
+- The independent Day 1 gpt-5.6-sol visual gate passed; see artifacts/village/day-1/second-model-review.md. Keep fixed `still=1` comparisons (time=4 seconds) for later art changes.
+
+- Brook water uses metre-based downstream UVs and a local planar reflection. Hide all reflectors during capture to prevent nested reflections. Flow direction follows interpreted terrain fall, not surveyed hydrology.
+- IcosahedronGeometry has duplicate vertices across faces. Use position-based displacement; per-index random displacement opens cracks in stones.
+
+- EA 2022 composite DTM 2 m crop is saved in artifacts/village/terrain. Modern chainshop/Henry ground ~100 m OD; nearby mapped Black Brook ~87 m. Scene extent ~86–111 m. See docs/village/terrain-research.md before replacing the invented baseGround function; historical eastern watercourse diverges from modern low ground.
+
+- Live village now reads terrain-heights.json (4 m grid, Gaussian sigma 6 m, datum 82 m OD). Call prepareGround(homes) before scene geometry. Water and rocks use streamSurface, not baseGround offsets. Ground includes level building/puddle platforms and interpreted downhill channel cuts.
+
+- Weaver reference: IMG_2411 ~2:09–2:19 says bathroom replaced old chainshop site (extension reported 1973). Likely white flat-roof addition at eastern/roadside end in IMG_2412, not wooded garden end. Reported house dates 1896/1926 are oral history, not confirmed. See docs/village/weaver-house-reference.md; do not remove historical #13/#26 from modern canopy evidence.
+
+- Henry’s small shop uses weaverWorkshop(founder): negative local X is the east/roadside gable. It shares the forge asset at .55/.72/.70 scale, with chimney meshes replaced by one stack. Exclude that footprint from fences and woodland.
+
+- Laundry now uses laundry.ts subdivided garment meshes with a shared paused scene clock, woven canvas maps and split pegs. Fixed review URL ?view=washing; its camera must stay inside the yard to avoid the neighbouring house.
+
+- Lane painting must layer the whole network (all verges, then all cores, then tracks). Ground ruts and nearestRoad use rounded routes. Chimneys exist in cottage GLB, lowHouse, dwellings extra stacks, and Henry shop; fix all variants. yard-details.ts batches coal bins for 58 visible homes and Henry’s kitchen beds.
+
+- Footpaths must paint after road shoulders and before wheel tracks. Their flared, feathered mouths remove the dark verge stripe at minor junctions.
+
+- Dense woodland uses a separate seed, green-boundary distance, and oriented house/yard exclusions. Keep Henry’s laundry and vegetable beds clear; protect footpaths and both forges.
+
+- Day 2 keeps tree positions, replaces 20% of crowns with pine/fir sprays from conifers.ts, and records scope in docs/village/day-2-art-direction.md. Puddle reflection shader replacement matches the installed Reflector source.
+
+- Tom requests local commits at suitable checkpoints. Do not push: Netlify is linked and a previous push deployed the wrong version.

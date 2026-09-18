@@ -1,0 +1,24 @@
+{
+  "asset": "mushroom-green-forge",
+  "seed": 1865,
+  "units": "metres",
+  "source": "scripts/forge/build_forge.py",
+  "blender": "5.2.1 LTS",
+  "sha256": "1641b802054dd2e3f0c275615ee736df0b784501c96c525eba614b9cdd54eb2d",
+  "bytes": 11930308,
+  "mesh_batches": 123,
+  "source_vertices": 188154,
+  "reference_photos": [
+    "photos/IMG_7256.HEIC",
+    "photos/IMG_7257.HEIC",
+    "photos/IMG_7258.HEIC",
+    "photos/IMG_4259.HEIC"
+  ],
+  "historical_status": "Interpretive study from present-day photographs; not a surveyed reconstruction of 1865.",
+  "provenance": "Original scripted geometry; no third-party meshes or textures.",
+  "uncompressedBytes": 58288356,
+  "compression": "EXT_meshopt_compression",
+  "triangles": 353296,
+  "meshBatches": 123,
+  "validationErrors": 0
+}

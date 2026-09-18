@@ -1,0 +1,57 @@
+import * as T from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {ground,localPoint,chainshopReplacesHouse,type Home} from './layout';
+
+export function addYardDetails(scene:T.Scene,homes:Home[]){
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=128;const ctx=canvas.getContext('2d')!;
+ ctx.fillStyle='#493629';ctx.fillRect(0,0,128,128);
+ for(let i=0;i<3000;i++){const x=(i*73)%128,y=(i*41+Math.floor(i/128)*17)%128;ctx.fillStyle=i%3?'#574333':'#30271f';ctx.fillRect(x,y,1+i%2,1);}
+ const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
+ const soil=new T.MeshStandardMaterial({map:texture,roughness:1});
+ const wood=new T.MeshStandardMaterial({color:'#635342',roughness:1});
+ const coal=new T.MeshStandardMaterial({color:'#242521',roughness:.8});
+ const leaves=['#637445','#7a885a','#50613c'].map(color=>new T.MeshStandardMaterial({color,roughness:1,side:T.DoubleSide}));
+ const buckets=new Map<T.Material,T.BufferGeometry[]>();
+ function put(g:T.BufferGeometry,m:T.Material,h:Home,x:number,y:number,z:number){if(m!==soil)g.deleteAttribute("uv");const p=localPoint(h,x,z);g.rotateY(h.angle);g.translate(p[0],ground(...p)+y,p[1]);const list=buckets.get(m)||[];list.push(g.index?g.toNonIndexed():g);buckets.set(m,list);}
+ function box(h:Home,x:number,y:number,z:number,w:number,d:number,t:number,m:T.Material){put(new T.BoxGeometry(w,d,t),m,h,x,y,z);}
+ let count=0;
+ for(const h of homes){if(h.number===chainshopReplacesHouse)continue;count++;
+  // Low, open timber coal bins sit beside the rear wall, clear of the doorway.
+  const w=[6.4,7.2,9.2][h.style]*h.sx,d=[4.6,4.8,4.5][h.style]*h.sz;
+  const x=h.number===22?2.7:-w*.27,z=-d/2-(h.number===22?1.05:2.9);
+  for(let row=0;row<4;row++){const y=.12+row*.17;box(h,x,y,z-.48,1.5,.15,.085,wood);for(const side of [-1,1])box(h,x+side*.71,y,z,.085,.15,1.04,wood);if(row<2)box(h,x,y,z+.48,1.5,.15,.085,wood);}
+  for(const side of [-1,1])for(const end of [-1,1])box(h,x+side*.67,.37,z+end*.44,.09,.75,.09,wood);
+  box(h,x,.23,z,1.3,.23,.85,coal);
+  for(let i=0;i<45;i++){const u=Math.sin(i*31.7+h.number)*.5+.5,v=Math.sin(i*17.3+h.number*2)*.5+.5;const g=new T.IcosahedronGeometry(.075+(i%4)*.019,0);g.scale(1,.7,1.2);g.rotateY(i*2.3);put(g,coal,h,x+(u-.5)*1.19,.37+.12*(1-Math.abs(u-.5)*2),z+(v-.5)*.75);}
+ }
+ const h=homes.find(h=>h.number===22)!;
+ // Two modest kitchen beds with a clear central footpath and low board edging.
+ for(let bed=0;bed<2;bed++){
+  const x=-4.2+bed*1.65,z=-9.5;
+  box(h,x,.07,z,1.18,.13,2.8,soil);
+  for(const side of [-1,1]){box(h,x+side*.62,.12,z,.065,.23,2.96,wood);box(h,x,.12,z+side*1.45,1.3,.23,.065,wood);}
+  for(let row=0;row<5;row++)for(let col=0;col<2;col++){
+   const px=x+(col-.5)*.52,pz=z+(row-2)*.51;
+   if(bed===0){
+    for(let leaf=0;leaf<7;leaf++){
+     const a=leaf*2.4+row,vertices:number[]=[];
+     const point=(t:number,side:number)=>{const r=.035+t*.21,spread=Math.sin(t*Math.PI)*.105*side;return [Math.cos(a)*r-Math.sin(a)*spread,.11+.17*Math.sin(t*Math.PI*.85),Math.sin(a)*r+Math.cos(a)*spread];};
+     for(let j=0;j<5;j++){const a0=point(j/5,-1),b=point(j/5,1),c=point((j+1)/5,1),d=point((j+1)/5,-1);vertices.push(...a0,...b,...c,...a0,...c,...d);}
+     const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.computeVertexNormals();put(g,leaves[leaf%3],h,px,0,pz);
+    }
+   }else for(let leaf=0;leaf<5;leaf++){
+    const a=leaf*2.4,g=new T.PlaneGeometry(.026,.34,1,3),p=g.attributes.position;
+    for(let i=0;i<p.count;i++){const t=(p.getY(i)+.17)/.34;p.setXYZ(i,p.getX(i)+Math.sin(a)*t*t*.12,t*.34,Math.cos(a)*t*t*.12);}g.computeVertexNormals();put(g,leaves[leaf%3],h,px,.1,pz);
+   }
+  }
+ }
+ for(const [m,parts] of buckets){const g=mergeGeometries(parts);const mesh=new T.Mesh(g,m);mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);parts.forEach(g=>g.dispose());}
+ return count;
+}
+
+export function openStack(root:T.Object3D,x:number,y:number,z:number,w:number,height:number,d:number,m:T.Material){
+ const wall=.105;
+ const add=(a:number,b:number,c:number,px:number,py:number,pz:number,mat=m)=>{const mesh=new T.Mesh(new T.BoxGeometry(a,b,c),mat);mesh.position.set(px,py,pz);mesh.castShadow=mesh.receiveShadow=true;root.add(mesh);};
+ for(const side of [-1,1]){add(wall,height,d,x+side*(w-wall)/2,y,z);add(w-2*wall,height,wall,x,y,z+side*(d-wall)/2);}
+ add(w-2*wall,.025,d-2*wall,x,y+height/2-.45,z,new T.MeshStandardMaterial({color:'#141310',roughness:1}));
+}

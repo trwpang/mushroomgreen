@@ -1,0 +1,31 @@
+{
+  "source": "Environment Agency LIDAR Composite DTM 2m (2022 composite)",
+  "source_page": "https://environment.data.gov.uk/dataset/09ea3b37-df3a-4e8b-ac69-fb0842227b04",
+  "download_date": "2026-09-18",
+  "crs": "EPSG:27700",
+  "units": "metres above Ordnance Datum Newlyn",
+  "bbox": [
+    393300,
+    286000,
+    394200,
+    287000
+  ],
+  "grid_spacing_m": 2,
+  "village_display_ellipse_range_m": [
+    86.0,
+    110.8
+  ],
+  "mapped_household_location_range_m": [
+    95.4,
+    101.8
+  ],
+  "lowest_household": 48,
+  "highest_household": 19,
+  "landmark_heights_m": {
+    "Henry\u2019s mapped home": 100.2,
+    "Chainshop": 100.0,
+    "80 m west of Henry": 88.2,
+    "Black Brook nearest forge": 86.9
+  },
+  "note": "Modern bare-earth heights at historical map coordinates. Not an 1865 survey. Water surfaces and changed ground require historical checks."
+}

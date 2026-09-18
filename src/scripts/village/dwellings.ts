@@ -1,0 +1,79 @@
+import * as T from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import type {Home} from './layout';
+
+// Stable household seeds keep each dwelling recognisable across reloads and LOD changes.
+export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Object3D){
+  let seed=home.number*971+1865;
+  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  const palette=['#ad7961','#9a8776','#c2b79a','#877765','#b59071','#999b83'];
+  const wall=new T.Color(palette[home.number%palette.length]);
+  const roof=new T.Color().setHSL(.06+random()*.06,.12+random()*.18,.47+random()*.22);
+  const door=new T.Color(['#586557','#697473','#71614b','#493e32','#827863'][home.number%5]);
+  const cache=new Map<string,T.Material>();
+  for(const model of [low,high])model.traverse(o=>{
+    if(!(o instanceof T.Mesh))return;
+    const recolour=(source:T.Material)=>{
+      if(!(source instanceof T.MeshStandardMaterial)||/glass/i.test(source.name))return source;
+      const key=source.uuid+(/door|frames/i.test(o.name)?'joinery':'body');
+      if(cache.has(key))return cache.get(key)!;
+      const m=source.clone(),name=source.name+' '+o.name;
+      if(/brick|limewash|wall/i.test(name)){
+        m.color.multiply(wall).multiplyScalar(1.45);
+        if(home.number%5===0&&!/soot/i.test(name))m.color.lerp(new T.Color('#b3ad94'),.68);
+        if(home.number%7===0&&!/soot/i.test(name))m.color.lerp(new T.Color('#86867a'),.6);
+      }
+      else if(/slate|roof/i.test(name)){m.color.multiply(roof).multiplyScalar(1.8);if(home.number%3===0)m.color.multiply(new T.Color('#8caebc'));}
+      else if(/door|frames/i.test(o.name))m.color.copy(door);
+      cache.set(key,m);return m;
+    };
+    o.material=Array.isArray(o.material)?o.material.map(recolour):recolour(o.material);
+  });
+  if(home.number!==22)root.scale.y=.9+random()*.21;
+  const w=[6.4,7.2,9.2][home.style],d=[4.6,4.8,4.5][home.style],e=[2.65,4.45,2.85][home.style];
+  const wood=new T.MeshStandardMaterial({color:door,roughness:1});
+  const masonry=new T.MeshStandardMaterial({color:wall.clone().multiplyScalar(.63),roughness:1});
+  const tile=new T.MeshStandardMaterial({color:roof.clone().multiplyScalar(.48),roughness:1});
+  const lime=new T.MeshStandardMaterial({color:'#a39b80',roughness:1});
+  const soot=new T.MeshStandardMaterial({color:'#484438',roughness:1});
+  const buckets=new Map<T.Material,T.BufferGeometry[]>();
+  const matrix=new T.Matrix4();
+  function box(x:number,y:number,z:number,a:number,b:number,c:number,m:T.Material,tilt=0){
+    matrix.compose(new T.Vector3(x,y,z),new T.Quaternion().setFromEuler(new T.Euler(tilt,0,0)),new T.Vector3(a,b,c));
+    const g=new T.BoxGeometry(1,1,1).toNonIndexed().applyMatrix4(matrix);
+    const list=buckets.get(m)||[];list.push(g);buckets.set(m,list);
+  }
+  // Unequal service additions change the silhouette without enlarging the main map footprint.
+  if(home.number!==22&&home.number%4!==0){
+    const aw=1.8+random()*1.3,ad=1.05+random()*.55,ah=1.45+random()*.5;
+    const x=(random()-.5)*(w-aw),z=-d/2-ad/2+.05;
+    box(x,ah/2,z,aw,ah,ad,home.number%2?wood:masonry);
+    box(x,ah+.09,z,aw+.22,.14,ad+.24,tile,.16);
+    if(home.number%2)for(let i=0;i<Math.floor(aw/.18);i++)box(x-aw/2+i*.18,ah/2,z-ad/2-.015,.016,ah,.028,soot);
+  }
+  if(home.number%3===0){const x=w/2-.55;for(const side of [-1,1]){box(x+side*.19,e+1.9,-.25,.10,1.2,.51,masonry);box(x,e+1.9,-.25+side*.205,.28,1.2,.10,masonry);}box(x,e+2.08,-.25,.28,.03,.31,new T.MeshStandardMaterial({color:'#141310',roughness:1}));}
+  // Uneven lime repairs and damp staining retain the exposed brick between patches.
+  for(let i=0;i<5+home.number%7;i++){
+    const x=(random()-.5)*w;
+    if(Math.abs(x)<.65)continue;
+    box(x,.12+random()*.45,d/2+.075,.18+random()*.65,.1+random()*.22,.018,home.number%3?soot:lime);
+  }
+  if(home.number%4===1){ // A repaired shutter beside one window.
+    for(let i=0;i<4;i++)box(-w*.32-.76+i*.10,1.3,d/2+.10,.09,1,.055,wood);
+    box(-w*.32-.60,1.05,d/2+.14,.43,.055,.03,soot);
+  }
+  // Threshold slabs and stacks give each entrance a different working character.
+  box(0,.05,d/2+.35,.95+random()*.7,.1,.45+random()*.35,masonry);
+  const side=home.number%2?1:-1;
+  if(home.number%3===1){
+    for(let i=0;i<7;i++)box(side*w*.37,.10+Math.floor(i/3)*.17,d/2+.4+(i%3)*.17,.65+random()*.3,.13,.14,wood);
+  }else if(home.number%3===2){
+    box(side*w*.39,.3,d/2+.5,.8,.6,.65,wood);
+    box(side*w*.39,.62,d/2+.5,.84,.07,.69,soot);
+  }
+  for(const [material,parts] of buckets){
+    const geometry=mergeGeometries(parts);parts.forEach(g=>g.dispose());
+    const mesh=new T.Mesh(geometry,material);mesh.castShadow=mesh.receiveShadow=true;root.add(mesh);
+  }
+  root.userData.characterSeed=home.number*971+1865;
+}

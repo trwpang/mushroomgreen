@@ -35,3 +35,17 @@ public/spike-sprites/
 
 # Babylon spike assets — local only, not deployed
 public/babylon-sprites/
+
+# Forge study: reference conversions, disposable logs, Blender backup saves
+artifacts/forge/reference/
+artifacts/forge/*.log
+assets/forge/*.blend1
+
+# Village build artifacts
+artifacts/village/*.log
+assets/village/*.blend1
+
+# Python build caches and local agent checkouts
+__pycache__/
+*.pyc
+.claude/worktrees/

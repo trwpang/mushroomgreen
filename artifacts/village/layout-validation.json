@@ -1,0 +1,15 @@
+{
+  "households": 59,
+  "uniqueHouseholdIds": true,
+  "allRecordsResolve": true,
+  "projectionOrientation": true,
+  "finiteTransforms": true,
+  "allHomesInsideTerrain": true,
+  "distancePreserved": true,
+  "roads": 6,
+  "brooks": 2,
+  "modernForgePin": true,
+  "householdRecordRetained": true,
+  "streamBedsBelowWater": true,
+  "streamSamplesChecked": 317
+}

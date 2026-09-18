@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-18",
+  "status": "Day 1 visual gate passed",
+  "review": "second-model-review.md",
+  "fixedTimeSeconds": 4,
+  "pictureExport": [
+    1920,
+    1080
+  ],
+  "views": [
+    {
+      "name": "map",
+      "url": "/village?still=1"
+    },
+    {
+      "name": "approach",
+      "url": "/village?view=approach&still=1",
+      "targetOffset": [
+        1.2,
+        1.6,
+        -1.8
+      ],
+      "cameraOffset": [
+        17,
+        2.9,
+        -11
+      ],
+      "fov": 34
+    },
+    {
+      "name": "entrance",
+      "url": "/village?view=forge&still=1",
+      "targetOffset": [
+        0,
+        1.5,
+        0
+      ],
+      "cameraOffset": [
+        16,
+        3.6,
+        -4
+      ],
+      "fov": 38
+    },
+    {
+      "name": "lane",
+      "url": "/village?view=lane&still=1"
+    }
+  ],
+  "checks": {
+    "typescript": true,
+    "productionBuild": true,
+    "layoutInvariants": true,
+    "independentDesktopVisualReview": true,
+    "cleanViewAndRestore": true,
+    "picturePreview": true
+  },
+  "limitations": [
+    "Phone follow-up unavailable in second-model browser session; no device benchmark claimed.",
+    "PNG preview verified; automated download persistence not confirmed in the in-app browser."
+  ]
+}
