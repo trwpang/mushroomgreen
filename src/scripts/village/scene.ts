@@ -40,6 +40,10 @@ for(let j=0;j<4096;j++)for(let i=0;i<4096;i++){const n=rand()*13+Math.sin(i*.017
 const pixel=(p:Point):Point=>[(p[0]+230)/460*4096,(p[1]+320)/520*4096];
 function stroke(points:Point[],width:number,color:string){ctx.beginPath();points.forEach((p,i)=>{const q=pixel(p);if(i)ctx.lineTo(...q);else ctx.moveTo(...q);});ctx.strokeStyle=color;ctx.lineWidth=width/460*4096;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();}
 for(const polygon of greens){ctx.beginPath();polygon.forEach((p,i)=>{const q=pixel(p);if(i)ctx.lineTo(...q);else ctx.moveTo(...q);});ctx.closePath();ctx.fillStyle='#61713b55';ctx.fill();}
+// Irregular bare, straw-coloured and damp patches break up the grass base.
+let grassSeed=491865;const grassRandom=()=>{grassSeed=(Math.imul(grassSeed,1664525)+1013904223)>>>0;return grassSeed/4294967296;};
+const grassPatch=(x:number,z:number)=>.5+.23*Math.sin(x*.19+Math.sin(z*.13)*2)+.17*Math.sin(z*.31-x*.08)+.10*Math.sin(x*.83+z*.49);
+for(let i=0;i<2300;i++){const x=(grassRandom()-.5)*420,z=-60+(grassRandom()-.5)*480;if(!within(x,z))continue;const q=pixel([x,z]),r=(1.5+grassRandom()*5)*4096/460,g=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],r);g.addColorStop(0,i%3?'#8c795365':'#493e3055');g.addColorStop(1,i%3?'#8c795300':'#493e3000');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],r,0,Math.PI*2);ctx.fill();}
 const paths:Point[][]=[];
 for(const h of homes.filter(h=>h.number!==chainshopReplacesHouse)){const w=[6.4,7.2,9.2][h.style]*h.sx,d=[4.6,4.8,4.5][h.style]*h.sz;const front=localPoint(h,0,d/2+.3);const road=nearestRoad(front);let points:Point[]=[front,road];
 // Bend around intervening homes instead of cutting their footprints.
@@ -141,8 +145,25 @@ treePositions.forEach((p,i)=>{
 // Sparse meadow grass, denser on the margins; no blades through lanes or buildings.
 const grassVertices:number[]=[];
 for(let blade=0;blade<7;blade++){const a=blade*2.4,x=Math.cos(a)*.09,z=Math.sin(a)*.09,h=.15+(blade%3)*.055,w=.013;grassVertices.push(x-w,0,z,x+w,0,z,x+.025,h*.6,z+.015,x-w,0,z,x+.025,h*.6,z+.015,x+.045,h,z+.025);}
-const grassGeo=new T.BufferGeometry();grassGeo.setAttribute('position',new T.Float32BufferAttribute(grassVertices,3));grassGeo.computeVertexNormals();const grassPoints:Point[]=[];for(const h of homes.filter(h=>h.number!==chainshopReplacesHouse)){const w=[6.4,7.2,9.2][h.style]*h.sx,d=[4.6,4.8,4.5][h.style]*h.sz;for(let i=0;i<110;i++){const x=(rand()-.5)*(w+1.5),z=(i%2?1:-1)*(d/2+.2+rand()*.6);if(Math.abs(x)<.9&&z>0)continue;grassPoints.push(localPoint(h,x,z));}}for(let i=0;i<48000;i++){const x=(rand()-.5)*410,z=-60+(rand()-.5)*470;if(!within(x,z)||streamDistance(x,z)<2.7)continue;const r=nearestRoad([x,z]);if(Math.hypot(x-r[0],z-r[1])<3.2||homes.some(h=>Math.hypot(x-h.x,z-h.z)<Math.max(h.width,h.depth)*.58+2))continue;if(paths.some(line=>{for(let j=1;j<line.length;j++){const q=nearestSegment([x,z],line[j-1],line[j]);if(Math.hypot(x-q[0],z-q[1])<1)return true;}return false;}))continue;grassPoints.push([x,z]);}
-const meadow=new T.InstancedMesh(grassGeo,new T.MeshStandardMaterial({color:'#5d6543',roughness:1,side:T.DoubleSide}),grassPoints.length);grassPoints.forEach((p,i)=>{dummy.position.set(p[0],ground(...p)+.01,p[1]);dummy.rotation.set(0,rand()*6.28,0);const s=.5+rand();dummy.scale.set(s,s,s);dummy.updateMatrix();meadow.setMatrixAt(i,dummy.matrix);});meadow.receiveShadow=true;scene.add(meadow);
+const grassGeo=new T.BufferGeometry();grassGeo.setAttribute('position',new T.Float32BufferAttribute(grassVertices,3));grassGeo.computeVertexNormals();
+const grassPoints:{p:Point;height:number;dry:boolean}[]=[];
+// Discontinuous wall weeds: small tufts in sheltered corners, not a tidy border.
+for(const h of homes.filter(h=>h.number!==chainshopReplacesHouse)){const w=[6.4,7.2,9.2][h.style]*h.sx,d=[4.6,4.8,4.5][h.style]*h.sz;
+ for(let i=0;i<90;i++){const x=(grassRandom()-.5)*(w+1.5),z=(i%2?1:-1)*(d/2+.2+grassRandom()*.8),p=localPoint(h,x,z);if(Math.abs(x)<1.2&&z>0||grassPatch(...p)<.48)continue;grassPoints.push({p,height:.45+grassRandom()*.85,dry:i%3===0});}
+}
+// Meadow colonies grow taller away from the paths, separated by worn bare gaps.
+for(let i=0;i<78000;i++){
+ const x=(grassRandom()-.5)*410,z=-60+(grassRandom()-.5)*470,patch=grassPatch(x,z);
+ if(!within(x,z)||streamDistance(x,z)<2.7||patch<.48||grassRandom()>patch)continue;
+ const r=nearestRoad([x,z]),roadDistance=Math.hypot(x-r[0],z-r[1]);
+ if(roadDistance<3.4||homes.some(h=>Math.hypot(x-h.x,z-h.z)<Math.max(h.width,h.depth)*.58+2))continue;
+ let pathDistance=Infinity;for(const line of paths)for(let j=1;j<line.length;j++){const q=nearestSegment([x,z],line[j-1],line[j]);pathDistance=Math.min(pathDistance,Math.hypot(x-q[0],z-q[1]));}
+ if(pathDistance<1.2)continue;
+ const away=Math.min(1,Math.min(roadDistance-3.4,pathDistance-1.2)/6),height=.7+away*(1.3+grassRandom()*1.5);
+ for(let j=0;j<3;j++)grassPoints.push({p:[x+(grassRandom()-.5)*.45,z+(grassRandom()-.5)*.45],height:height*(.65+grassRandom()*.5),dry:patch<.65||j===0});
+}
+const meadow=new T.InstancedMesh(grassGeo,new T.MeshStandardMaterial({color:'#a2a27c',roughness:1,side:T.DoubleSide}),grassPoints.length);
+grassPoints.forEach(({p,height,dry},i)=>{dummy.position.set(p[0],ground(...p)+.01,p[1]);dummy.rotation.set(0,grassRandom()*6.28,0);const width=.7+grassRandom()*.85;dummy.scale.set(width,height,width);dummy.updateMatrix();meadow.setMatrixAt(i,dummy.matrix);meadow.setColorAt(i,new T.Color(dry?'#8b7a4b':'#596840').multiplyScalar(.8+grassRandom()*.4));});meadow.receiveShadow=true;scene.add(meadow);mount.dataset.grassTufts=String(grassPoints.length);
 for(const [m,geos]of meshes){const g=mergeGeometries(geos);if(g){const mesh=new T.Mesh(g,m);mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);}for(const g of geos)g.dispose();}meshes.clear();
 // The existing forge is reused as architecture, without its standalone diorama base.
 $('load-label').textContent='Lighting the chain shop…';const forge=await loader.loadAsync('/forge/mushroom-green-forge.glb');const forgeRoot=new T.Group();const forgePos:Point=chainshopPosition;forgeRoot.position.set(forgePos[0],ground(...forgePos),forgePos[1]);forgeRoot.rotation.y=1.03;
@@ -156,7 +177,8 @@ openStack(weaverShop,-1,4.18,1.25,.66,1.65,.62,distantBrick);
 const smallPick=new T.Mesh(new T.BoxGeometry(9.4,5,5),new T.MeshBasicMaterial({visible:false}));smallPick.position.y=2.5;smallPick.userData.home=founder;weaverShop.add(smallPick);pickTargets.push(smallPick);scene.add(weaverShop);mount.dataset.domesticChainshops='1';
 const shopGlow=new T.PointLight('#ffab57',5,4,2);shopGlow.position.copy(weaverShop.localToWorld(new T.Vector3(4.3,1.2,0)));scene.add(shopGlow);
 const showcase=addShowcase(scene);
-const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),rand);mount.dataset.shrubs=String(landscape.counts.shrubs);mount.dataset.forgePosition=forgePos.join(',');
+let landscapeSeed=9321865;const landscapeRandom=()=>{landscapeSeed=(Math.imul(landscapeSeed,1664525)+1013904223)>>>0;return landscapeSeed/4294967296;};
+const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom);mount.dataset.shrubs=String(landscape.counts.shrubs);mount.dataset.forgePosition=forgePos.join(',');
 // A static local environment supplies reflected sky and foliage; flow normals animate it.
 const capture=new T.WebGLCubeRenderTarget(128,{type:T.HalfFloatType});const reflectionCamera=new T.CubeCamera(.1,600,capture);reflectionCamera.position.set(-75,ground(-75,55)+3,55);[...landscape.waterMeshes,...showcase.puddles].forEach(o=>o.visible=false);scene.updateMatrixWorld(true);reflectionCamera.update(renderer,scene);[...landscape.waterMeshes,...showcase.puddles].forEach(o=>o.visible=true);const pmrem=new T.PMREMGenerator(renderer);const reflection=pmrem.fromCubemap(capture.texture);landscape.waterMaterial.envMap=reflection.texture;landscape.waterMaterial.envMapIntensity=.3;showcase.wet.envMap=reflection.texture;showcase.wet.envMapIntensity=.35;capture.dispose();pmrem.dispose();
 // Map overlay: exact source footprints, boundary, mapped routes, and household numbers.

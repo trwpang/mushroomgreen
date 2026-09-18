@@ -85,3 +85,5 @@ Quick-reference notes Claude should internalize on every session start. Update w
 - Tom requests local commits at suitable checkpoints. Do not push: Netlify is linked and a previous push deployed the wrong version.
 
 - Chimney brick courses had real see-through gaps. Both Blender builders now include four continuous recessed mortar walls; retain their Chimney-prefixed mesh names for village extraction. Keep the flue empty above its recessed darkness plate.
+
+- Grass should read as untended ground: seeded patch colonies, dry/bare atlas patches, longer blades away from paths, and discontinuous short wall weeds. Keep planted beds and paths clear.

@@ -64,6 +64,8 @@ for(const points of roadSamples)for(let i=6;i<points.length;i+=18){const p=point
 }
 // Patches follow damp ground and yard edges rather than a uniform scatter.
 for(const h of homes)for(let j=0;j<5;j++){const a=rand()*Math.PI*2,d=Math.max(h.width,h.depth)*.6+1.3;const p:Point=[h.x+Math.cos(a)*d,h.z+Math.sin(a)*d];const r=nearestRoad(p);if(Math.hypot(p[0]-r[0],p[1]-r[1])>4)shrubs.push({p,s:.4+rand()*.65});}
+// The forge has its own placed brambles; random shrubs must not block the entrance.
+for(let i=shrubs.length-1;i>=0;i--)if(Math.hypot(shrubs[i].p[0]-chainshopPosition[0],shrubs[i].p[1]-chainshopPosition[1])<12)shrubs.splice(i,1);
 const d=new T.Object3D();
 const rockMaterial=new T.MeshStandardMaterial({color:'#aaa398',roughness:.78});
 rockMaterial.onBeforeCompile=shader=>{
