@@ -104,6 +104,14 @@ for style in range(3):
     box('Outhouse',(L/2-.8,W/2+.76,.87),(1.55,1.5,1.74),dark)
     for i in range(10):box('Shutters',(L/2-1.51+i*.15,W/2+1.52,.86),(.144,.07,1.70),wood[i%4])
     box('Lean roof',(L/2-.8,W/2+.80,1.86),(1.82,1.85,.08),slate[0],Matrix.Rotation(-.16,3,'X'))
+    for row in range(8):
+        for col in range(7):
+            ay=W/2-.07+row*.235
+            worn_tile((L/2-1.62+col*.26,ay,1.91-(ay-(W/2+.8))*.16),slate[(row+col)%len(slate)],Matrix.Rotation(-.16,3,'X'))
+    for z in [.26,1.33]:box('Lean door braces',(L/2-.8,W/2+1.568,z),(1.36,.035,.07),wood[1])
+    box('Lean latch',(L/2-.48,W/2+1.593,.86),(.16,.025,.035),iron)
+    for z in [.30,1.30]:box('Lean hinge',(L/2-1.38,W/2+1.593,z),(.26,.024,.035),iron)
+    box('Lean threshold',(L/2-.8,W/2+1.67,.055),(1.56,.35,.11),stone[1])
     for i in range(18):
         a=i*math.tau/18
         box('Barrel',(-L/2-.65+.32*math.cos(a),.8+.32*math.sin(a),.47),(.107,.055,.91),wood[i%4],Matrix.Rotation(a+math.pi/2,3,'Z'))

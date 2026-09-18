@@ -45,6 +45,19 @@ export function addYardDetails(scene:T.Scene,homes:Home[]){
    }
   }
  }
+ // A narrow boarded privy with a pitched roof, braced door and iron hardware.
+ const px=4.8,pz=-6.5,iron=new T.MeshStandardMaterial({color:'#34332d',roughness:.85});
+ for(let i=0;i<8;i++){const offset=(i-3.5)*.15;box(h,px+offset,.86,pz+.64,.143,1.72,.07,wood);for(const side of [-1,1])box(h,px+side*.60,.86,pz+offset,.07,1.72,.143,wood);}
+ for(let i=0;i<6;i++)box(h,px+(i-2.5)*.15,.83,pz-.67,.143,1.60,.06,wood);
+ for(const side of [-1,1])box(h,px+side*.53,.9,pz-.67,.13,1.8,.10,wood);
+ box(h,px,1.70,pz-.67,1.2,.13,.1,wood);
+ for(const y of [.34,1.25])box(h,px,y,pz-.715,.86,.07,.03,wood);
+ const brace=new T.BoxGeometry(.06,.95,.035);brace.rotateZ(-.60);put(brace,wood,h,px,.79,pz-.73);
+ for(const y of [.35,1.25])box(h,px-.38,y,pz-.755,.23,.035,.025,iron);
+ box(h,px+.31,.83,pz-.755,.12,.035,.03,iron);
+ for(const x of [-.16,0,.16])box(h,px+x,1.51,pz-.708,.055,.10,.012,iron);
+ for(const side of [-1,1])for(let i=0;i<5;i++){const x=side*(.07+i*.14),g=new T.BoxGeometry(.17,.065,1.55);g.rotateZ(-side*.33);put(g,coal,h,px+x,2.01-Math.abs(x)*.34,pz);}
+ box(h,px,.035,pz-.83,1.03,.07,.35,soil);
  for(const [m,parts] of buckets){const g=mergeGeometries(parts);const mesh=new T.Mesh(g,m);mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);parts.forEach(g=>g.dispose());}
  return count;
 }

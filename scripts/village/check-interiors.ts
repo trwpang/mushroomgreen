@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {makeHomes,chainshopReplacesHouse} from '../../src/scripts/village/layout';
+import {planInterior,validateInterior} from '../../src/scripts/village/interior-plans';
+const homes=makeHomes(JSON.parse(readFileSync('dist/households.json','utf8'))).filter(h=>h.number!==chainshopReplacesHouse);
+const plans=homes.map(planInterior),errors=plans.flatMap(validateInterior);
+assert.equal(plans.length,58);assert.deepEqual(errors,[]);
+const signature=(p:typeof plans[number])=>JSON.stringify({...p,number:0,seed:0,floors:p.floors.map(f=>({...f,items:f.items.map(({id,...item})=>item)}))});
+assert.equal(new Set(plans.map(signature)).size,58,'Each rendered plan must differ beyond its ID');
+assert.deepEqual(plans,homes.map(planInterior),'Plans must be stable on reload');
+const report={households:plans.length,floors:plans.reduce((n,p)=>n+p.floors.length,0),checks:['all visible cottages covered','furniture within walls','furniture clear of furniture','0.98m central door route','person-sized navigation to every item','usable seating beside each table','hearth aligned with chimney','stable individual plans'],errors,plans};
+mkdirSync('artifacts/village/day-3',{recursive:true});writeFileSync('artifacts/village/day-3/interior-plans.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({...report,plans:undefined},null,2));

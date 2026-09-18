@@ -4,10 +4,10 @@
   "units": "metres",
   "source": "scripts/forge/build_forge.py",
   "blender": "5.2.1 LTS",
-  "sha256": "031256f2ff6fecf9dbfb25450dd9756007c364a50a81bc2a2696a7421c72330f",
-  "bytes": 11935664,
-  "mesh_batches": 124,
-  "source_vertices": 188250,
+  "sha256": "100bd4ee2149855927560ee384382431775f74cab442623783cacfc2f04b5bcc",
+  "bytes": 59052576,
+  "mesh_batches": 139,
+  "source_vertices": 193002,
   "reference_photos": [
     "photos/IMG_7256.HEIC",
     "photos/IMG_7257.HEIC",
@@ -15,10 +15,5 @@
     "photos/IMG_4259.HEIC"
   ],
   "historical_status": "Interpretive study from present-day photographs; not a surveyed reconstruction of 1865.",
-  "provenance": "Original scripted geometry; no third-party meshes or textures.",
-  "uncompressedBytes": 58303064,
-  "compression": "EXT_meshopt_compression",
-  "triangles": 353440,
-  "meshBatches": 124,
-  "validationErrors": 0
+  "provenance": "Original scripted geometry; no third-party meshes or textures."
 }

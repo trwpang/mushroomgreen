@@ -4,11 +4,11 @@
   "source": "scripts/village/build_cottages.py",
   "provenance": "Original scripted meshes and surface pixels. Building forms are artistic interpretations of modest Black Country homes.",
   "types": 3,
-  "uncompressedBytes": 38161720,
-  "bytes": 7276300,
-  "sha256": "f79ca6dc8c5f16e04bbd31fce0cb8bc225eedab55722127b820a79f0a4b62d0c",
+  "uncompressedBytes": 38591372,
+  "bytes": 7363944,
+  "sha256": "e4f1de127c8c0e1e399068ae9467168a783a6a00c64c7bee96490aff8a16e3a4",
   "compression": "EXT_meshopt_compression",
-  "triangles": 292150,
-  "meshBatches": 228,
+  "triangles": 295802,
+  "meshBatches": 240,
   "validationErrors": 0
 }

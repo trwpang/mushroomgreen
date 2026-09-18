@@ -74,7 +74,7 @@ export function addShowcase(scene:T.Scene){
   base+=texture2D(tDiffuse,reflectionUv+ripple-vec2(.0018,0.))*.15;
   base+=texture2D(tDiffuse,reflectionUv+ripple+vec2(0.,.0018))*.15;
   base+=texture2D(tDiffuse,reflectionUv+ripple-vec2(0.,.0018))*.15;`);
-  pm.fragmentShader='varying vec2 hollowPoint;\n'+pm.fragmentShader.replace('gl_FragColor = vec4( blendOverlay( base.rgb, color ), 1.0 );','float rim=smoothstep(.50,.95,length(hollowPoint)); gl_FragColor=vec4(mix(base.rgb*.32,vec3(.03,.032,.02),rim*.65),(1.-smoothstep(.62,.94,length(hollowPoint)))*.88);');
+  pm.fragmentShader='varying vec2 hollowPoint;\n'+pm.fragmentShader.replace('gl_FragColor = vec4( blendOverlay( base.rgb, color ), 1.0 );','float rim=smoothstep(.50,.95,length(hollowPoint)); gl_FragColor=vec4(mix(base.rgb*.72+vec3(.025,.032,.028),vec3(.06,.065,.042),rim*.50),(1.-smoothstep(.62,.94,length(hollowPoint)))*.80);');
   const reflect=puddle.onBeforeRender.bind(puddle),lastPosition=new T.Vector3(Infinity,0,0),lastRotation=new T.Quaternion();let lastReflection=0;
   puddle.onBeforeRender=(renderer,scene,camera,geometry,material,group)=>{
     if(scene.overrideMaterial)return;const now=performance.now(),moved=lastPosition.distanceToSquared(camera.position)>.00001||lastRotation.angleTo(camera.quaternion)>.0001;

@@ -2,7 +2,7 @@
   "khronos": {
     "mimeType": "model/gltf-binary",
     "validatorVersion": "2.0.0-dev.3.10",
-    "validatedAt": "2026-09-18T20:46:41.660Z",
+    "validatedAt": "2026-09-18T21:00:01.655Z",
     "issues": {
       "numErrors": 0,
       "numWarnings": 0,
@@ -90,7 +90,7 @@
           "pointer": "/buffers/0",
           "mimeType": "application/gltf-buffer",
           "storage": "glb",
-          "byteLength": 6945436
+          "byteLength": 7026864
         },
         {
           "pointer": "/buffers/1",
@@ -324,9 +324,9 @@
       "hasSkins": false,
       "hasTextures": true,
       "hasDefaultScene": true,
-      "drawCallCount": 228,
-      "totalVertexCount": 574567,
-      "totalTriangleCount": 292150,
+      "drawCallCount": 240,
+      "totalVertexCount": 583425,
+      "totalTriangleCount": 295802,
       "maxUVs": 1,
       "maxInfluences": 0,
       "maxAttributes": 4
@@ -335,7 +335,7 @@
   "decodedChecks": {
     "finitePositions": true,
     "validIndices": true,
-    "triangles": 292150
+    "triangles": 295802
   },
   "budget": {
     "maxTriangles": 600000,

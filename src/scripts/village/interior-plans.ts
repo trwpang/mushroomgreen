@@ -1,0 +1,74 @@
+import type {Home} from './layout';
+export type FurnitureKind='hearth'|'bed'|'table'|'stool'|'cupboard'|'chest'|'washstand'|'stairs'|'pallet';
+export interface Furnishing {id:string;kind:FurnitureKind;x:number;z:number;w:number;d:number;variant:number;}
+export interface InteriorFloor {name:string;items:Furnishing[];curtain:boolean;}
+export interface InteriorPlan {number:number;width:number;depth:number;wallHeight:number;chimneyX:number;occupants:number;seed:number;floors:InteriorFloor[];palette:number;}
+export function seeded(seed:number){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
+export function overlaps(a:Furnishing,b:Furnishing,gap=.06){return Math.abs(a.x-b.x)<(a.w+b.w)/2+gap&&Math.abs(a.z-b.z)<(a.d+b.d)/2+gap;}
+// Furniture is in actual metres. Geometry is not stretched with the cottage asset.
+// The 1861 count informs crowding, never a claim about specific 1865 possessions.
+export function planInterior(h:Home):InteriorPlan{
+ const width=[6.4,7.2,9.2][h.style]*h.sx,depth=[4.6,4.8,4.5][h.style]*h.sz;
+ const rand=seeded(h.number*1865+7301),count=h.occupants_1861||1;
+ const plan:InteriorPlan={number:h.number,width,depth,wallHeight:h.style===1?2.15:2.5,chimneyX:-width/2+.55*h.sx,occupants:count,seed:h.number*1865+7301,floors:[],palette:h.number%6};
+ const floors=h.style===1?2:1;
+ for(let floor=0;floor<floors;floor++){
+  const items:Furnishing[]=[],innerW=width/2-.18,innerD=depth/2-.18;
+  const fits=(a:Furnishing)=>Math.abs(a.x)+a.w/2<=innerW+.001&&Math.abs(a.z)+a.d/2<=innerD+.001&&!items.some(b=>overlaps(a,b,((a.kind==='stool'&&b.kind==='table')||(a.kind==='table'&&b.kind==='stool'))?.16:.43))&&(a.kind==='hearth'||Math.abs(a.x)-a.w/2>=.50);
+  function place(kind:FurnitureKind,w:number,d:number,candidates:[number,number][],required=false){
+   for(const [x,z] of candidates){const a={id:`${h.number}-${floor}-${kind}-${items.length}`,kind,x,z,w,d,variant:Math.floor(rand()*6)};if(fits(a)){items.push(a);return a;}}
+   if(required)throw new Error(`No room for ${kind} in house ${h.number} floor ${floor}`);return null;
+  }
+  function candidates(w:number,d:number,side:number,back:boolean){const out:[number,number][]=[];for(let iz=0;iz<Math.ceil(depth/.12);iz++)for(let ix=0;ix<Math.ceil(width/.12);ix++){
+   const x=side*(innerW-w/2-ix*.12),z=(back?-1:1)*(innerD-d/2-iz*.12);if(side*x<.5+w/2)continue;out.push([x,z]);}return out;}
+  if(!floor){const hw=Math.min(1.15,1.04*h.sx);place('hearth',hw,1.15,[[-innerW+hw/2,0]],true);}
+  if(floors===2)place('stairs',.76,1.85,[[innerW-.38,innerD-.925]],true);
+  // Sleeping places stay in the quieter rear/right area; crowding adds a second bed only where it fits.
+  const bedW=width<5.4?1.05:1.28+(h.number%3)*.05;
+  if(floor||floors===1){place('bed',bedW,1.9,candidates(bedW,1.9,1,true),true);
+   if(count>4)place('bed',1.07,1.83,candidates(1.07,1.83,-1,true));
+   if(count>8)place('pallet',.72,1.7,candidates(.72,1.7,1,false));}
+  if(!floor){
+   // A usable eating/work group belongs near the hearth, not against the front cut line.
+   // Small cottages keep a compact table; broad cottages have space for a larger work surface.
+   const tw=Math.min(1.42,.86+Math.max(0,width-4.5)*.11),td=.68;
+   const preferredX=-Math.max(1.15,width*.245),preferredZ=.54+(h.number%3)*.10;
+   const tableCandidates=candidates(tw,td,-1,false).sort((a,b)=>Math.hypot(a[0]-preferredX,a[1]-preferredZ)-Math.hypot(b[0]-preferredX,b[1]-preferredZ));
+   const table=place('table',tw,td,tableCandidates,true)!;
+   const seats:[number,number][]=[[table.x,table.z+td/2+.34],[table.x,table.z-td/2-.34],[table.x-tw/2-.34,table.z],[table.x+tw/2+.34,table.z]];
+   place('stool',.34,.34,seats);
+   if(count>1)place('stool',.34,.34,seats);
+   place('cupboard',.64,.36,candidates(.64,.36,-1,true),true);
+   const washCandidates=candidates(.58,.36,1,false).sort((a,b)=>Math.hypot(a[0]-width*.27,a[1]+depth*.15)-Math.hypot(b[0]-width*.27,b[1]+depth*.15));
+   place('washstand',.58,.36,washCandidates);
+  }else{place('chest',.68,.4,candidates(.68,.4,-1,false));place('washstand',.58,.36,candidates(.58,.36,1,false));}
+  if(h.number%3!==0){const bed=items.find(a=>a.kind==='bed'),nearBed: [number,number][]=bed?[[bed.x,bed.z+bed.d/2+.65]]:[];place('chest',.58,.36,[...nearBed,...candidates(.58,.36,1,true)]);}
+  plan.floors.push({name:floor?'Sleeping room':'Living room',items,curtain:floors===1&&width>7});
+ }
+ return plan;
+}
+export function validateInterior(plan:InteriorPlan):string[]{
+ const errors:string[]=[];
+ for(const [floorIndex,floor]of plan.floors.entries()){
+  const prefix=`House ${plan.number}, floor ${floorIndex}: `;
+  for(const a of floor.items){
+   if(Math.abs(a.x)+a.w/2>plan.width/2-.17||Math.abs(a.z)+a.d/2>plan.depth/2-.17)errors.push(prefix+a.id+' crosses wall');
+   if(a.kind!=='hearth'&&Math.abs(a.x)-a.w/2<.49)errors.push(prefix+a.id+' blocks central passage');
+   for(const b of floor.items)if(a.id<b.id&&overlaps(a,b,.07))errors.push(prefix+a.id+' overlaps '+b.id);
+  }
+  const table=floor.items.find(a=>a.kind==='table'),seats=floor.items.filter(a=>a.kind==='stool');
+  if(table&&!seats.length)errors.push(prefix+'table has no seat');
+  for(const seat of seats)if(table&&Math.hypot(Math.max(0,Math.abs(seat.x-table.x)-table.w/2),Math.max(0,Math.abs(seat.z-table.z)-table.d/2))>.50)errors.push(prefix+'seat is too far from table');
+  // A person-sized navigation grid must connect entrance, room centre and every item.
+  const step=.12,radius=.21,nx=Math.ceil(plan.width/step),nz=Math.ceil(plan.depth/step);
+  const point=(i:number,j:number)=>[-plan.width/2+(i+.5)*step,-plan.depth/2+(j+.5)*step];
+  const free=(i:number,j:number)=>{if(i<0||j<0||i>=nx||j>=nz)return false;const [x,z]=point(i,j);return Math.abs(x)<plan.width/2-.18-radius&&Math.abs(z)<plan.depth/2-.18-radius&&!floor.items.some(a=>Math.abs(x-a.x)<a.w/2+radius&&Math.abs(z-a.z)<a.d/2+radius);};
+  const start=[Math.floor(nx/2),Math.floor((plan.depth-.5)/step)];
+  const seen=new Set<string>(),queue=[start];while(queue.length){const [i,j]=queue.shift()!;const key=i+','+j;if(seen.has(key)||!free(i,j))continue;seen.add(key);for(const [di,dj]of [[1,0],[-1,0],[0,1],[0,-1]])queue.push([i+di,j+dj]);}
+  if(seen.size<20)errors.push(prefix+'no entrance route');
+  for(const a of floor.items){let accessible=false;for(const key of seen){const [i,j]=key.split(',').map(Number),[x,z]=point(i,j);const dx=Math.max(0,Math.abs(x-a.x)-a.w/2),dz=Math.max(0,Math.abs(z-a.z)-a.d/2);if(Math.hypot(dx,dz)<.5){accessible=true;break;}}if(!accessible)errors.push(prefix+a.id+' cannot be reached');}
+ }
+ const hearth=plan.floors[0].items.find(a=>a.kind==='hearth');
+ if(!hearth||Math.abs(hearth.x-plan.chimneyX)>hearth.w/2+.06||Math.abs(hearth.z)>.01)errors.push(`House ${plan.number}: hearth misses chimney`);
+ return errors;
+}

@@ -214,6 +214,16 @@ for side in [-1,1]:
                 box('Brickwork',(side*4.625+random.uniform(-.006,.006),(a+b)/2,z),(.045,b-a-.012,.068),random.choice(brick))
             y+=.30
 box('Interior',(0,0,.04),(9,4.2,.10),dark)
+# Visit photographs show an uneven brick floor and smoke-marked pale inner walls.
+for row in range(17):
+    for col in range(30):
+        x=-4.35+col*.295+(row%2)*.14;y=-1.98+row*.235
+        if x<4.4:box('Interior floor bricks',(x,y,.102+random.uniform(-.006,.006)),(.282,.221,.045),random.choice(sootbrick if random.random()<.25 else brick))
+inner_lime=mat('Smoke stained interior lime',(123,119,103))
+for i in range(28):
+    box('Interior lime',( -4.28+i*.315,1.975,1.21),(.30,.018,2.30),inner_lime)
+for side in [-1,1]:
+    for y in [-1.64,-1.31,1.31,1.64]:box('Interior lime',(side*4.365,y,1.20),(.018,.30,2.28),inner_lime)
 
 def shutter(cx,cy,width,height,angle=0,side=0):
     rot=Matrix.Rotation(angle,3,'Z')
@@ -319,8 +329,8 @@ def anvil(x,y):
     rod('Anvil horn',(x+.32,y,.97),(x+.67,y,1.00),.115,iron_edge,.009,10)
     box('Hammer',(x-.12,y,.1+1.04),(.22,.12,.10),iron)
     rod('Hammer',(x-.1,y,1.15),(x-.22,y+.49,1.09),.025,wood[2])
-anvil(3.45,-.10)
-anvil(5.55,-1.5)
+# Three hearth-side stations, leaving the gable door and centre aisle clear.
+for station_x in [-3.,0.,3.]:anvil(station_x,-.72)
 for i in range(14):
     ring('Finished chain',(5.48+.12*math.sin(i*.9),-1.3-i*.105,.14+i*.004),.083,.055,.014,iron,Matrix.Rotation(math.pi/2*(i%2),3,'Y'))
 for i in range(7):
