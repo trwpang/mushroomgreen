@@ -2,7 +2,7 @@
   "khronos": {
     "mimeType": "model/gltf-binary",
     "validatorVersion": "2.0.0-dev.3.10",
-    "validatedAt": "2026-09-18T12:28:11.711Z",
+    "validatedAt": "2026-09-18T20:46:37.181Z",
     "issues": {
       "numErrors": 0,
       "numWarnings": 0,
@@ -55,12 +55,6 @@
           "code": "IMAGE_NPOT_DIMENSIONS",
           "message": "Image has non-power-of-two dimensions: 768x768.",
           "severity": 2,
-          "pointer": "/images/13"
-        },
-        {
-          "code": "IMAGE_NPOT_DIMENSIONS",
-          "message": "Image has non-power-of-two dimensions: 768x768.",
-          "severity": 2,
           "pointer": "/images/14"
         },
         {
@@ -68,6 +62,12 @@
           "message": "Image has non-power-of-two dimensions: 768x768.",
           "severity": 2,
           "pointer": "/images/15"
+        },
+        {
+          "code": "IMAGE_NPOT_DIMENSIONS",
+          "message": "Image has non-power-of-two dimensions: 768x768.",
+          "severity": 2,
+          "pointer": "/images/16"
         }
       ],
       "truncated": false
@@ -91,7 +91,7 @@
           "pointer": "/buffers/0",
           "mimeType": "application/gltf-buffer",
           "storage": "glb",
-          "byteLength": 11732344
+          "byteLength": 11735880
         },
         {
           "pointer": "/buffers/1",
@@ -258,8 +258,8 @@
           "mimeType": "image/webp",
           "storage": "buffer-view",
           "image": {
-            "width": 1024,
-            "height": 1024,
+            "width": 256,
+            "height": 256,
             "format": "rgb",
             "primaries": "srgb",
             "transfer": "srgb",
@@ -271,8 +271,8 @@
           "mimeType": "image/webp",
           "storage": "buffer-view",
           "image": {
-            "width": 768,
-            "height": 768,
+            "width": 1024,
+            "height": 1024,
             "format": "rgb",
             "primaries": "srgb",
             "transfer": "srgb",
@@ -310,8 +310,8 @@
           "mimeType": "image/webp",
           "storage": "buffer-view",
           "image": {
-            "width": 256,
-            "height": 256,
+            "width": 768,
+            "height": 768,
             "format": "rgb",
             "primaries": "srgb",
             "transfer": "srgb",
@@ -377,9 +377,9 @@
       "hasSkins": false,
       "hasTextures": true,
       "hasDefaultScene": true,
-      "drawCallCount": 123,
-      "totalVertexCount": 993043,
-      "totalTriangleCount": 353296,
+      "drawCallCount": 124,
+      "totalVertexCount": 993299,
+      "totalTriangleCount": 353440,
       "maxUVs": 1,
       "maxInfluences": 0,
       "maxAttributes": 4
@@ -388,7 +388,7 @@
   "decodedChecks": {
     "finitePositions": true,
     "validIndices": true,
-    "triangles": 353296
+    "triangles": 353440
   },
   "budget": {
     "maxTriangles": 600000,

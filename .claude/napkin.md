@@ -83,3 +83,5 @@ Quick-reference notes Claude should internalize on every session start. Update w
 - Day 2 keeps tree positions, replaces 20% of crowns with pine/fir sprays from conifers.ts, and records scope in docs/village/day-2-art-direction.md. Puddle reflection shader replacement matches the installed Reflector source.
 
 - Tom requests local commits at suitable checkpoints. Do not push: Netlify is linked and a previous push deployed the wrong version.
+
+- Chimney brick courses had real see-through gaps. Both Blender builders now include four continuous recessed mortar walls; retain their Chimney-prefixed mesh names for village extraction. Keep the flue empty above its recessed darkness plate.

@@ -281,6 +281,10 @@ for i in range(240):
 for i in range(33):
     box('Ridge tiles',(-4.68+i*.293,0,4.22),(.284,.17,.1),slate[2],Matrix.Rotation(math.pi/4,3,'X'))
 for x in [-3.,0.,3.]:
+    # Continuous recessed mortar walls close the brick joints, leaving an open flue.
+    for side in [-1,1]:
+        box('Chimney mortar',(x,-1.3+side*.24,3.955),(.60,.12,2.12),mortar)
+        box('Chimney mortar',(x+side*.24,-1.3,3.955),(.12,.36,2.12),mortar)
     for row in range(25):
         z=2.94+row*.083
         for s in [-1,1]:
@@ -289,7 +293,7 @@ for x in [-3.,0.,3.]:
             box('Chimneys',(x+s*.255,-1.3,z),(.12,.39,.071),random.choice(sootbrick if row>16 else brick))
     for y in [-1.60,-1.]:box('Chimney caps',(x,y,5.06),(.69,.14,.10),sootbrick[0])
     for xx in [x-.275,x+.275]:box('Chimney caps',(xx,-1.3,5.06),(.14,.48,.10),sootbrick[0])
-    box('Flue darkness',(x,-1.3,4.99),(.43,.43,.02),coal)
+    box('Flue darkness',(x,-1.3,4.65),(.43,.43,.02),coal)
     for sy in [-1,1]:box('Lead flashing',(x,-1.3+sy*.35,3.23-sy*.25),(.82,.10,.19),slate[0])
 
 # Exposed rafters, tie beams, hearth and chimney hood inside.

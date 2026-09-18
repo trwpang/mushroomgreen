@@ -79,6 +79,10 @@ for style in range(3):
         rod('Gutters',(-L/2-.23,side*(W/2+.26),E-.14),(L/2+.23,side*(W/2+.26),E-.14),.041,iron,sides=8)
     for i in range(int(L/.28)+2):box('Ridge',(-L/2+i*.28,0,R+.15),(.275,.16,.065),slate[1],Matrix.Rotation(.65,3,'X'))
     cx=-L/2+.55
+    # Recessed mortar closes horizontal and vertical joints without filling the flue.
+    for side in [-1,1]:
+        box('Chimney mortar',(cx,side*.225,R+.34),(.58,.13,1.57),mortar)
+        box('Chimney mortar',(cx+side*.225,0,R+.34),(.13,.32,1.57),mortar)
     for row in range(18):
         z=R-.40+row*.087
         for sy in [-1,1]:
