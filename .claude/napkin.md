@@ -87,3 +87,9 @@ Quick-reference notes Claude should internalize on every session start. Update w
 - Chimney brick courses had real see-through gaps. Both Blender builders now include four continuous recessed mortar walls; retain their Chimney-prefixed mesh names for village extraction. Keep the flue empty above its recessed darkness plate.
 
 - Grass should read as untended ground: seeded patch colonies, dry/bare atlas patches, longer blades away from paths, and discontinuous short wall weeds. Keep planted beds and paths clear.
+
+- Interiors are isolated cutaways. Workshop clipping must disable GTAO because its override normal material leaves wall ghosts; restore renderer.localClippingEnabled on exit. Rooms are interpreted, with 58 cottages/74 floors; #5 is replaced by the visible forge but keeps its record.
+- Tree trunks and crowns are now instanced together. Hide both for close-view occlusion; hiding crowns alone leaves distracting bare trunks.
+- Household reader clones server-rendered trusted content templates. Keep census year1861 distinct from the1865 scene, and never invent missing family narratives.
+- Forge detail pushed its compressed output over the 12MB budget; never assume model export succeeded from Blender exit alone. Both builders now stage under artifacts/*/raw and only validated optimizers replace public assets. prebuild checks hashes, byte budgets and compression receipts.
+- Decode normalized integer Meshopt POSITION attributes to Float32 before baking world transforms. Applying transforms directly to quantized attributes clamps coordinates and destroys the small-shop geometry. centralWorkstation plus its regression check covers this.

@@ -40,7 +40,7 @@ for(const frames of networks)for(let i=3;i<frames.length;i+=7){
 for(const line of brooks)for(const p of samples(line,1)){const q=pixel(p),r=(streamWidth(...p)*.5+2)*scale;const g=ctx.createRadialGradient(q[0],q[1],r*.2,q[0],q[1],r);g.addColorStop(0,'#655a40');g.addColorStop(.63,'#696347c0');g.addColorStop(1,'#69714a00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],r,0,Math.PI*2);ctx.fill();}
 const q=pixel(chainshopPosition);ctx.fillStyle='#665a42';ctx.beginPath();for(let i=0;i<32;i++){const a=i/32*Math.PI*2,r=.91+rand()*.13;const x=q[0]+Math.cos(a)*5.7*scale*r,y=q[1]+Math.sin(a)*7*scale*r;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.closePath();ctx.fill();
 }
-export function addLandscape(scene:T.Scene,homes:Home[],rand:()=>number){
+export function addLandscape(scene:T.Scene,homes:Home[],rand:()=>number,clearings:Point[]=[]){
 const water=brookWater(scene),waterTime=water.time,waterMat=water.material;
 const waterMeshes:T.Mesh[]=[];
 for(const source of brooks){const line=downstreamLine(source),points=samples(line,.7);const verts:number[]=[],uvs:number[]=[],tangents:number[]=[],indices:number[]=[];let distance=0;
@@ -65,7 +65,7 @@ for(const points of roadSamples)for(let i=6;i<points.length;i+=18){const p=point
 // Patches follow damp ground and yard edges rather than a uniform scatter.
 for(const h of homes)for(let j=0;j<5;j++){const a=rand()*Math.PI*2,d=Math.max(h.width,h.depth)*.6+1.3;const p:Point=[h.x+Math.cos(a)*d,h.z+Math.sin(a)*d];const r=nearestRoad(p);if(Math.hypot(p[0]-r[0],p[1]-r[1])>4)shrubs.push({p,s:.4+rand()*.65});}
 // The forge has its own placed brambles; random shrubs must not block the entrance.
-for(let i=shrubs.length-1;i>=0;i--)if(Math.hypot(shrubs[i].p[0]-chainshopPosition[0],shrubs[i].p[1]-chainshopPosition[1])<12)shrubs.splice(i,1);
+for(let i=shrubs.length-1;i>=0;i--)if(clearings.some(p=>Math.hypot(p[0]-shrubs[i].p[0],p[1]-shrubs[i].p[1])<1+shrubs[i].s*.8)||Math.hypot(shrubs[i].p[0]-chainshopPosition[0],shrubs[i].p[1]-chainshopPosition[1])<12)shrubs.splice(i,1);
 const d=new T.Object3D();
 const rockMaterial=new T.MeshStandardMaterial({color:'#aaa398',roughness:.78});
 rockMaterial.onBeforeCompile=shader=>{

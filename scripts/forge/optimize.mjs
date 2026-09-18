@@ -15,12 +15,12 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies(
   'meshopt.encoder': MeshoptEncoder,
   'meshopt.decoder': MeshoptDecoder,
 });
-const original = await readFile(path);
-const previousManifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+const original = await readFile(new URL('../../artifacts/forge/raw/mushroom-green-forge.glb', import.meta.url));
+const previousManifest = JSON.parse(await readFile(new URL('../../artifacts/forge/raw/asset-manifest.json', import.meta.url), 'utf8'));
 const document = await io.readBinary(original);
 await document.transform(dedup(), weld(), prune(),
-  textureCompress({ encoder: sharp, targetFormat: 'webp', quality: 86, slots: /baseColorTexture/ }),
-  textureCompress({ encoder: sharp, targetFormat: 'webp', quality: 90, slots: /normalTexture|metallicRoughnessTexture/ }),
+  textureCompress({ encoder: sharp, targetFormat: 'webp', quality: 82, slots: /baseColorTexture/ }),
+  textureCompress({ encoder: sharp, targetFormat: 'webp', quality: 86, slots: /normalTexture|metallicRoughnessTexture/ }),
   meshopt({ encoder: MeshoptEncoder, level: 'high' }));
 const bytes = await io.writeBinary(document);
 const report = await validateBytes(bytes, { maxIssues: 100 });
@@ -46,7 +46,7 @@ await writeFile(new URL('../../artifacts/forge/gltf-validation.json', import.met
 const temporary = new URL(path.href + '.tmp');
 await writeFile(temporary, bytes);
 await rename(temporary, path);
-const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+const manifest = {...previousManifest};
 Object.assign(manifest, {
   uncompressedBytes: previousManifest.uncompressedBytes ?? original.length,
   bytes: bytes.length,
@@ -56,5 +56,7 @@ Object.assign(manifest, {
   meshBatches: decoded.getRoot().listMeshes().length,
   validationErrors: report.issues.numErrors,
 });
-await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+const manifestTemporary=new URL(manifestPath.href+'.tmp');
+await writeFile(manifestTemporary, JSON.stringify(manifest, null, 2) + '\n');
+await rename(manifestTemporary,manifestPath);
 console.log(JSON.stringify({ before: original.length, after: bytes.length, triangles, validationErrors: report.issues.numErrors }));

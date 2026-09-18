@@ -12,7 +12,7 @@ The three stages are implemented: the complete mapped layout, Henry Weaver's cot
 - The overlay displays the original mapped footprint polygons and family colours. Cottage shells use bounded proportions derived from those footprints; they are not exact extrusions of the polygons.
 - Ground height, house elevations, building types, gardens, trees, small paths, and yard contents are artistic estimates. This is a visual interpretation, not an 1865 survey.
 - The forge is anchored to the modern Google Maps chainshop pin supplied by Tom: 52.4754217, -2.0931022. The cottage mesh at household #5 is suppressed to prevent overlap. The historical household and its record remain. This fixes the present-day landmark location; it does not prove the 1865 use or boundaries of that plot.
-- Each house is selectable and links to its existing household record. No household data is changed.
+- Each house opens an in-scene reader with its existing household record, census total, sources and nearby homes. No household data is changed.
 
 ## Visual research
 
@@ -48,11 +48,15 @@ The model command rebuilds the three cottages only. The village also loads the e
 
 ## Controls
 
-Drag to orbit; right-drag to pan; scroll/pinch to zoom. Five views show the north-up village, Henry's house, the lane, Black Brook, and the chainshop. Select a house in the scene or from the complete household picker. The overlay shows mapped lines and household numbers. Daylight, pause, and notes controls work independently. Canvas keyboard controls: arrows orbit, +/− zoom, Home restores the village. Escape closes notes and household panels. Reduced motion disables ambient motion and camera transitions.
+Drag to orbit; right-drag to pan; scroll/pinch to zoom. Six views show the north-up village, the approach, Henry's house, the lane, Black Brook, and the chainshop. Select a house in the scene or from the complete household picker. The overlay shows mapped lines and household numbers. Daylight, pause, and notes controls work independently. Canvas keyboard controls: arrows orbit, +/− zoom, Home restores the village. Escape closes notes and household panels. Reduced motion disables ambient motion and camera transitions.
 
 ## Limits
 
-The scene is an exterior study. Interiors, people, and historical railway reconstruction are not implemented. The map lacks enough elevation and railway alignment evidence for a surveyed reconstruction. The settlement's proportions and routes are retained; surrounding terrain and vegetation are composed for atmosphere. The maximum detailed-house count is bounded, but all 59 household records can be explored individually. There are 58 cottage placements plus the chainshop.
+There are 58 individually seeded cottage interiors with 74 selectable floors, plus the main forge and Henry's small chainshop. Rooms use the mapped footprint proportions, modest furniture, clear entrance routes and household-specific palettes and placement. They are interpretations, not surveyed historic interiors. The small shop has one hearth and anvil; the main forge has three workstations beside a clear aisle. Nine hens and a resting cat use the same pause clock as water, smoke and laundry. People and historical railway reconstruction remain outside this pass. Day 6 was deliberately omitted.
+
+Only one cottage interior is built at a time. Exit disposes its geometry and materials. Neighbour links and previous/next controls keep family reading in the scene. URLs preserve the selected household, interior and floor: `/village?house=22&inside=home`, `/village?house=22&inside=small`, and `/village?house=3&inside=home&floor=1`.
+
+Run `npm run village:layouts` and `npm run village:life` after `npm run build` for room and animal validation. See `overnight-independent-review.md` for the separate model's source review and `overnight-validation.md` for browser evidence.
 
 ## Landscape refinement
 

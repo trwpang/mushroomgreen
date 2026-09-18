@@ -1,0 +1,14 @@
+[
+  {
+    "asset": "forge",
+    "invalidExportRejected": true,
+    "publicAssetUnchanged": true,
+    "publicManifestUnchanged": true
+  },
+  {
+    "asset": "village",
+    "invalidExportRejected": true,
+    "publicAssetUnchanged": true,
+    "publicManifestUnchanged": true
+  }
+]

@@ -1,5 +1,5 @@
 import type {Home} from './layout';
-export type FurnitureKind='hearth'|'bed'|'table'|'stool'|'cupboard'|'chest'|'washstand'|'stairs'|'pallet';
+export type FurnitureKind='hearth'|'bed'|'table'|'stool'|'cupboard'|'chest'|'washstand'|'stairs'|'pallet'|'linenbench'|'clothesrail'|'basket'|'flue'|'fuelbucket'|'partition';
 export interface Furnishing {id:string;kind:FurnitureKind;x:number;z:number;w:number;d:number;variant:number;}
 export interface InteriorFloor {name:string;items:Furnishing[];curtain:boolean;}
 export interface InteriorPlan {number:number;width:number;depth:number;wallHeight:number;chimneyX:number;occupants:number;seed:number;floors:InteriorFloor[];palette:number;}
@@ -14,15 +14,16 @@ export function planInterior(h:Home):InteriorPlan{
  const floors=h.style===1?2:1;
  for(let floor=0;floor<floors;floor++){
   const items:Furnishing[]=[],innerW=width/2-.18,innerD=depth/2-.18;
-  const fits=(a:Furnishing)=>Math.abs(a.x)+a.w/2<=innerW+.001&&Math.abs(a.z)+a.d/2<=innerD+.001&&!items.some(b=>overlaps(a,b,((a.kind==='stool'&&b.kind==='table')||(a.kind==='table'&&b.kind==='stool'))?.16:.43))&&(a.kind==='hearth'||Math.abs(a.x)-a.w/2>=.50);
+  const fits=(a:Furnishing)=>Math.abs(a.x)+a.w/2<=innerW+.001&&Math.abs(a.z)+a.d/2<=innerD+.001&&!items.some(b=>overlaps(a,b,((a.kind==='stool'&&b.kind==='table')||(a.kind==='table'&&b.kind==='stool'))?.16:(floor?.53:.43)))&&(a.kind==='hearth'||Math.abs(a.x)-a.w/2>=.50);
   function place(kind:FurnitureKind,w:number,d:number,candidates:[number,number][],required=false){
    for(const [x,z] of candidates){const a={id:`${h.number}-${floor}-${kind}-${items.length}`,kind,x,z,w,d,variant:Math.floor(rand()*6)};if(fits(a)){items.push(a);return a;}}
    if(required)throw new Error(`No room for ${kind} in house ${h.number} floor ${floor}`);return null;
   }
   function candidates(w:number,d:number,side:number,back:boolean){const out:[number,number][]=[];for(let iz=0;iz<Math.ceil(depth/.12);iz++)for(let ix=0;ix<Math.ceil(width/.12);ix++){
    const x=side*(innerW-w/2-ix*.12),z=(back?-1:1)*(innerD-d/2-iz*.12);if(side*x<.5+w/2)continue;out.push([x,z]);}return out;}
-  if(!floor){const hw=Math.min(1.15,1.04*h.sx);place('hearth',hw,1.15,[[-innerW+hw/2,0]],true);}
-  if(floors===2)place('stairs',.76,1.85,[[innerW-.38,innerD-.925]],true);
+  {const hw=Math.min(1.15,1.04*h.sx);place(floor?'flue':'hearth',hw,1.15,[[-innerW+hw/2,0]],true);}
+  if(floors===2)place('stairs',.76,1.85,[[innerW-.38,innerD-1.525]],true);
+  if(width>8.5&&depth>4.5&&(floor||floors===1))place('partition',.12,depth/2-.12,[[width*.13,-depth/4+.12]]);
   // Sleeping places stay in the quieter rear/right area; crowding adds a second bed only where it fits.
   const bedW=width<5.4?1.05:1.28+(h.number%3)*.05;
   if(floor||floors===1){place('bed',bedW,1.9,candidates(bedW,1.9,1,true),true);
@@ -39,10 +40,24 @@ export function planInterior(h:Home):InteriorPlan{
    place('stool',.34,.34,seats);
    if(count>1)place('stool',.34,.34,seats);
    place('cupboard',.64,.36,candidates(.64,.36,-1,true),true);
+   const fuelCandidates=candidates(.36,.36,-1,true).sort((a,b)=>Math.hypot(a[0]+width*.34,a[1]+.85)-Math.hypot(b[0]+width*.34,b[1]+.85));place('fuelbucket',.36,.36,fuelCandidates);
    const washCandidates=candidates(.58,.36,1,false).sort((a,b)=>Math.hypot(a[0]-width*.27,a[1]+depth*.15)-Math.hypot(b[0]-width*.27,b[1]+depth*.15));
    place('washstand',.58,.36,washCandidates);
-  }else{place('chest',.68,.4,candidates(.68,.4,-1,false));place('washstand',.58,.36,candidates(.58,.36,1,false));}
-  if(h.number%3!==0){const bed=items.find(a=>a.kind==='bed'),nearBed: [number,number][]=bed?[[bed.x,bed.z+bed.d/2+.65]]:[];place('chest',.58,.36,[...nearBed,...candidates(.58,.36,1,true)]);}
+  }else{
+   const bed=items.find(a=>a.kind==='bed')!;
+   const near=(cw:number,cd:number,px:number,pz:number,side:number)=>candidates(cw,cd,side,false).sort((a,b)=>Math.hypot(a[0]-px,a[1]-pz)-Math.hypot(b[0]-px,b[1]-pz));
+   place('chest',.84,.43,near(.84,.43,bed.x,bed.z+bed.d/2+.72,1));
+   place('washstand',.58,.36,near(.58,.36,bed.x-bed.w/2-.98,bed.z+.30,1));
+   // The open side of the chamber forms a small dressing/storage group.
+   // Folded linen, a plain clothes horse and basket replace empty perimeter-only staging.
+   place('linenbench',1.02,.40,near(1.02,.40,-width*.245,.62,-1));
+   if(h.number%4===2)place('cupboard',.68,.40,near(.68,.40,-width*.25,-1.10,-1));
+   else place('clothesrail',.92,.38,near(.92,.38,-width*.245,-.80,-1));
+   place('basket',.45,.45,near(.45,.45,-width*.19,1.65,-1));
+  }
+  if(!floor&&floors===1&&width*depth>42){const benchSpots=candidates(.9,.4,-1,true).sort((a,b)=>Math.hypot(a[0]+width*.22,a[1]+depth*.28)-Math.hypot(b[0]+width*.22,b[1]+depth*.28));place('linenbench',.9,.4,benchSpots);}
+  if(!floor&&width*depth>35&&h.number%2===0){const spots=candidates(.45,.45,1,false).sort((a,b)=>Math.hypot(a[0]-width*.21,a[1]-.6)-Math.hypot(b[0]-width*.21,b[1]-.6));place('basket',.45,.45,spots);}
+  if(!floor&&h.number%3!==0){const bed=items.find(a=>a.kind==='bed'),nearBed: [number,number][]=bed?[[bed.x,bed.z+bed.d/2+.65]]:[];place('chest',.58,.36,[...nearBed,...candidates(.58,.36,1,true)]);}
   plan.floors.push({name:floor?'Sleeping room':'Living room',items,curtain:floors===1&&width>7});
  }
  return plan;
@@ -66,6 +81,7 @@ export function validateInterior(plan:InteriorPlan):string[]{
   const start=[Math.floor(nx/2),Math.floor((plan.depth-.5)/step)];
   const seen=new Set<string>(),queue=[start];while(queue.length){const [i,j]=queue.shift()!;const key=i+','+j;if(seen.has(key)||!free(i,j))continue;seen.add(key);for(const [di,dj]of [[1,0],[-1,0],[0,1],[0,-1]])queue.push([i+di,j+dj]);}
   if(seen.size<20)errors.push(prefix+'no entrance route');
+  {const stairs=floor.items.find(a=>a.kind==='stairs');if(stairs){const tx=stairs.x,tz=stairs.z+(floorIndex?-1:1)*(stairs.d/2+.34);const reachable=[...seen].some(key=>{const [i,j]=key.split(',').map(Number),[x,z]=point(i,j);return Math.hypot(x-tx,z-tz)<.22;});if(!reachable)errors.push(prefix+'stair landing is blocked');}}
   for(const a of floor.items){let accessible=false;for(const key of seen){const [i,j]=key.split(',').map(Number),[x,z]=point(i,j);const dx=Math.max(0,Math.abs(x-a.x)-a.w/2),dz=Math.max(0,Math.abs(z-a.z)-a.d/2);if(Math.hypot(dx,dz)<.5){accessible=true;break;}}if(!accessible)errors.push(prefix+a.id+' cannot be reached');}
  }
  const hearth=plan.floors[0].items.find(a=>a.kind==='hearth');

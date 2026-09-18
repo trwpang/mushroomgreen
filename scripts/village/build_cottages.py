@@ -138,5 +138,6 @@ for style in range(3):
                 uv.data[li].uv=custom[j] if custom else (co[axes[0]]*2,co[axes[1]]*2)
         obj.modifiers.new('Portable triangles','TRIANGULATE')
 bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE/'cottages.blend'))
-bpy.ops.export_scene.gltf(filepath=str(OUT/'cottages.glb'),export_format='GLB',export_apply=True,export_tangents=True,export_extras=True)
-(OUT/'asset-manifest.json').write_text(json.dumps({'asset':'cottages','seed':1865,'source':'scripts/village/build_cottages.py','provenance':'Original scripted meshes and surface pixels. Building forms are artistic interpretations of modest Black Country homes.','types':3},indent=2))
+RAW=ROOT/'artifacts/village/raw';RAW.mkdir(parents=True,exist_ok=True)
+bpy.ops.export_scene.gltf(filepath=str(RAW/'cottages.glb'),export_format='GLB',export_apply=True,export_tangents=True,export_extras=True)
+(RAW/'asset-manifest.json').write_text(json.dumps({'asset':'cottages','seed':1865,'source':'scripts/village/build_cottages.py','provenance':'Original scripted meshes and surface pixels. Building forms are artistic interpretations of modest Black Country homes.','types':3},indent=2))

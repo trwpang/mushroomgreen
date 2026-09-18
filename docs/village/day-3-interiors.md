@@ -56,3 +56,13 @@ The report `artifacts/village/day-3/interior-plans.json` contains all 58 plans a
 ## Visual refinement
 
 The eating/work table and stools form a group near the hearth. The table moves into the room where space permits. Washstands and chests sit near the sleeping area. Some homes have a modest woven floor mat below the table. The camera now sits 20% farther out to retain the front corners.
+
+## Second visual review: lived-in rooms
+
+The independent review found that the first upper rooms looked too empty. Every upper room now has a small linen bench, a woven laundry basket, a bed-foot trunk and either a clothes horse or a cupboard. Wall pegs hold spare cloth. Bedside mats, folded linen and a candle give the sleeping area a coherent use. The main chimney breast continues through the upper room. Wider homes have a low timber partition that marks a separate sleeping bay in the cutaway.
+
+Spacious single-floor homes also gain a linen bench. Some have a laundry basket. Small fuel buckets, fire irons and wall pegs add domestic detail around the hearth without filling the entrance. These objects remain artistic interpretation, with no claims about the belongings of named residents.
+
+Stairs now leave 0.60 m clear at their lower end. The upper guard rails cover both long edges and the low end. The top landing stays open. The navigation checks explicitly reach the upper and lower landings; upper floor furniture uses 0.53 m separation. All 58 plans and 74 floors pass after these changes.
+
+Ground-floor material variation: selected households use worn clay squares or stone flags, with timber upstairs. These are artistic choices, not claims about recorded household finishes.

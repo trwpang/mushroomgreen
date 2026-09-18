@@ -15,8 +15,8 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies(
   'meshopt.encoder': MeshoptEncoder,
   'meshopt.decoder': MeshoptDecoder,
 });
-const original = await readFile(path);
-const previousManifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+const original = await readFile(new URL('../../artifacts/village/raw/cottages.glb', import.meta.url));
+const previousManifest = JSON.parse(await readFile(new URL('../../artifacts/village/raw/asset-manifest.json', import.meta.url), 'utf8'));
 const document = await io.readBinary(original);
 await document.transform(dedup(), weld(), prune(),
   textureCompress({ encoder: sharp, targetFormat: 'webp', quality: 86, slots: /baseColorTexture/ }),
@@ -46,7 +46,7 @@ await writeFile(new URL('../../artifacts/village/gltf-validation.json', import.m
 const temporary = new URL(path.href + '.tmp');
 await writeFile(temporary, bytes);
 await rename(temporary, path);
-const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+const manifest = {...previousManifest};
 Object.assign(manifest, {
   uncompressedBytes: previousManifest.uncompressedBytes ?? original.length,
   bytes: bytes.length,
@@ -56,5 +56,7 @@ Object.assign(manifest, {
   meshBatches: decoded.getRoot().listMeshes().length,
   validationErrors: report.issues.numErrors,
 });
-await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+const manifestTemporary=new URL(manifestPath.href+'.tmp');
+await writeFile(manifestTemporary, JSON.stringify(manifest, null, 2) + '\n');
+await rename(manifestTemporary,manifestPath);
 console.log(JSON.stringify({ before: original.length, after: bytes.length, triangles, validationErrors: report.issues.numErrors }));

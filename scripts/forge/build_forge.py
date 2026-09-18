@@ -505,10 +505,11 @@ scene.view_settings.view_transform='AgX'
 scene.render.image_settings.file_format='PNG'
 scene.render.film_transparent=True
 bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE/'mushroom-green-forge.blend'))
-bpy.ops.export_scene.gltf(filepath=str(OUT/'mushroom-green-forge.glb'),export_format='GLB',export_apply=True,export_tangents=True,export_cameras=False,export_lights=False,export_yup=True)
-model=OUT/'mushroom-green-forge.glb'
+RAW=ROOT/'artifacts/forge/raw';RAW.mkdir(parents=True,exist_ok=True)
+bpy.ops.export_scene.gltf(filepath=str(RAW/'mushroom-green-forge.glb'),export_format='GLB',export_apply=True,export_tangents=True,export_cameras=False,export_lights=False,export_yup=True)
+model=RAW/'mushroom-green-forge.glb'
 receipt={'asset':'mushroom-green-forge','seed':1865,'units':'metres','source':'scripts/forge/build_forge.py','blender':bpy.app.version_string,'sha256':hashlib.sha256(model.read_bytes()).hexdigest(),'bytes':model.stat().st_size,'mesh_batches':len(batches),'source_vertices':sum(len(v[0]) for v in batches.values()),'reference_photos':['photos/IMG_7256.HEIC','photos/IMG_7257.HEIC','photos/IMG_7258.HEIC','photos/IMG_4259.HEIC'],'historical_status':'Interpretive study from present-day photographs; not a surveyed reconstruction of 1865.','provenance':'Original scripted geometry; no third-party meshes or textures.'}
-(OUT/'asset-manifest.json').write_text(json.dumps(receipt,indent=2)+'\n')
+(RAW/'asset-manifest.json').write_text(json.dumps(receipt,indent=2)+'\n')
 if '--render' in __import__('sys').argv:
     scene.render.filepath=str(ROOT/'artifacts/forge/blender-preview.png')
     bpy.ops.render.render(write_still=True)

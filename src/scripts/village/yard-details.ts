@@ -8,11 +8,15 @@ export function addYardDetails(scene:T.Scene,homes:Home[]){
  for(let i=0;i<3000;i++){const x=(i*73)%128,y=(i*41+Math.floor(i/128)*17)%128;ctx.fillStyle=i%3?'#574333':'#30271f';ctx.fillRect(x,y,1+i%2,1);}
  const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
  const soil=new T.MeshStandardMaterial({map:texture,roughness:1});
- const wood=new T.MeshStandardMaterial({color:'#635342',roughness:1});
+ const boardCanvas=document.createElement('canvas');boardCanvas.width=128;boardCanvas.height=512;const bc=boardCanvas.getContext('2d')!;bc.fillStyle='#928571';bc.fillRect(0,0,128,512);
+ for(let i=0;i<460;i++){const x=(i*47)%128,y=(i*113)%512;bc.fillStyle=i%3?'#352c2038':'#d4c5a13a';bc.fillRect(x,y,.4+i%2,25+i%71);}for(let i=0;i<7;i++){const x=12+i*17,y=35+(i*73)%420;bc.strokeStyle='#30291f66';bc.beginPath();bc.ellipse(x,y,2,12,0,0,Math.PI*2);bc.stroke();}
+ const boardMap=new T.CanvasTexture(boardCanvas);boardMap.colorSpace=T.SRGBColorSpace;boardMap.anisotropy=4;
+ const wood=new T.MeshStandardMaterial({map:boardMap,color:'#ada18e',roughness:1});
+ const boardVariants=['#a1947e','#b7a88f','#8b826f'].map(color=>new T.MeshStandardMaterial({map:boardMap,color,roughness:1}));
  const coal=new T.MeshStandardMaterial({color:'#242521',roughness:.8});
  const leaves=['#637445','#7a885a','#50613c'].map(color=>new T.MeshStandardMaterial({color,roughness:1,side:T.DoubleSide}));
  const buckets=new Map<T.Material,T.BufferGeometry[]>();
- function put(g:T.BufferGeometry,m:T.Material,h:Home,x:number,y:number,z:number){if(m!==soil)g.deleteAttribute("uv");const p=localPoint(h,x,z);g.rotateY(h.angle);g.translate(p[0],ground(...p)+y,p[1]);const list=buckets.get(m)||[];list.push(g.index?g.toNonIndexed():g);buckets.set(m,list);}
+ function put(g:T.BufferGeometry,m:T.Material,h:Home,x:number,y:number,z:number){if(!(m as T.MeshStandardMaterial).map)g.deleteAttribute("uv");const p=localPoint(h,x,z);g.rotateY(h.angle);g.translate(p[0],ground(...p)+y,p[1]);const list=buckets.get(m)||[];list.push(g.index?g.toNonIndexed():g);buckets.set(m,list);}
  function box(h:Home,x:number,y:number,z:number,w:number,d:number,t:number,m:T.Material){put(new T.BoxGeometry(w,d,t),m,h,x,y,z);}
  let count=0;
  for(const h of homes){if(h.number===chainshopReplacesHouse)continue;count++;
@@ -47,8 +51,8 @@ export function addYardDetails(scene:T.Scene,homes:Home[]){
  }
  // A narrow boarded privy with a pitched roof, braced door and iron hardware.
  const px=4.8,pz=-6.5,iron=new T.MeshStandardMaterial({color:'#34332d',roughness:.85});
- for(let i=0;i<8;i++){const offset=(i-3.5)*.15;box(h,px+offset,.86,pz+.64,.143,1.72,.07,wood);for(const side of [-1,1])box(h,px+side*.60,.86,pz+offset,.07,1.72,.143,wood);}
- for(let i=0;i<6;i++)box(h,px+(i-2.5)*.15,.83,pz-.67,.143,1.60,.06,wood);
+ for(let i=0;i<8;i++){const offset=(i-3.5)*.15;box(h,px+offset,.86,pz+.64,.143,1.72,.07,boardVariants[i%3]);for(const side of [-1,1])box(h,px+side*.60,.86,pz+offset,.07,1.72,.143,boardVariants[(i+side+3)%3]);}
+ for(let i=0;i<6;i++)box(h,px+(i-2.5)*.15,.83,pz-.67,.143,1.60,.06,boardVariants[i%3]);
  for(const side of [-1,1])box(h,px+side*.53,.9,pz-.67,.13,1.8,.10,wood);
  box(h,px,1.70,pz-.67,1.2,.13,.1,wood);
  for(const y of [.34,1.25])box(h,px,y,pz-.715,.86,.07,.03,wood);
