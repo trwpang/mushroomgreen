@@ -14,21 +14,20 @@ for(const kind of Object.keys(propNames) as (keyof typeof propNames)[]){assert.d
 const planned=planWorkingProps(homes,kit.models,paths);assert.deepEqual(planned,planWorkingProps(homes,kit.models,paths));
 for(const p of planned)assert.equal(propGroundIssue(p.p,homes,paths),null,JSON.stringify(p));
 for(const kind of Object.keys(propNames))assert(planned.some(p=>p.kind===kind),'Missing '+kind);
-// Regression: each placed broom must touch the terrain and have a second support.
+// Regression: the complete broom clears the wall and touches both wall and ground.
 for(const p of planned.filter(p=>p.kind==='broom')){
- assert(p.support,'Broom has no support');assert(Math.abs(p.tilt??0)>.3,'Broom stands upright');
+ assert.equal(p.support,'wall');assert(p.wallSide);assert(Math.abs(p.tilt??0)>.3);
+ const h=homes.find(h=>h.number===p.home)!,face=[6.4,7.2,9.2][h.style]*h.sx/2+.1375*h.sx;
  const matrix=new T.Matrix4().compose(new T.Vector3(p.p[0],ground(...p.p)+(p.lift??0)+.008,p.p[1]),new T.Quaternion().setFromEuler(new T.Euler(p.tilt??0,p.angle,0,'YXZ')),new T.Vector3(1,1,1));
- const support=planned.find(q=>q.kind==='barrel'&&q.group===p.support);let clearance=Infinity,tipClearance=Infinity,contact=Infinity;
+ let clearance=Infinity,wallGap=Infinity,brushGap=Infinity;
  kit.models.broom.traverse(o=>{if(o instanceof T.Mesh){const points=o.geometry.attributes.position;for(let i=0;i<points.count;i++){
-  const v=new T.Vector3().fromBufferAttribute(points,i).applyMatrix4(matrix),gap=v.y-ground(v.x,v.z);clearance=Math.min(clearance,gap);if(points.getY(i)>1.35)tipClearance=Math.min(tipClearance,gap);
-  if(support&&points.getY(i)>.5){const y=v.y-ground(...support.p)-.008-.12;if(y>.1&&y<.88){const radius=.29+Math.sin(y/.88*Math.PI)*.047+.014;contact=Math.min(contact,Math.abs(Math.hypot(v.x-support.p[0],v.z-support.p[1])-radius));}}
+  const v=new T.Vector3().fromBufferAttribute(points,i).applyMatrix4(matrix),gap=v.y-ground(v.x,v.z);clearance=Math.min(clearance,gap);if(points.getY(i)<.3)brushGap=Math.min(brushGap,gap);
+  const dx=v.x-h.x,dz=v.z-h.z,x=dx*Math.cos(h.angle)-dz*Math.sin(h.angle);wallGap=Math.min(wallGap,p.wallSide!*x-face);
  }}});
- if(support)for(let i=0;i<=40;i++){const t=i/40,v=new T.Vector3(.10*t,.34+1.15*t,.035*t).applyMatrix4(matrix),y=v.y-ground(...support.p)-.008-.12;if(y>.1&&y<.88){const radius=.29+Math.sin(y/.88*Math.PI)*.047+.014;contact=Math.min(contact,Math.abs(Math.hypot(v.x-support.p[0],v.z-support.p[1])-radius-.02));}}
- assert(clearance>-.006&&clearance<.01,'Broom floats or sinks: '+p.home+' '+clearance);
- if(p.support==='ground')assert(Math.abs(tipClearance)<.025,'Broom handle does not rest on ground: '+p.home);
- else {assert(support,'Missing support barrel');assert(contact<.04,'Broom does not touch its barrel: '+p.home+' '+contact);}
+ assert(clearance>-.001&&clearance<.01,'Broom floats or sinks: '+p.home);
+ assert(brushGap<.01,'Bristles do not touch ground: '+p.home);
+ assert(wallGap>=0&&wallGap<.01,'Broom does not rest against its wall: '+p.home+' '+wallGap);
 }
-
 assert(planned.length>=100,'Insufficient yard distribution');assert(new Set(planned.map(p=>p.home)).size>=35,'Insufficient household coverage');
 const scene=new T.Scene(),live=addWorkingProps(scene,homes,undefined,paths);let tris=0;live.root.traverse(o=>{if(o instanceof T.Mesh)tris+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});assert(live.root.children.length<=6);assert(tris<1000000);
 const report={models:stats,placements:live.placements,counts:live.counts,triangles:tris,draws:live.root.children.length};mkdirSync('artifacts/village/props-round-2',{recursive:true});writeFileSync('artifacts/village/props-round-2/validation.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({models:stats,counts:live.counts,triangles:tris,draws:live.root.children.length},null,2));

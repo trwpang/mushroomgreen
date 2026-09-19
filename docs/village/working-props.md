@@ -79,3 +79,10 @@ The original placement rule allowed brooms to stand without support. It also use
 Brooms are now placed after other objects. Seven lean against existing barrels. Fourteen lie on the ground, with pitch adjusted so the brush and handle tip both have support. Four unsafe broom placements are omitted. The current plan contains 215 objects; deferring brooms also allows one additional scuttle to fit.
 
 The planner tests rotated footprints. Terrain fitting uses contact extrema for pitch search, then all mesh vertices for the final height. Regression checks test the complete broom mesh against the terrain, the handle tip against the ground, and the handle against its recorded support barrel. Scene type checks and production build pass.
+
+
+### Property-wall placement (supersedes barrel and ground storage)
+
+At the user's request, all 28 brooms now lean against blank cottage gable walls. The handle reach uses the rotated mesh. The support face includes the authored brick relief and each cottage's horizontal scale. The bristles touch terrain; doors and windows are on the other elevations. Existing authored rain barrels also have explicit clearance.
+
+The regression check now requires wall support for every broom. It checks all vertices for wall penetration, handle-to-wall contact and bristle-to-ground contact. Current total: 222 objects. Type checks and production build pass.

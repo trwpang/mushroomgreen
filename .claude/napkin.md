@@ -114,3 +114,5 @@ Quick-reference notes Claude should internalize on every session start. Update w
 - Second prop pass: twenty templates, 218 placements across 53 areas, six merged material batches. Keep atlas cell selection separate from shape RNG: textured and untextured props must have identical bounds. Wicker rows need close spacing. Sack surfaces need shared normals and continuous support boards; separate outer bearers made the sacks look airborne. Exact counts come from the validation JSON, never mental totals.
 
 - Brooms cannot stand unsupported in yards. Defer them until supports exist: lean against a barrel or fit both the brush and handle tip to terrain. Use rotated footprints for clearance, and validate actual mesh contact. Omit a broom if neither supported position fits. User called the upright floating broom a witch problem.
+
+- User prefers brooms against property walls. Use blank gables, with the real brick face at (L/2 + .1375)*sx. Base offset comes from the rotated mesh reach. Ground every bristle and avoid the authored barrel at local (-(L/2+.65)*sx, -.8*sz). Test mesh-to-wall clearance as well as terrain contact.
