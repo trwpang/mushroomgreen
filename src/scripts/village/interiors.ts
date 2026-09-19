@@ -110,9 +110,11 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   }
   if(embedded)for(const side of [-1,1])for(const wx of windows){
    // Deep timber reveals cover the coarse brick edges of the authored opening.
-   const mid=(windowLow+windowHigh)/2,z=side*(d/2-.04);
-   for(const dx of [-1,1])box(wx+dx*(windowW/2-.075*home.sx),mid,z,.16*home.sx,windowHigh-windowLow+.08,.28,woods[1]);
-   for(const yy of [windowLow,windowHigh])box(wx,yy,z,windowW,.065,.28,woods[1]);
+   // Stand 25 mm proud of the plaster, rather than sharing its visible plane.
+   // Jambs end at the rails so their front faces cannot overlap at the corners.
+   const mid=(windowLow+windowHigh)/2,z=side*(d/2-.055),rail=.065;
+   for(const dx of [-1,1])box(wx+dx*(windowW/2-.075*home.sx),mid,z,.16*home.sx,windowHigh-windowLow-rail,.30,woods[1]);
+   for(const yy of [windowLow,windowHigh])box(wx,yy,z,windowW+.01*home.sx,rail,.30,woods[1]);
   }
   // One rough transverse ceiling tie remains, but the roof is removed.
   box(-w*.18,wallH-.09,0,.14,.18,d,woods[1]);
