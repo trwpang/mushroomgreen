@@ -63,12 +63,14 @@ export function ground(x:number,z:number){
 
 export function nearestSegment(p:Point,a:Point,b:Point):Point {const dx=b[0]-a[0],dz=b[1]-a[1];const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dz)/(dx*dx+dz*dz||1)));return [a[0]+dx*t,a[1]+dz*t];}
 export function nearestRoad(p:Point):Point {let best:Point=roads[0][0],d=Infinity;for(const line of laneLines)for(let i=1;i<line.length;i++){const q=nearestSegment(p,line[i-1],line[i]);const dd=Math.hypot(p[0]-q[0],p[1]-q[1]);if(dd<d){d=dd;best=q;}}return best;}
-export function makeHomes(rows:Household[]):Home[]{return rows.map(h=>{const [x,z]=project([h.position.lat,h.position.lon]);const poly=(h.polygon||[]).map(project);let length=0,angle=0;
+export function makeHomes(rows:Household[]):Home[]{return rows.map(h=>{let [x,z]=project([h.position.lat,h.position.lon]);const poly=(h.polygon||[]).map(project);let length=0,angle=0;
 for(let i=1;i<poly.length;i++){const dx=poly[i][0]-poly[i-1][0],dz=poly[i][1]-poly[i-1][1];if(Math.hypot(dx,dz)>length){length=Math.hypot(dx,dz);angle=-Math.atan2(dz,dx);}}
 const ca=Math.cos(angle),sa=Math.sin(angle);const local=poly.map(p=>[(p[0]-x)*ca-(p[1]-z)*sa,(p[0]-x)*sa+(p[1]-z)*ca]);
 const width=local.length?Math.max(...local.map(p=>p[0]))-Math.min(...local.map(p=>p[0])):7;
 const depth=local.length?Math.max(...local.map(p=>p[1]))-Math.min(...local.map(p=>p[1])):5;
 const road=nearestRoad([x,z]);if((road[0]-x)*sa+(road[1]-z)*ca<0)angle+=Math.PI;
+// Give Heathcock's rendered cottage clearance from the lane. Keep the source map coordinates intact.
+if(h.number===41){const dx=x-road[0],dz=z-road[1],distance=Math.hypot(dx,dz);if(distance>0){x+=dx/distance*2;z+=dz/distance*2;}}
 const style=h.number===22?0:h.number%5===0?2:h.number%3===0?1:0;
 return {...h,x,z,angle,width,depth,style,sx:Math.max(.7,Math.min(1.65,width/[6.4,7.2,9.2][style])),sz:Math.max(.75,Math.min(1.4,depth/[4.6,4.8,4.5][style])),height:ground(x,z)-.10};});}
 export function localPoint(h:Home,x:number,z:number):Point {return [h.x+Math.cos(h.angle)*x+Math.sin(h.angle)*z,h.z-Math.sin(h.angle)*x+Math.cos(h.angle)*z];}
