@@ -1,13 +1,13 @@
 {
-  "models": 100,
-  "bytes": 889976,
-  "triangles": 113844,
-  "sha256": "404d1944e90c8d820219e8deb21ba234b99e66928516182062dba38fcdc65f44",
+  "models": 112,
+  "bytes": 1108400,
+  "triangles": 144252,
+  "sha256": "1bda908867c229d01a7ba891aae3881bb0852561e2e5ea062c12885eb1eae8bc",
   "compression": "EXT_meshopt_compression",
   "validationErrors": 0,
   "sourceHashes": {
-    "src/scripts/village/interior-catalogue.ts": "6f69a1dd3f3184ce5507279b92dfa36b1a81457f38c3b7c1d65556647f1fd2f0",
-    "src/scripts/village/interior-objects.ts": "bd445c6b7eec656356db0f77cb4e6fababdc98a6937543962bcfba23eb62ed68"
+    "src/scripts/village/interior-catalogue.ts": "4f7c72cbdb382dfa722be6ff38063f67973236b58cc7d7775ecb06a0333b7597",
+    "src/scripts/village/interior-objects.ts": "ab90af058a79c631f4f14200c1b493ff06a33fc0d466104de92f2bedb2da9151"
   },
   "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
   "usage": "Same terms as this repository; no new third-party asset licence.",
@@ -990,7 +990,7 @@
       "support": "finish",
       "dimensions": [
         1,
-        0.02669999953731894,
+        0.030400000702589747,
         1
       ]
     },
@@ -1000,7 +1000,7 @@
       "support": "finish",
       "dimensions": [
         1,
-        0.02669999953731894,
+        0.030400000702589747,
         1
       ]
     },
@@ -1012,6 +1012,126 @@
         0.9959999918937683,
         0.08999999798834324,
         1
+      ]
+    },
+    {
+      "id": "windsor-armchair",
+      "name": "Hoop-back wooden armchair",
+      "support": "core",
+      "dimensions": [
+        0.6119999885559082,
+        1.0780828520655632,
+        0.4769202917814255
+      ]
+    },
+    {
+      "id": "rush-armchair",
+      "name": "Rush-seat ladder armchair",
+      "support": "core",
+      "dimensions": [
+        0.6119999885559082,
+        1.0199999809265137,
+        0.48893943428993225
+      ]
+    },
+    {
+      "id": "prep-table",
+      "name": "Scrubbed kitchen preparation bench",
+      "support": "core",
+      "dimensions": [
+        1.5,
+        0.9599999883174899,
+        0.6335000097751617
+      ]
+    },
+    {
+      "id": "sewing-table",
+      "name": "Small sewing work table",
+      "support": "core",
+      "dimensions": [
+        1.0369999408721924,
+        0.8125,
+        0.5729999840259552
+      ]
+    },
+    {
+      "id": "water-crock-stand",
+      "name": "Water crock on timber stand",
+      "support": "core",
+      "dimensions": [
+        0.4569368213415146,
+        0.7379999822378158,
+        0.4300000071525574
+      ]
+    },
+    {
+      "id": "log-basket",
+      "name": "Kindling in a wicker basket",
+      "support": "floor",
+      "dimensions": [
+        0.5199999809265137,
+        0.45899999141693115,
+        0.5199999809265137
+      ]
+    },
+    {
+      "id": "pan-rack",
+      "name": "Peg rack with copper and iron pans",
+      "support": "wall",
+      "dimensions": [
+        0.9100000262260437,
+        0.45250000804662704,
+        0.10883012600243092
+      ]
+    },
+    {
+      "id": "wall-sampler",
+      "name": "Framed stitched household sampler",
+      "support": "wall",
+      "dimensions": [
+        0.3700000047683716,
+        0.46999999821186067,
+        0.05280000064522028
+      ]
+    },
+    {
+      "id": "oval-portrait",
+      "name": "Small oval framed silhouette",
+      "support": "wall",
+      "dimensions": [
+        0.2639999985694885,
+        0.330000014975667,
+        0.025980761274695396
+      ]
+    },
+    {
+      "id": "mantel-clock",
+      "name": "Plain wooden mantel clock",
+      "support": "surface",
+      "dimensions": [
+        0.3400000035762787,
+        0.38500001560896635,
+        0.15000000596046448
+      ]
+    },
+    {
+      "id": "vegetable-basket",
+      "name": "Basket of potatoes and onions",
+      "support": "shelf",
+      "dimensions": [
+        0.36000001430511475,
+        0.17599999904632568,
+        0.36000001430511475
+      ]
+    },
+    {
+      "id": "dish-rack",
+      "name": "Wooden drainer with plates",
+      "support": "surface",
+      "dimensions": [
+        0.37700000405311584,
+        0.19249999895691872,
+        0.25999999046325684
       ]
     }
   ]

@@ -60,7 +60,40 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
   rod([.24,b+.19,0],[.27,b+.12,.06],.008);cyl(.09,b+.318,0,.021,.021,.055,'cream');rod([.09,b+.345,0],[-.15,b+.273,0],.0015,'cream');for(let i=0;i<5;i++)ring(-.08+i*.044,b+.26,.038,.009,.002,'copper');
   if(treadle){rod([.31,.31,.15],[.24,b+.19,.09],.0025,'darkwood');rod([.31,.31,-.15],[.24,b+.19,-.09],.0025,'darkwood');}
  };
- if(['open-range','oven-range','hob-stove'].includes(id)){
+ if(id==='windsor-armchair'||id==='rush-armchair'){
+  const rush=id==='rush-armchair';board(0,.43,0,.52,.47,'darkwood');
+  for(const x of [-.21,.21])for(const z of [-.18,.18]){rod([x,.43,z],[x*1.18,.025,z*1.17],.026,'oak');}
+  for(const z of [-.16,.16])rod([-.235,.19,z],[.235,.19,z],.019,'darkwood');rod([0,.19,-.16],[0,.19,.16],.020,'oak');
+  for(const side of [-1,1]){rod([side*.23,.46,.13],[side*.27,.68,.12],.019,'oak');rod([side*.27,.68,.19],[side*.27,.71,-.21],.026,'darkwood');rod([side*.225,.45,-.205],[side*.255,.80,-.22],.021,'oak');rod([side*.27,.71,-.21],[side*.247,.71,-.215],.024,'darkwood');ball(side*.27,.68,.19,.036,.026,.042,'oak');}
+  if(rush){for(const side of [-1,1])leg(side*.225,-.205,1.02,true);for(const y of [.70,.83,.96])box(0,y,-.205,.45,.07,.03,'oak');for(let i=0;i<24;i++)rod([-.235,.460,(i-11.5)*.018],[.235,.460,(i-11.5)*.018],.0045,'linen');}
+  else{const arch=(x:number)=>.79+.29*Math.cos(x/.255*Math.PI/2);for(let i=0;i<9;i++){const x=(i-4)*.051;rod([x,.46,-.18],[x,arch(x),-.22],.010,'oak');}const hoop=Array.from({length:25},(_,i)=>{const x=-.255+i*.51/24;return new T.Vector3(x,arch(x),-.22);});put(new T.TubeGeometry(new T.CatmullRomCurve3(hoop),48,.020,8,false),'darkwood');softBox(0,.487,.01,.44,.05,.39,'cloth',.018);}
+ }else if(id==='prep-table'||id==='sewing-table'){
+  const prep=id==='prep-table',w=prep?1.50:1.04,d=prep?.58:.52;
+  board(0,.79,0,w,d,'oak');for(const x of [-w/2+.065,w/2-.065])for(const z of [-d/2+.055,d/2-.055])leg(x,z,.767,!prep);
+  board(0,.22,-.015,w-.12,d-.09,'darkwood');
+  for(const z of [-d/2+.02,d/2-.02])box(0,.68,z,w-.07,.12,.025,'darkwood');panel(0,.68,d/2,.40,.11);for(const x of [-.13,.13])ball(x,.68,d/2+.035,.014,.014,.018,'iron');
+  if(prep){box(0,.885,-d/2+.012,w,.15,.025,'darkwood');for(const x of [-w/2+.04,w/2-.04])box(x,.17,0,.04,.04,d-.08,'oak');}
+ }else if(id==='water-crock-stand'){
+  board(0,.35,0,.43,.43);for(const x of [-.16,.16])for(const z of [-.16,.16])leg(x,z,.33);vessel(0,.375,0,.18,.32,'clay','pot');lid(0,.695,0,.15,'darkwood');spout(.16,.46,0,.065,'copper');
+ }else if(id==='log-basket'||id==='vegetable-basket'){
+  const logs=id==='log-basket',r=logs?.26:.18,h=logs?.26:.16;
+  vessel(0,0,0,r,h,'oak');for(let i=0;i<10;i++)ring(0,.026+i*(h-.04)/10,0,r*(.61+i*.038),.006,'darkwood',Math.PI/2);
+  for(let i=0;i<20;i++){const a=i*Math.PI/10;rod([Math.sin(a)*r*.54,.018,Math.cos(a)*r*.54],[Math.sin(a)*r*.96,h,Math.cos(a)*r*.96],.004,'oak');}
+  if(logs){for(let i=0;i<9;i++){const x=(i%3-1)*.105,z=(Math.floor(i/3)-1)*.10;rod([x,.08,z],[x+.04,.36+(i%3)*.045,z+.07],.036,'darkwood');ball(x+.04,.36+(i%3)*.045,z+.07,.034,.009,.034,'oak');}}
+  else for(let i=0;i<12;i++){const t=i*2.4,rr=.11*Math.sqrt(i/12);ball(Math.cos(t)*rr,.11+(i%3)*.018,Math.sin(t)*rr,.035,.03,.026,i%3?'oak':'clay');}
+ }else if(id==='pan-rack'){
+  box(0,.42,0,.91,.085,.035,'darkwood');for(const x of [-.40,-.20,0,.20,.40])rod([x,.42,.018],[x,.43,.075],.005,'iron');
+  for(const [i,x]of [-.30,0,.30].entries()){rod([x,.41,.065],[x,.22,.065],.012,'iron');const g=new T.CylinderGeometry(i===1?.115:.09,i===1?.115:.09,.035,24);g.rotateX(Math.PI/2);put(g,i===0?'copper':'iron',x,.125,.065);ring(x,.125,.087,i===1?.10:.078,.005,'steel');}
+ }else if(id==='wall-sampler'){
+  panel(0,.235,0,.37,.47,'darkwood');box(0,.235,.031,.30,.39,.01,'linen');
+  for(let row=0;row<7;row++)for(let col=0;col<9;col++){const x=(col-4)*.026,y=.10+row*.046;if((row*7+col*3)%5===0)continue;rod([x-.006,y-.006,.039],[x+.006,y+.006,.039],.0013,row%2?'blue':'clay');rod([x-.006,y+.006,.039],[x+.006,y-.006,.039],.0013,row%2?'blue':'clay');}
+ }else if(id==='oval-portrait'){
+  const frame=new T.TorusGeometry(.15,.015,6,32);frame.scale(.80,1,1);put(frame,'darkwood',0,.17,0);const paper=new T.CircleGeometry(.144,32);paper.scale(.80,1,1);put(paper,'paper',0,.17,0);ball(0,.21,.008,.041,.057,.003,'coal');box(.012,.157,.008,.030,.031,.006,'coal');ball(0,.12,.008,.074,.035,.003,'coal');
+ }else if(id==='mantel-clock'){
+  box(0,.04,0,.34,.07,.15,'darkwood');panel(0,.22,0,.27,.34,'darkwood');const face=new T.CircleGeometry(.103,32);put(face,'cream',0,.245,.032);ring(0,.245,.035,.106,.008,'copper');for(let i=0;i<12;i++){const t=i*Math.PI/6;rod([Math.sin(t)*.081,.245+Math.cos(t)*.081,.04],[Math.sin(t)*.093,.245+Math.cos(t)*.093,.04],.002,'coal');}rod([0,.245,.044],[-.041,.28,.044],.003,'coal');rod([0,.245,.045],[.012,.325,.045],.002,'coal');
+ }else if(id==='dish-rack'){
+  board(0,.035,0,.38,.26);for(const side of [-1,1])rod([side*.17,.035,-.10],[side*.17,.16,-.10],.012,'oak');for(let i=0;i<6;i++)rod([-.15+i*.06,.045,.10],[-.15+i*.06,.16,-.10],.008,'darkwood');for(const x of [-.12,0,.12]){const g=new T.CylinderGeometry(.085,.085,.009,24);g.rotateZ(Math.PI/2);put(g,'cream',x,.12,0);ring(x+.005,.12,0,.073,.002,'blue',0,Math.PI/2);}
+ }else if(['open-range','oven-range','hob-stove'].includes(id)){
   const closed=id==='hob-stove',oven=id==='oven-range';
   box(0,.04,0,.96,.08,.55,'clay');for(const x of [-.38,.38])for(const z of [-.18,.18])leg(x,z,.16,false,'iron');
   box(0,.40,-.18,.88,.54,.12,'iron');box(0,.17,0,.85,.12,.42,'iron');box(0,.71,0,.94,.07,.50,'iron');surfaces.push({x:0,y:.755,z:0,width:.90,depth:.47});
@@ -196,10 +229,10 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
  }else if(id==='quarry-tiles'||id==='flagstones'){
   const tiles=id==='quarry-tiles',n=tiles?4:2;box(0,.004,0,1,.008,1,'stone');
   for(let x=0;x<n;x++)for(let z=0;z<n;z++){
-   const size=1/n-.007,half=size/2,chip=.005+((x*7+z*3)%5)*.001,shape=new T.Shape();
+   const size=1/n-.003,half=size/2,chip=.001,shape=new T.Shape();
    shape.moveTo(-half+chip,-half);shape.lineTo(half-chip,-half);shape.lineTo(half,-half+chip);shape.lineTo(half,half-chip);shape.lineTo(half-chip,half);shape.lineTo(-half+chip,half);shape.lineTo(-half,half-chip);shape.lineTo(-half,-half+chip);shape.closePath();
-   const g=new T.ExtrudeGeometry(shape,{depth:.014,bevelEnabled:true,bevelThickness:.0015,bevelSize:.0015,bevelSegments:1,steps:1});g.rotateX(-Math.PI/2);
-   const tint=.73+((x*13+z*7)%9)*.036,colour=new Float32Array(g.getAttribute('position').count*3).fill(tint);g.setAttribute('color',new T.Float32BufferAttribute(colour,3));put(g,tiles?'tile':'stone',(x+.5)/n-.5,.010+((x+z)%3)*.0006,(z+.5)/n-.5);
+   const g=new T.ExtrudeGeometry(shape,{depth:.014,bevelEnabled:true,bevelThickness:.0004,bevelSize:.0004,bevelSegments:1,steps:1});g.rotateX(-Math.PI/2);
+   const tint=.94+((x*13+z*7)%9)*.014,colour=new Float32Array(g.getAttribute('position').count*3).fill(tint);g.setAttribute('color',new T.Float32BufferAttribute(colour,3));put(g,tiles?'tile':'stone',(x+.5)/n-.5,.016,(z+.5)/n-.5);
   }
  }else if(id==='board-ceiling'){
   for(let i=0;i<7;i++)box((i+.5)/7-.5,.015,0,1/7-.004,.03,1,i%3?'oak':'darkwood');for(const x of [-.43,.43])box(x,-.030,0,.045,.06,1,'darkwood');

@@ -52,11 +52,33 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   const stair=plan.floors[floor].items.find(a=>a.kind==='stairs');
   // Ground-floor finishes vary by household. These are material interpretations, not recorded fittings.
   const finish:InteriorObjectId=!floor&&(home.number%3!==0||home.number===22)?(home.number%7===0?'flagstones':'quarry-tiles'):'board-ceiling';
-  const objectMats:Record<ObjectMaterial,T.Material>={oak:woods[0],darkwood:woods[2],iron,steel:mat('#8f9389',undefined,.44,'iron'),copper:mat('#a17b43',undefined,.48,'iron'),cream:ceramic,blue:mat('#394e69',undefined,.4,'ceramic'),clay:earthenware,cloth:blanket,green:mat('#636e54',clothMap,.92,'cloth'),coal:dark,glass:mat('#71867c',undefined,.18,'glass'),paper:mat('#c3b79c',plasterMap,.95,'cloth'),linen:mat('#d0c7ae',clothMap,.97,'cloth'),tile:mat('#755038',plasterMap,.92,'stone'),stone:mat('#807b69',plasterMap,.97,'stone')};
+  const objectMats:Record<ObjectMaterial,T.Material>={oak:woods[0],darkwood:woods[2],iron,steel:mat('#8f9389',undefined,.44,'iron'),copper:mat('#a17b43',undefined,.48,'iron'),cream:ceramic,blue:mat('#394e69',undefined,.4,'ceramic'),clay:earthenware,cloth:blanket,green:mat('#636e54',clothMap,.92,'cloth'),coal:dark,glass:mat('#71867c',undefined,.18,'glass'),paper:mat('#c3b79c',plasterMap,.95,'cloth'),linen:mat('#d0c7ae',clothMap,.97,'cloth'),tile:own(new T.MeshStandardMaterial({color:'#955b43',roughness:.83})),stone:mat('#807b69',plasterMap,.97,'stone')};
   const fabric=own(new T.MeshStandardMaterial({color:blanket.color,map:clothMap,roughness:.98,side:T.DoubleSide}));refineSurface(fabric,'cloth');objectMats.cloth=fabric;for(const key of ['tile','stone'] as const)(objectMats[key] as T.MeshStandardMaterial).vertexColors=true;for(const key of ['steel','copper'] as const)(objectMats[key] as T.MeshStandardMaterial).metalness=.55;
   function object(id:InteriorObjectId,x:number,y:number,z:number,sx=1,scaleY=1,sz=1,angle=0,tilt=0){
    for(const part of interiorObject(id).parts){const g=part.geometry.clone();g.scale(sx,scaleY,sz);g.rotateX(tilt);add(g,objectMats[part.material],x,y,z,0,angle);}
   }
+  // Quarry tiles use one room-wide 9-inch grid. No stretched edge modules or repeated dark diagonal pattern.
+  if(finish==='quarry-tiles'){
+   box(0,.006,0,w-.20,.024,d-.20,own(new T.MeshStandardMaterial({color:'#766a59',roughness:.98})));
+   const wearCanvas=document.createElement('canvas');wearCanvas.width=wearCanvas.height=512;const paint=wearCanvas.getContext('2d')!,wearRand=seeded(home.number*997+21);
+   paint.fillStyle='#f0ece5';paint.fillRect(0,0,512,512);
+   // One room-wide wear map: ash by the grate, handling dirt at storage, and fine clay pores.
+   for(let i=0;i<12000;i++){paint.fillStyle=i%2?'#51413209':'#ffffff10';paint.fillRect(wearRand()*512,wearRand()*512,1+wearRand(),1+wearRand());}
+   for(const a of plan.floors[floor].items.filter(a=>['hearth','prep','cupboard','table','sewingtable'].includes(a.kind))){
+    const px=(a.x/w+.5)*512,pz=(.5-a.z/d)*512,r=a.kind==='hearth'?90:45;
+    const stain=paint.createRadialGradient(px,pz,0,px,pz,r);stain.addColorStop(0,a.kind==='hearth'?'#46372950':'#66544425');stain.addColorStop(1,'#75604d00');paint.fillStyle=stain;paint.fillRect(px-r,pz-r,r*2,r*2);
+   }
+   const wearMap=own(new T.CanvasTexture(wearCanvas));wearMap.colorSpace=T.SRGBColorSpace;wearMap.anisotropy=8;(objectMats.tile as T.MeshStandardMaterial).map=wearMap;
+   const tileRand=seeded(home.number*631+floor*31),pitch=.2286,gap=.003;
+   for(let x=-w/2+.10;x<w/2-.10;x+=pitch)for(let z=-d/2+.10;z<d/2-.10;z+=pitch){
+    const fw=Math.min(pitch,w/2-.10-x),fd=Math.min(pitch,d/2-.10-z);
+    if(fw<=gap||fd<=gap)continue;
+    const g=new T.BoxGeometry(fw-gap,.006,fd-gap),shade=.94+tileRand()*.11;
+    const pos=g.getAttribute('position'),uv=g.getAttribute('uv');for(let i=0;i<pos.count;i++)uv.setXY(i,(pos.getX(i)+x+fw/2+w/2)/w,1-(pos.getZ(i)+z+fd/2+d/2)/d);
+    g.setAttribute('color',new T.Float32BufferAttribute(new Float32Array(g.getAttribute('position').count*3).fill(shade),3));
+    add(g,objectMats.tile,x+fw/2,.027,z+fd/2);
+   }
+  }else{
   // Short metre-scale modules fit the room boundaries and leave the actual stair opening.
   for(let z=-d/2+.10;z<d/2-.10;z+=.72)for(let x=-w/2+.10;x<w/2-.10;x+=.72){
    const fw=Math.min(.72,w/2-.10-x),fd=Math.min(.72,d/2-.10-z);
@@ -67,6 +89,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
     if(floor&&stair&&Math.abs(cx-stair.x)<stair.w/2&&Math.abs(cz-stair.z)<stair.d/2)continue;
     object(finish,cx,finish==='board-ceiling'?-.06:0,cz,xs[i]-xs[i-1],1,zs[j]-zs[j-1]);
    }
+  }
   }
   if(floor&&stair){
    const left=stair.x-stair.w/2,right=stair.x+stair.w/2,back=stair.z-stair.d/2,front=stair.z+stair.d/2;
@@ -259,7 +282,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
    for(let i=0;i<p.count;i++)p.setZ(i,.038*Math.sin(p.getX(i)*48));g.computeVertexNormals();
    add(g,cream,cx,1.00,startZ+.31,0,Math.PI/2);
   }
-  for(const [material,parts]of batches){const g=own(mergeGeometries(parts));parts.forEach(p=>p.dispose());const m=new T.Mesh(g,material);m.castShadow=m.receiveShadow=true;root.add(m);}
+  for(const [material,parts]of batches){const g=own(mergeGeometries(parts));parts.forEach(p=>p.dispose());const m=new T.Mesh(g,material);m.castShadow=material!==objectMats.tile;m.receiveShadow=true;if(material===objectMats.tile)m.userData.quarryFloor={pitch:.2286,gap:.003};root.add(m);}
   if(!embedded){const ambient=new T.HemisphereLight('#e7dec7','#726049',1.15);root.add(ambient);}
   const targetPoint=localPoint(home,0,0),cameraPoint=localPoint(home,w*.924,d*1.152);
   active={group:root,plan,floor,floors:plan.floors.length,target:new T.Vector3(targetPoint[0],home.height+base+.8,targetPoint[1]),camera:new T.Vector3(cameraPoint[0],home.height+base+Math.max(w,d)*1.02+2.88,cameraPoint[1])};

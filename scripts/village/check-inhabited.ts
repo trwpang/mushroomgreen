@@ -20,6 +20,13 @@ for(const h of homes){
   const lime=v.group.children.filter(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.surfaceKind==='plaster');
   const timber=v.group.children.filter(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.surfaceKind==='wood');
   const base=.12+f*2.225*sy;
+  if(v.group.userData.floorFinish==='quarry-tiles'){
+   const tile=v.group.children.find(o=>o.userData.quarryFloor) as T.Mesh;
+   assert(tile&&!tile.castShadow&&tile.receiveShadow,'Flat tiles receive furniture shadows without casting self-shadow speckles');
+   tile.geometry.computeBoundingBox();const bounds=tile.geometry.boundingBox!;
+   assert(Math.abs(bounds.max.y-(base+.03))<1e-5&&Math.abs(bounds.min.y-(base+.024))<1e-5,'All quarry tiles must share one level surface');
+   assert.equal(tile.userData.quarryFloor.pitch,.2286);assert.equal(tile.userData.quarryFloor.gap,.003);
+  }
   function ray(x:number,y:number,z:number,dx:number,dy:number,dz:number){
    const origin=new T.Vector3(x,y,z).applyMatrix4(v.group.matrixWorld);
    const direction=new T.Vector3(dx,dy,dz).transformDirection(v.group.matrixWorld);

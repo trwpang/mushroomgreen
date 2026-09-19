@@ -1,6 +1,6 @@
 import type {Home} from './layout';
-export type FurnitureKind='hearth'|'bed'|'table'|'stool'|'cupboard'|'chest'|'washstand'|'stairs'|'pallet'|'linenbench'|'clothesrail'|'basket'|'flue'|'fuelbucket'|'partition';
-export interface Furnishing {id:string;kind:FurnitureKind;x:number;z:number;w:number;d:number;variant:number;}
+export type FurnitureKind='hearth'|'bed'|'table'|'stool'|'cupboard'|'chest'|'washstand'|'stairs'|'pallet'|'linenbench'|'clothesrail'|'basket'|'flue'|'fuelbucket'|'partition'|'prep'|'sewingtable'|'armchair'|'pantry'|'waterstation'|'fuelstore';
+export interface Furnishing {id:string;kind:FurnitureKind;x:number;z:number;w:number;d:number;variant:number;angle?:number;zone?:string;}
 export interface InteriorFloor {name:string;items:Furnishing[];curtain:boolean;}
 export interface InteriorPlan {number:number;width:number;depth:number;wallHeight:number;chimneyX:number;occupants:number;seed:number;floors:InteriorFloor[];palette:number;}
 export function seeded(seed:number){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
@@ -60,7 +60,7 @@ export function planInterior(h:Home):InteriorPlan{
   if(!floor&&h.number%3!==0){const bed=items.find(a=>a.kind==='bed'),nearBed: [number,number][]=bed?[[bed.x,bed.z+bed.d/2+.65]]:[];place('chest',.58,.36,[...nearBed,...candidates(.58,.36,1,true)]);}
   plan.floors.push({name:floor?'Sleeping room':'Living room',items,curtain:floors===1&&width>7});
  }
- return plan;
+ return furnishLivingPlan(plan);
 }
 export function validateInterior(plan:InteriorPlan):string[]{
  const errors:string[]=[];
@@ -87,4 +87,76 @@ export function validateInterior(plan:InteriorPlan):string[]{
  const hearth=plan.floors[0].items.find(a=>a.kind==='hearth');
  if(!hearth||Math.abs(hearth.x-plan.chimneyX)>hearth.w/2+.06||Math.abs(hearth.z)>.01)errors.push(`House ${plan.number}: hearth misses chimney`);
  return errors;
+}
+
+/** Furnishing is arranged by use, with wall storage and working room in front. */
+function furnishLivingPlan(plan:InteriorPlan):InteriorPlan {
+ if(plan.number===22){
+  const item=(kind:FurnitureKind,x:number,z:number,w:number,d:number,zone:string,angle=0,variant=0):Furnishing=>({id:`22-0-${kind}-${zone}`,kind,x,z,w,d,zone,angle,variant});
+  plan.floors[0].items=[
+   item('hearth',-4.525,0,1.15,1.15,'cooking'),
+   item('partition',1.50,-1.80,.12,2.48,'sleeping'),
+   item('bed',4.36,-2.08,1.45,1.92,'sleeping'),
+   item('prep',-3.38,-2.68,2.02,.64,'cooking'),
+   item('cupboard',-1.38,-2.77,1.32,.48,'cooking'),
+   item('pantry',-4.77,-1.82,.48,.88,'cooking',Math.PI/2),
+   item('table',-2.30,.55,1.64,.82,'eating'),
+   item('stool',-2.30,1.32,.44,.42,'eating-front',Math.PI),
+   item('stool',-2.30,-.22,.44,.42,'eating-back'),
+   item('linenbench',-2.05,2.77,1.72,.44,'rest',Math.PI),
+   item('armchair',-4.65,1.56,.66,.68,'rest',Math.PI/2),
+   item('fuelbucket',-3.74,-.87,.34,.34,'cooking'),
+   item('fuelstore',-4.66,2.70,.60,.46,'fuel',Math.PI),
+   item('waterstation',-1.34,-1.40,.50,.50,'cooking'),
+   item('sewingtable',3.18,2.71,1.24,.58,'sewing',Math.PI),
+   item('armchair',3.18,1.71,.58,.58,'sewing',0,1),
+   item('washstand',2.21,-2.75,.64,.46,'sleeping'),
+   item('chest',4.35,-.49,1.10,.48,'sleeping'),
+   item('clothesrail',4.58,2.70,.86,.40,'clothes'),
+   item('basket',4.67,1.78,.44,.44,'clothes'),
+  ];
+  return plan;
+ }
+ for(const [floor,f]of plan.floors.entries()){
+  const accept=(a:Furnishing,replace?:Furnishing)=>{
+   const others=f.items.filter(b=>b!==replace);
+   if(Math.abs(a.x)+a.w/2>plan.width/2-.18||Math.abs(a.z)+a.d/2>plan.depth/2-.18||Math.abs(a.x)-a.w/2<.5||others.some(b=>overlaps(a,b,.09)))return false;
+   const trial={...plan,floors:plan.floors.map((ff,i)=>i===floor?{...ff,items:[...others,a]}:ff)};
+   if(validateInterior(trial).length)return false;
+   f.items=[...others,a];return true;
+  };
+  const wallSpots=(w:number,d:number,side:number,front=false)=>{
+   const spots:[number,number][]=[];const z=(front?1:-1)*(plan.depth/2-.21-d/2);
+   for(let x=plan.width/2-.23-w/2;x>.50+w/2;x-=.24)spots.push([side*x,z]);return spots;
+  };
+  // Benches and washstands belong against a wall. Loose laundry belongs beside the washstand.
+  for(const a of [...f.items].filter(a=>['linenbench','washstand','clothesrail'].includes(a.kind))){
+   const spots=[...wallSpots(a.w,a.d,a.x<0?-1:1,a.kind==='linenbench'),...wallSpots(a.w,a.d,a.x<0?-1:1)];
+   spots.sort((a1,b)=>Math.hypot(a1[0]-a.x,a1[1]-a.z)-Math.hypot(b[0]-a.x,b[1]-a.z));
+   for(const [x,z]of spots)if(accept({...a,x,z,angle:z>0?Math.PI:0},a))break;
+  }
+  for(const a of [...f.items].filter(a=>a.kind==='basket')){
+   const wash=f.items.find(a=>a.kind==='washstand');if(wash)for(const side of [-1,1])if(accept({...a,x:wash.x+side*(wash.w/2+a.w/2+.12),z:wash.z},a))break;
+  }
+  if(floor)continue;
+  const insert=(kind:FurnitureKind,w:number,d:number,side:number,front=false,zone='cooking')=>{
+   const spots=wallSpots(w,d,side,front);
+   for(const [x,z]of spots){if(kind==='pantry'&&Math.abs(x-side*plan.width*.32)<w/2+.70)continue;const a:Furnishing={id:`${plan.number}-${floor}-${kind}-zone`,kind,x,z,w,d,variant:plan.number%3,zone,angle:front?Math.PI:0};if(accept(a))return a;}
+  };
+  // Larger homes get a separate prep bench; small homes keep a clear section of their dining table.
+  if(plan.width*plan.depth>23)insert('prep',Math.min(1.40,plan.width*.14),.50,-1);
+  if([12,40].includes(plan.number))insert('sewingtable',.86,.48,1,true,'sewing');
+  if(plan.width*plan.depth>22)insert('armchair',.60,.60,-1,true,'rest');
+  if(plan.width*plan.depth>32)insert('pantry',.65,.43,1,false,'storage');
+  if(plan.width*plan.depth>30)insert('waterstation',.39,.39,-1,false);
+  const table=f.items.find(a=>a.kind==='table');
+  if(table){
+   const desired=Math.min(4,plan.occupants);
+   for(const [dx,dz,angle]of [[0,table.d/2+.36,Math.PI],[0,-table.d/2-.36,0],[-table.w/2-.36,0,Math.PI/2],[table.w/2+.36,0,-Math.PI/2]]){
+    if(f.items.filter(a=>a.kind==='stool').length>=desired)break;
+    accept({id:`${plan.number}-extra-seat-${dx}-${dz}`,kind:'stool',x:table.x+dx,z:table.z+dz,w:.34,d:.34,angle,variant:plan.number%3,zone:'eating'});
+   }
+  }
+ }
+ return plan;
 }

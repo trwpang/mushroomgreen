@@ -8,7 +8,7 @@ import {planDressing,objectBounds} from '../../src/scripts/village/interior-dres
 import {makeHomes} from '../../src/scripts/village/layout';
 import {planInterior,seeded} from '../../src/scripts/village/interior-plans';
 const stats:Record<string,unknown>={},hashes=new Set<string>(),counts=Object.fromEntries(interiorCatalogue.map(([id])=>[id,0])) as Record<InteriorObjectId,number>;
-assert.equal(interiorCatalogue.length,100);assert.equal(new Set(interiorCatalogue.map(a=>a[0])).size,100);
+assert.equal(interiorCatalogue.length,112);assert.equal(new Set(interiorCatalogue.map(a=>a[0])).size,112);
 for(const [id]of interiorCatalogue){const asset=interiorObject(id),size=asset.bounds.getSize(new T.Vector3());let triangles=0;const hash=createHash('sha256');
  assert(asset.parts.length>0);assert(Math.abs(asset.bounds.min.y)<1e-6);assert(Math.min(size.x,size.y,size.z)>0);assert(Math.max(size.x,size.y,size.z)<2.1);
  for(const p of asset.parts){for(const key of ['position','normal','uv']){const a=p.geometry.getAttribute(key);assert(a&&[...a.array].every(Number.isFinite),`${id}: invalid ${key}`);}triangles+=p.geometry.getAttribute('position').count/3;hash.update(new Uint8Array(p.geometry.getAttribute('position').array.buffer));}
@@ -34,7 +34,21 @@ for(const home of homes){const plan=planInterior(home),rng=seeded(home.number*97
  }
  assert(plans.filter(p=>p.home===home.number).some(p=>p.placements.some(a=>a.id.endsWith('-bed'))),'Every house needs a bed');
 }
+// Protect the household arrangement, not just the number of props.
+const henryHome=homes.find(h=>h.number===22)!,henry=planInterior(henryHome),hf=henry.floors[0].items;
+assert.equal(henry.occupants,2,'Use the recorded 1861 household count');
+assert(hf.find(a=>a.kind==='bed')!.w>=1.4,'Henry needs a shared double sleeping place');
+assert.equal(hf.filter(a=>a.kind==='stool').length,2);
+assert.equal(hf.filter(a=>a.kind==='armchair').length,2);
+const hp=plans.find(p=>p.home===22&&p.floor===0)!.placements;
+const dining=hf.find(a=>a.kind==='table')!,prep=hf.find(a=>a.kind==='prep')!,sewing=hf.find(a=>a.kind==='sewingtable')!,bench=hf.find(a=>a.kind==='linenbench')!;
+assert(!hp.some(p=>p.anchor===dining.id&&p.id.includes('machine')),'Keep meals clear of sewing equipment');
+assert(hp.some(p=>p.anchor===sewing.id&&p.id==='hand-machine'),'Machine must stand on its own table');
+assert(henry.depth/2-(Math.abs(bench.z)+bench.d/2)<.25,'Bench belongs against the wall');
+assert(prep.w>=2&&hp.some(p=>p.anchor===prep.id&&p.id==='vegetable-basket'),'Cooking needs preparation and ingredient storage');
+const workArea=new T.Box3(new T.Vector3(prep.x-.21,.75,prep.z-.12),new T.Vector3(prep.x+.21,1.4,prep.z+.18));
+assert(!hp.some(p=>p.anchor===prep.id&&p.role==='surface'&&objectBounds(p).intersectsBox(workArea)),'Leave a clear section of preparation surface');
 const missing=Object.entries(counts).filter(([,count])=>!count).map(([id])=>id);
-mkdirSync('artifacts/village/interior-objects',{recursive:true});writeFileSync('artifacts/village/interior-objects/validation.json',JSON.stringify({models:100,homes:homes.length,floors:plans.length,instances,counts,missing,stats,plans},null,2)+'\n');
-console.log(JSON.stringify({models:100,homes:homes.length,floors:plans.length,instances,missing,counts},null,2));
+mkdirSync('artifacts/village/interior-objects',{recursive:true});writeFileSync('artifacts/village/interior-objects/validation.json',JSON.stringify({models:interiorCatalogue.length,homes:homes.length,floors:plans.length,instances,counts,missing,stats,plans},null,2)+'\n');
+console.log(JSON.stringify({models:interiorCatalogue.length,homes:homes.length,floors:plans.length,instances,missing,counts},null,2));
 assert.deepEqual(missing,[],'Every catalogue object must appear in the village');

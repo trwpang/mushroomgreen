@@ -22,6 +22,12 @@ export const interiorCatalogue = [
  ['cap','Soft working cap','shelf'],['apron','Hanging working apron','wall'],['towel','Hanging woven towel','wall'],['curtains','Gathered curtain pair and rod','wall'],['rag-rug','Striped rag rug','floor'],
  ['mirror','Small timber-framed mirror','wall'],['wall-clock','Wooden pendulum wall clock','wall'],['framed-print','Small framed landscape print','wall'],['book','Cloth-bound household book','shelf'],['candle-snuffer','Conical candle snuffer','shelf'],
  ['scrub-brush','Wooden scrubbing brush','shelf'],['soap-dish','Soap on a pottery dish','surface'],['quarry-tiles','Worn quarry-tile floor kit','finish'],['flagstones','Uneven flagstone floor kit','finish'],['board-ceiling','Narrow wooden ceiling kit','finish'],
+ ['windsor-armchair','Hoop-back wooden armchair','core'],['rush-armchair','Rush-seat ladder armchair','core'],
+ ['prep-table','Scrubbed kitchen preparation bench','core'],['sewing-table','Small sewing work table','core'],
+ ['water-crock-stand','Water crock on timber stand','core'],['log-basket','Kindling in a wicker basket','floor'],
+ ['pan-rack','Peg rack with copper and iron pans','wall'],['wall-sampler','Framed stitched household sampler','wall'],
+ ['oval-portrait','Small oval framed silhouette','wall'],['mantel-clock','Plain wooden mantel clock','surface'],
+ ['vegetable-basket','Basket of potatoes and onions','shelf'],['dish-rack','Wooden drainer with plates','surface'],
 ] as const;
 export type InteriorObjectId=typeof interiorCatalogue[number][0];
 export type ObjectSupport=typeof interiorCatalogue[number][2];
