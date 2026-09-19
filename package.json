@@ -22,7 +22,8 @@
     "village:workshop": "esbuild scripts/village/check-workshop.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-workshop-check.mjs && node /tmp/mushroom-workshop-check.mjs",
     "chainmaker:model": "blender --background --python-exit-code 1 --python scripts/chainmaker/build_chainmaker.py && node scripts/chainmaker/optimize.mjs",
     "chainmaker:check": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --skipLibCheck src/scripts/chainmaker/scene.ts && esbuild scripts/chainmaker/check-rig.ts --bundle --platform=node --format=esm --outfile=/tmp/chainmaker-check.mjs && node /tmp/chainmaker-check.mjs",
-    "surfaces:check": "esbuild scripts/rendering/check-surfaces.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-surfaces-check.mjs && node /tmp/mushroom-surfaces-check.mjs"
+    "surfaces:check": "esbuild scripts/rendering/check-surfaces.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-surfaces-check.mjs && node /tmp/mushroom-surfaces-check.mjs",
+    "village:outbuildings": "esbuild scripts/village/check-outbuildings.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-outbuildings-check.mjs && node /tmp/mushroom-outbuildings-check.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",

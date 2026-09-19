@@ -1,3 +1,4 @@
+import {serviceStore} from './outbuildings';
 import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -45,13 +46,34 @@ export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Ob
     const g=new T.BoxGeometry(1,1,1).toNonIndexed().applyMatrix4(matrix);
     const list=buckets.get(m)||[];list.push(g);buckets.set(m,list);
   }
+  const atlases:Partial<Record<'wood'|'slate',T.MeshStandardMaterial>>={};
+  high.traverse(o=>{if(o instanceof T.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material]){
+    if(m instanceof T.MeshStandardMaterial&&m.map){
+      if(/old oak/i.test(m.name))atlases.wood=m;
+      if(/weathered slate/i.test(m.name))atlases.slate=m;
+    }
+  }});
   // Unequal service additions change the silhouette without enlarging the main map footprint.
   if(home.number!==22&&home.number%4!==0){
     const aw=1.8+random()*1.3,ad=1.05+random()*.55,ah=1.45+random()*.5;
     const x=(random()-.5)*(w-aw),z=-d/2-ad/2+.05;
-    box(x,ah/2,z,aw,ah,ad,home.number%2?wood:masonry);
-    box(x,ah+.09,z,aw+.22,.14,ad+.24,tile,.16);
-    if(home.number%2)for(let i=0;i<Math.floor(aw/.18);i++)box(x-aw/2+i*.18,ah/2,z-ad/2-.015,.016,ah,.028,soot);
+    const store=serviceStore(home.number,aw,ad,ah,home.height,atlases);
+    // The authored timber shed already occupies the right-hand rear corner.
+    const storeX=Math.min(x,w/2-1.75-aw/2);
+    store.position.set(storeX,0,z);root.add(store);
+  }
+  // The Blender shed had detailed doors but plain dark side boxes. Clad both exposed sides.
+  const shedWood=new T.MeshStandardMaterial({color:'#62503b',roughness:.96});
+  refineSurface(shedWood,'wood');
+  const shedX=w/2-.8,shedZ=-d/2-.76;
+  for(const side of [-1,1]){
+    for(let i=0;i<10;i++){
+      const z=shedZ-.675+i*.15;
+      box(shedX+side*.79,.86,z,.045,1.70,.143,shedWood);
+      if(i%3===home.number%3)box(shedX+side*.816,.5+(i%4)*.2,z,.008,.25,.008,soot);
+    }
+    box(shedX+side*.79,.12,shedZ,.06,.10,1.52,soot);
+    for(const end of [-1,1])box(shedX+side*.8,.87,shedZ+end*.73,.075,1.75,.075,shedWood);
   }
   if(home.number%3===0){const x=w/2-.55;for(const side of [-1,1]){box(x+side*.19,e+1.9,-.25,.10,1.2,.51,masonry);box(x,e+1.9,-.25+side*.205,.28,1.2,.10,masonry);}box(x,e+2.08,-.25,.28,.03,.31,new T.MeshStandardMaterial({color:'#141310',roughness:1}));}
   // Uneven lime repairs and damp staining retain the exposed brick between patches.
