@@ -1,3 +1,4 @@
+import {addSpringFlowers} from './spring-flowers';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
 import {addWorkingChainmaker} from '../chainmaker/worker';
 import {centralWorkstation} from './workshop';
@@ -157,6 +158,7 @@ treePositions.forEach((p,i)=>{
  // Muted leaf litter beneath the canopy makes the woods read as connected ground.
  const q=pixel(p),radius=2.6*scale/460*4096,g=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],radius);g.addColorStop(0,'#454b2d45');g.addColorStop(1,'#454b2d00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],radius,0,Math.PI*2);ctx.fill();
 });groundTexture.needsUpdate=true;
+mount.dataset.flowers=JSON.stringify(addSpringFlowers(scene,homes,paths,treePositions));
 // Sparse meadow grass, denser on the margins; no blades through lanes or buildings.
 const grassVertices:number[]=[];
 for(let blade=0;blade<7;blade++){const a=blade*2.4,x=Math.cos(a)*.09,z=Math.sin(a)*.09,h=.15+(blade%3)*.055,w=.013;grassVertices.push(x-w,0,z,x+w,0,z,x+.025,h*.6,z+.015,x-w,0,z,x+.025,h*.6,z+.015,x+.045,h,z+.025);}
