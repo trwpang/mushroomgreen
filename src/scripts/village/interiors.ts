@@ -6,8 +6,8 @@ import {localPoint} from './layout';
 import {planInterior,seeded,type InteriorPlan,type Furnishing} from './interior-plans';
 
 export interface InteriorView {group:T.Group;plan:InteriorPlan;floor:number;floors:number;target:T.Vector3;camera:T.Vector3;}
-/** A single selected cottage. The caller hides its exterior root, then restores it on hide. */
-export function createInteriors(scene:T.Scene){
+/** Shared room builder for isolated cutaways and furnished village shells. */
+export function createInteriors(scene:T.Object3D,embedded=false){
  let active:InteriorView|null=null,clock=0;
  let flame:T.Mesh|null=null,glow:T.PointLight|null=null;
  const resources=new Set<T.Material|T.Texture|T.BufferGeometry>();
@@ -18,8 +18,8 @@ export function createInteriors(scene:T.Scene){
   const rand=seeded(plan.seed+floor*473),root=new T.Group();root.name=`House ${home.number} — interpreted interior — ${plan.floors[floor].name}`;
   root.position.set(home.x,home.height,home.z);root.rotation.y=home.angle;scene.add(root);
   const w=plan.width,d=plan.depth;
-  const appearance=seeded(home.number*971+1865);appearance();appearance();const sy=home.number===22?1:.9+appearance()*.21;
-  const levelHeight=2.225*sy,base=floor*levelHeight+.12,wallH=home.style===1?levelHeight:[2.65,4.45,2.85][home.style]*sy;
+  const appearance=seeded(home.number*971+1865);appearance();appearance();appearance();const sy=home.number===22?1:.9+appearance()*.21;
+  const levelHeight=2.225*sy,base=floor*levelHeight+.12,wallH=(home.style===1?levelHeight:[2.65,4.45,2.85][home.style]*sy)-(embedded?.12:0);
   function texture(kind:'wood'|'plaster'|'cloth'|'brick',baseColour:string){
    const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d')!;
    ctx.fillStyle=baseColour;ctx.fillRect(0,0,256,256);
@@ -37,7 +37,7 @@ export function createInteriors(scene:T.Scene){
    const t=own(new T.CanvasTexture(c));t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=8;return t;
   }
   const woodMap=texture('wood','#796045'),plasterMap=texture('plaster','#c4b99e'),clothMap=texture('cloth','#c4b69a'),brickMap=texture('brick','#69422d');
-  const mat=(color:string,map?:T.Texture,roughness=.93,kind?:Surface)=>{const m=own(new T.MeshStandardMaterial({color,map,roughness}));return refineSurface(m,kind??(map===woodMap?'wood':map===clothMap?'cloth':map===brickMap?'brick':map===plasterMap?'plaster':roughness<.5?'ceramic':'iron'));};
+  const mat=(color:string,map?:T.Texture,roughness=.93,kind?:Surface)=>{const m=own(new T.MeshStandardMaterial({color,map:map??null,roughness}));return refineSurface(m,kind??(map===woodMap?'wood':map===clothMap?'cloth':map===brickMap?'brick':map===plasterMap?'plaster':roughness<.5?'ceramic':'iron'));};
   const woods=['#e3ccaa','#c5b59d','#d3b590','#b59f84'].map(c=>mat(c,woodMap));
   const lime=mat(['#ddd6ba','#c7ccb9','#d8c7b0','#cbc3b3','#d7d0b9','#c4c7b5'][plan.palette],plasterMap),dark=mat('#211e18',undefined,.93,'coal'),iron=mat('#37372e',undefined,.7),brick=mat('#c2aa93',brickMap),stone=mat('#8a8170',undefined,.93,'stone'),cream=mat('#e9dfc9',clothMap),blanket=mat(['#786a53','#6a7773','#827064','#77794f','#8b7b66','#697071'][plan.palette],clothMap),ceramic=mat('#b5a787',undefined,.34),earthenware=mat('#835a3d',undefined,.42);
   const batches=new Map<T.Material,T.BufferGeometry[]>();
@@ -58,16 +58,35 @@ export function createInteriors(scene:T.Scene){
   }
   if(floor&&stair){
    const left=stair.x-stair.w/2,right=stair.x+stair.w/2,back=stair.z-stair.d/2,front=stair.z+stair.d/2;
-   box((-w/2+left)/2,-.08,0,left+w/2,.13,d,dark);
-   box((right+w/2)/2,-.08,0,w/2-right,.13,d,dark);
-   box(stair.x,-.08,(-d/2+back)/2,stair.w,.13,back+d/2,dark);
-   if(front<d/2)box(stair.x,-.08,(front+d/2)/2,stair.w,.13,d/2-front,dark);
+   box((-w/2+left)/2,-.08,0,left+w/2,.13,d,embedded?lime:dark);
+   box((right+w/2)/2,-.08,0,w/2-right,.13,d,embedded?lime:dark);
+   box(stair.x,-.08,(-d/2+back)/2,stair.w,.13,back+d/2,embedded?lime:dark);
+   if(front<d/2)box(stair.x,-.08,(front+d/2)/2,stair.w,.13,d/2-front,embedded?lime:dark);
    // Lower-storey shell gives the upper cutaway a grounded silhouette.
-   box(0,-base/2,-d/2,w,base,.18,brick);box(-w/2,-base/2,0,.18,base,d,brick);
-  }else box(0,-.08,0,w+.08,.13,d+.08,dark);
+   if(!embedded){box(0,-base/2,-d/2,w,base,.18,brick);box(-w/2,-base/2,0,.18,base,d,brick);}
+  }else box(0,-.08,0,w+.08,.13,d+.08,embedded?lime:dark);
   // Rear wall has actual glazing openings. Front and right wall are cut away for inspection.
-  const windowW=.96*home.sx,windowLow=(floor?1.225:1.30)*sy-.45*sy,windowHigh=windowLow+.9*sy;
+  const windowW=.96*home.sx,windowLow=(floor?1.225:1.30)*sy-.45*sy-(embedded?.12:0),windowHigh=windowLow+.9*sy;
   const windows=[-w*.32,w*.32];
+  if(embedded){
+   const iw=w-.30,id=d-.30;
+   for(const side of [-1,1]){
+    // Front lining also leaves the existing central doorway clear.
+    const cuts=[...windows.map(x=>({left:x-windowW/2,right:x+windowW/2,low:windowLow,high:windowHigh})),
+      ...(side===1&&!floor?[{left:-.46*home.sx,right:.46*home.sx,low:0,high:1.98*sy-base}]:[])].sort((a,b)=>a.left-b.left);
+    let edge=-iw/2;
+    for(const cut of cuts){
+     if(cut.left>edge)box((edge+cut.left)/2,wallH/2,side*id/2,cut.left-edge,wallH,.06,lime);
+     if(cut.low>0)box((cut.left+cut.right)/2,cut.low/2,side*id/2,cut.right-cut.left,cut.low,.06,lime);
+     if(cut.high<wallH)box((cut.left+cut.right)/2,(cut.high+wallH)/2,side*id/2,cut.right-cut.left,wallH-cut.high,.06,lime);
+     edge=cut.right;
+    }
+    if(edge<iw/2)box((edge+iw/2)/2,wallH/2,side*id/2,iw/2-edge,wallH,.06,lime);
+    box(side*iw/2,wallH/2,0,.06,wallH,id,lime);
+   }
+   // The next floor supplies the ground-floor ceiling and its real stair opening.
+   if(floor===plan.floors.length-1)box(0,wallH-.035,0,iw,.07,id,lime);
+  }else{
   let last=-w/2;
   for(const wx of windows){const left=wx-windowW/2;box((last+left)/2,wallH/2,-d/2,left-last,wallH,.17,lime);box(wx,windowLow/2,-d/2,windowW,windowLow,.17,lime);box(wx,(windowHigh+wallH)/2,-d/2,windowW,wallH-windowHigh,.17,lime);last=wx+windowW/2;}
   box((last+w/2)/2,wallH/2,-d/2,w/2-last,wallH,.17,lime);
@@ -78,15 +97,22 @@ export function createInteriors(scene:T.Scene){
   box(-w/2,wallH+.015,0,.19,.035,d,stone);box(w/2,.35,0,.19,.025,d,stone);
   box(-w/2+.105,.12,0,.045,.17,d-.18,woods[2]);box(0,.12,-d/2+.10,w-.20,.17,.045,woods[2]);
   for(const side of [-1,1])box(side*.51,.29,d/2,.06,.57,.21,woods[1]);box(0,.04,d/2,.98,.08,.36,stone);
+  }
   const glass=own(new T.MeshPhysicalMaterial({color:'#a4b7ae',transparent:true,opacity:.37,roughness:.18,metalness:.10,depthWrite:false,side:T.DoubleSide}));
   refineSurface(glass,'glass');
-  for(const wx of windows){const mid=(windowLow+windowHigh)/2,wh=windowHigh-windowLow;
+  if(!embedded)for(const wx of windows){const mid=(windowLow+windowHigh)/2,wh=windowHigh-windowLow;
    for(const dx of [-windowW/2,0,windowW/2])box(wx+dx,mid,-d/2+.07,.04,wh+.08,.07,woods[1]);
    for(const yy of [windowLow,mid,windowHigh])box(wx,yy,-d/2+.07,windowW+.06,.036,.07,woods[1]);
    box(wx,windowLow-.07,-d/2+.1,windowW+.18,.09,.35,stone);
    const pane=new T.Mesh(own(new T.PlaneGeometry(windowW-.04,wh-.04)),glass);pane.position.set(wx,mid+base,-d/2+.035);root.add(pane);
    // Window latch; no modern handles or giant reflective panes.
    box(wx+.07,mid,-d/2+.13,.14,.022,.025,iron);
+  }
+  if(embedded)for(const side of [-1,1])for(const wx of windows){
+   // Deep timber reveals cover the coarse brick edges of the authored opening.
+   const mid=(windowLow+windowHigh)/2,z=side*(d/2-.04);
+   for(const dx of [-1,1])box(wx+dx*(windowW/2-.075*home.sx),mid,z,.16*home.sx,windowHigh-windowLow+.08,.28,woods[1]);
+   for(const yy of [windowLow,windowHigh])box(wx,yy,z,windowW,.065,.28,woods[1]);
   }
   // One rough transverse ceiling tie remains, but the roof is removed.
   box(-w*.18,wallH-.09,0,.14,.18,d,woods[1]);
@@ -102,8 +128,9 @@ export function createInteriors(scene:T.Scene){
   }
   function furniture(a:Furnishing){const x=a.x,z=a.z,ww=a.w,dd=a.d,wood=woods[a.variant%4];
    if(a.kind==='partition'){
-    // Roof and upper partition are removed in the cutaway; low boards mark the sleeping bay.
-    box(x,.34,z,.10,.68,dd,woods[2]);box(x,.70,z,.14,.06,dd+.025,wood);
+    // Full-height boards in the village; low boards keep the cutaway readable.
+    const partitionH=embedded?Math.min(wallH,1.9):.68;
+    box(x,partitionH/2,z,.10,partitionH,dd,woods[2]);box(x,partitionH+.02,z,.14,.06,dd+.025,wood);
     for(let i=0;i<Math.ceil(dd/.17);i++)box(x+.057,.35,z-dd/2+(i+.5)*dd/Math.ceil(dd/.17),.016,.64,.012,dark);
     for(const dz of [-dd/2+.04,dd/2-.04])box(x,.41,z+dz,.13,.82,.09,wood);
    }else if(a.kind==='fuelbucket'){
@@ -214,7 +241,7 @@ export function createInteriors(scene:T.Scene){
    add(g,cream,cx,1.00,startZ+.31,0,Math.PI/2);
   }
   for(const [material,parts]of batches){const g=own(mergeGeometries(parts));parts.forEach(p=>p.dispose());const m=new T.Mesh(g,material);m.castShadow=m.receiveShadow=true;root.add(m);}
-  const ambient=new T.HemisphereLight('#e7dec7','#726049',1.15);root.add(ambient);
+  if(!embedded){const ambient=new T.HemisphereLight('#e7dec7','#726049',1.15);root.add(ambient);}
   const targetPoint=localPoint(home,0,0),cameraPoint=localPoint(home,w*.924,d*1.152);
   active={group:root,plan,floor,floors:plan.floors.length,target:new T.Vector3(targetPoint[0],home.height+base+.8,targetPoint[1]),camera:new T.Vector3(cameraPoint[0],home.height+base+Math.max(w,d)*1.02+2.88,cameraPoint[1])};
   root.userData.interiorPlan=plan;root.userData.home=home;return active;
