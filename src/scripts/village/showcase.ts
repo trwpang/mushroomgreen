@@ -1,3 +1,4 @@
+import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 import {ground,chainshopPosition,type Point} from './layout';
@@ -82,7 +83,7 @@ export function addShowcase(scene:T.Scene){
   };
   puddle.renderOrder=2;puddle.layers.set(1);scene.add(puddle);puddles.push(puddle);
   const materials=[new T.MeshStandardMaterial({color:'#655341',roughness:1}),new T.MeshStandardMaterial({color:'#3c3c35',roughness:.8}),new T.MeshStandardMaterial({color:'#75523e',roughness:.95}),new T.MeshStandardMaterial({color:'#848271',roughness:.9})];
-  materials.forEach(m=>m.vertexColors=true);
+  materials.forEach(m=>m.vertexColors=true);refineSurface(materials[0],'wood');refineSurface(materials[1],'iron');refineSurface(materials[2],'brick');refineSurface(materials[3],'stone');
   const batches=new Map<T.Material,T.BufferGeometry[]>();
   function add(geometry:T.BufferGeometry,x:number,y:number,z:number,m:T.Material,rotation=0){
     const q=world(x,z);const mat=new T.Matrix4().compose(new T.Vector3(q[0],ground(...q)+y,q[1]),new T.Quaternion().setFromEuler(new T.Euler(0,angle+rotation,0)),new T.Vector3(1,1,1));
@@ -136,7 +137,8 @@ float earthHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float earthNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(earthHash(i),earthHash(i+vec2(1.,0.)),f.x),mix(earthHash(i+vec2(0.,1.)),earthHash(i+vec2(1.,1.)),f.x),f.y);}
 `+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
-float grain=earthNoise(earthPoint.xz*25.0);
+float grainFilter=1.-smoothstep(.4,1.5,length(fwidth(earthPoint.xz*25.)));
+float grain=mix(.5,earthNoise(earthPoint.xz*25.0),grainFilter);
 float clods=earthNoise(earthPoint.xz*3.2);
 float patches=earthNoise(earthPoint.xz*.38);
 diffuseColor.rgb*=.77+grain*.20+clods*.20;
@@ -144,10 +146,15 @@ diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.83,.87,.78),smooths
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
 float bareEarth=smoothstep(.002,.025,diffuseColor.r-diffuseColor.g);
 float damp=bareEarth*smoothstep(.52,.75,earthNoise(earthPoint.xz*.62));
-roughnessFactor=mix(roughnessFactor,.38,damp*.72);`);
+roughnessFactor=mix(roughnessFactor,.31,damp*.77);`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
 vec3 earthRipple=vec3((earthNoise(earthPoint.xz*16.0)-.5)*.23,0.,(earthNoise(earthPoint.zx*16.0+9.0)-.5)*.23);
-normal=normalize(normal+mat3(viewMatrix)*earthRipple);`);
+float gritHeight=(earthNoise(earthPoint.xz*32.)-.5)*.006*grainFilter;
+vec3 groundDx=dFdx(-vViewPosition),groundDy=dFdy(-vViewPosition);
+vec3 groundR1=cross(groundDy,normal),groundR2=cross(normal,groundDx);
+float groundDet=dot(groundDx,groundR1);
+normal=normalize(max(abs(groundDet),1e-9)*normal-sign(groundDet)*(dFdx(gritHeight)*groundR1+dFdy(gritHeight)*groundR2));
+normal=normalize(normal+mat3(viewMatrix)*earthRipple*.65);`);
   };
-  material.customProgramCacheKey=()=> 'earth-detail-v2';
+  material.customProgramCacheKey=()=> 'earth-detail-v3';
 }

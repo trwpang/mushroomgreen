@@ -17,7 +17,8 @@ export function brookWater(scene:T.Scene) {
       varying vec2 brookUv; varying vec2 brookTangent; varying vec4 brookProjected;
       vec2 brookWaves(){
         float downstream=brookUv.y-brookTime*.72;
-        return vec2(sin(downstream*10.0+sin(brookUv.x*19.0))* .065 + sin(downstream*24.0+brookUv.x*31.0)*.018,
+        float eddy=sin(brookUv.y*1.7+sin(brookUv.x*11.)-brookTime*.4)*.6;
+        return vec2(sin(downstream*10.0+sin(brookUv.x*19.0)+eddy)* .065 + sin(downstream*24.0+brookUv.x*31.0)*.018,
           cos(brookUv.x*28.0+downstream*5.0)*.045);
       }\n`+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
@@ -27,13 +28,20 @@ export function brookWater(scene:T.Scene) {
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       float bank=abs(brookUv.x-.5)*2.0;
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.16,.145,.095),smoothstep(.55,1.0,bank));
-      diffuseColor.a*=1.0-smoothstep(.88,1.0,bank);`);
+      float sediment=.5+.5*sin(brookUv.y*3.1+sin(brookUv.x*17.));
+      diffuseColor.rgb*=.92+sediment*.16;
+      diffuseColor.a*=1.0-smoothstep(.84+sediment*.035,1.0,bank);`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`
       vec2 reflectionUv=brookProjected.xy/brookProjected.w+brookWaves()*.024;
-      vec3 reflected=texture2D(brookReflection,clamp(reflectionUv,.002,.998)).rgb;
+      vec2 reflectionSafe=clamp(reflectionUv,.004,.996);
+      vec3 reflected=texture2D(brookReflection,reflectionSafe).rgb*.60;
+      reflected+=texture2D(brookReflection,reflectionSafe+vec2(.0014,0.)).rgb*.10;
+      reflected+=texture2D(brookReflection,reflectionSafe-vec2(.0014,0.)).rgb*.10;
+      reflected+=texture2D(brookReflection,reflectionSafe+vec2(0.,.0014)).rgb*.10;
+      reflected+=texture2D(brookReflection,reflectionSafe-vec2(0.,.0014)).rgb*.10;
       float fresnel=.24+.38*pow(1.0-abs(dot(normal,normalize(vViewPosition))),3.0);
       float valid=step(0.0,reflectionUv.x)*step(reflectionUv.x,1.0)*step(0.0,reflectionUv.y)*step(reflectionUv.y,1.0);
-      outgoingLight=mix(outgoingLight,reflected*.34,fresnel*brookReflectionStrength*valid);
+      outgoingLight=mix(outgoingLight,reflected*.43,fresnel*brookReflectionStrength*valid);
       // Broken glints travel downstream; they do not scroll sideways across bends.
       float phase=brookUv.y-brookTime*.72;
       float threads=pow(max(0.0,sin(brookUv.x*63.0+sin(phase*1.8)*1.65+sin(phase*4.7)*.5)),22.0);
@@ -41,7 +49,7 @@ export function brookWater(scene:T.Scene) {
       outgoingLight+=vec3(.13,.15,.12)*threads*flecks*(1.0-smoothstep(.5,1.0,abs(brookUv.x-.5)*2.0));
       #include <opaque_fragment>`);
   };
-  material.customProgramCacheKey=()=> 'brook-flow-reflection-v2';
+  material.customProgramCacheKey=()=> 'brook-flow-reflection-v3';
   let last=-Infinity;
   const hidden:T.Object3D[]=[];
   return {material,time,

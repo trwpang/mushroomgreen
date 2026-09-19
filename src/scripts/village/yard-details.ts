@@ -1,3 +1,4 @@
+import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {ground,localPoint,chainshopReplacesHouse,type Home} from './layout';
@@ -15,6 +16,7 @@ export function addYardDetails(scene:T.Scene,homes:Home[]){
  const boardVariants=['#a1947e','#b7a88f','#8b826f'].map(color=>new T.MeshStandardMaterial({map:boardMap,color,roughness:1}));
  const coal=new T.MeshStandardMaterial({color:'#242521',roughness:.8});
  const leaves=['#637445','#7a885a','#50613c'].map(color=>new T.MeshStandardMaterial({color,roughness:1,side:T.DoubleSide}));
+ refineSurface(wood,'wood');boardVariants.forEach(m=>refineSurface(m,'wood'));refineSurface(coal,'coal');leaves.forEach(m=>refineSurface(m,'leaf'));
  const buckets=new Map<T.Material,T.BufferGeometry[]>();
  function put(g:T.BufferGeometry,m:T.Material,h:Home,x:number,y:number,z:number){if(!(m as T.MeshStandardMaterial).map)g.deleteAttribute("uv");const p=localPoint(h,x,z);g.rotateY(h.angle);g.translate(p[0],ground(...p)+y,p[1]);const list=buckets.get(m)||[];list.push(g.index?g.toNonIndexed():g);buckets.set(m,list);}
  function box(h:Home,x:number,y:number,z:number,w:number,d:number,t:number,m:T.Material){put(new T.BoxGeometry(w,d,t),m,h,x,y,z);}

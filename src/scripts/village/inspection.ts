@@ -1,3 +1,4 @@
+import {cloneSurface} from '../rendering/surfaces';
 import {rememberPlace} from './location';
 import * as T from 'three';
 import type {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -34,7 +35,7 @@ export function createInspection(scene:T.Scene,renderer:T.WebGLRenderer,camera:T
    if(/^(Roof|Ridge|Gutters|Chimney|Flue|Lead)/.test(o.name)){hiddenParts.push(o);o.visible=false;}
    if(o instanceof T.Mesh&&/^(Masonry|Brickwork|Interior_lime|Wood_grain|Ironmongery|Window|Shutter|Door)/.test(o.name)){
     forgeMaterials.set(o,o.material);const plane=new T.Plane(new T.Vector3(0,-1,0),root.position.y+1.25);
-    const clone=(m:T.Material)=>{const n=m.clone();n.clippingPlanes=[plane];n.clipShadows=true;n.side=T.DoubleSide;return n;};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);
+    const clone=(m:T.Material)=>{const n=cloneSurface(m);n.clippingPlanes=[plane];n.clipShadows=true;n.side=T.DoubleSide;return n;};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);
    }
   });renderer.localClippingEnabled=true;const target=root.localToWorld(new T.Vector3(0,.4,0));aim(root.localToWorld(new T.Vector3(7.2,10.8,-8.1)),target);label.textContent=workshop==='small'?'Henry’s small chainshop':'The chain workshop';floorSelect.hidden=true;}
   document.getElementById('leave-interior')!.focus();

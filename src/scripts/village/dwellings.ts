@@ -1,3 +1,4 @@
+import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {Home} from './layout';
@@ -17,7 +18,7 @@ export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Ob
       if(!(source instanceof T.MeshStandardMaterial)||/glass/i.test(source.name))return source;
       const key=source.uuid+(/door|frames/i.test(o.name)?'joinery':'body');
       if(cache.has(key))return cache.get(key)!;
-      const m=source.clone(),name=source.name+' '+o.name;
+      const m=source.clone(),name=source.name+' '+o.name;m.userData.surfaceDatum=home.height;
       if(/brick|limewash|wall/i.test(name)){
         m.color.multiply(wall).multiplyScalar(1.45);
         if(home.number%5===0&&!/soot/i.test(name))m.color.lerp(new T.Color('#b3ad94'),.68);
@@ -36,6 +37,7 @@ export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Ob
   const tile=new T.MeshStandardMaterial({color:roof.clone().multiplyScalar(.48),roughness:1});
   const lime=new T.MeshStandardMaterial({color:'#a39b80',roughness:1});
   const soot=new T.MeshStandardMaterial({color:'#484438',roughness:1});
+  refineSurface(wood,'wood');masonry.userData.surfaceDatum=home.height;refineSurface(masonry,'brick');refineSurface(tile,'slate');refineSurface(lime,'plaster');
   const buckets=new Map<T.Material,T.BufferGeometry[]>();
   const matrix=new T.Matrix4();
   function box(x:number,y:number,z:number,a:number,b:number,c:number,m:T.Material,tilt=0){

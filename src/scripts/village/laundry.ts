@@ -1,3 +1,4 @@
+import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {ground,localPoint,type Home} from './layout';
 
@@ -26,7 +27,7 @@ export function addLaundry(scene:T.Scene,home:Home){
   if(kind==='apron'){ctx.fillStyle='#bbb5a136';ctx.fillRect(90,130,76,46);ctx.strokeStyle='#423e354a';ctx.strokeRect(90,130,76,46);}
   if(kind==='petticoat'){ctx.strokeStyle='#6c675c44';for(const y of [222,230,238]){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(256,y);ctx.stroke();}}
   const map=new T.CanvasTexture(canvas);map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;
-  const material=new T.MeshStandardMaterial({map,roughness:1,side:T.DoubleSide});const mesh=new T.Mesh(geo,material);mesh.name=name;mesh.position.set(x,ropeY(x),.018);mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);
+  const material=new T.MeshStandardMaterial({map,roughness:1,side:T.DoubleSide});refineSurface(material,'cloth');const mesh=new T.Mesh(geo,material);mesh.name=name;mesh.position.set(x,ropeY(x),.018);mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);
   // Bake top-edge slope into the undeformed coordinates; each peg meets the rope.
   const base=new Float32Array(vertices);for(let i=0;i<base.length;i+=3)base[i+1]+=ropeY(x+base[i])-ropeY(x);
   fabrics.push({geometry:geo,base,phase});

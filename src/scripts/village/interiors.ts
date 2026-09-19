@@ -1,3 +1,4 @@
+import {refineSurface,type Surface} from '../rendering/surfaces';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {Home} from './layout';
@@ -23,15 +24,22 @@ export function createInteriors(scene:T.Scene){
    const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d')!;
    ctx.fillStyle=baseColour;ctx.fillRect(0,0,256,256);
    for(let i=0;i<5500;i++){const x=rand()*256,y=rand()*256;ctx.fillStyle=rand()>.5?'#ffffff0d':'#1b120d12';ctx.fillRect(x,y,kind==='wood'?1:2,kind==='wood'?8+rand()*80:2);}
+   // Broad translucent wear below the fine grain: handled wood, uneven lime,
+   // ash near skirtings, and faded folds. Seeded independently of room layouts.
+   const wear=seeded(plan.seed+floor*313+{wood:7,plaster:31,cloth:53,brick:79}[kind]);
+   for(let i=0;i<35;i++){const x=wear()*256,y=wear()*256,r=12+wear()*48;
+    const wash=ctx.createRadialGradient(x,y,0,x,y,r);wash.addColorStop(0,kind==='plaster'?'#655c4316':kind==='wood'?'#352b1b14':'#eee4cb12');wash.addColorStop(1,'#73694e00');ctx.fillStyle=wash;ctx.fillRect(x-r,y-r,r*2,r*2);}
+   if(kind==='plaster'){const damp=ctx.createLinearGradient(0,180,0,256);damp.addColorStop(0,'#504c3e00');damp.addColorStop(1,'#504c3e30');ctx.fillStyle=damp;ctx.fillRect(0,180,256,76);
+    for(let i=0;i<5;i++){const x=wear()*256,y=wear()*220;ctx.strokeStyle='#665e481e';ctx.lineWidth=.45;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+3,y+12);ctx.lineTo(x-1,y+20);ctx.lineTo(x+4,y+34);ctx.stroke();}}
    if(kind==='wood'){for(let i=0;i<28;i++){ctx.strokeStyle='#21170f24';ctx.lineWidth=.4;ctx.beginPath();const x=rand()*256;ctx.moveTo(x,0);ctx.bezierCurveTo(x+8,85,x-6,160,x+2,256);ctx.stroke();}}
    if(kind==='cloth')for(let i=0;i<256;i+=3){ctx.fillStyle='#b3a78a26';ctx.fillRect(i,0,1,256);ctx.fillRect(0,i,256,1);}
    if(kind==='brick'){ctx.strokeStyle='#a2957c';ctx.lineWidth=3;for(let y=0;y<256;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(256,y);ctx.stroke();for(let x=(y/32%2)*32;x<256;x+=64){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+32);ctx.stroke();}}}
    const t=own(new T.CanvasTexture(c));t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=8;return t;
   }
   const woodMap=texture('wood','#796045'),plasterMap=texture('plaster','#c4b99e'),clothMap=texture('cloth','#c4b69a'),brickMap=texture('brick','#69422d');
-  const mat=(color:string,map?:T.Texture,roughness=.93)=>own(new T.MeshStandardMaterial({color,map,roughness}));
+  const mat=(color:string,map?:T.Texture,roughness=.93,kind?:Surface)=>{const m=own(new T.MeshStandardMaterial({color,map,roughness}));return refineSurface(m,kind??(map===woodMap?'wood':map===clothMap?'cloth':map===brickMap?'brick':map===plasterMap?'plaster':roughness<.5?'ceramic':'iron'));};
   const woods=['#e3ccaa','#c5b59d','#d3b590','#b59f84'].map(c=>mat(c,woodMap));
-  const lime=mat(['#ddd6ba','#c7ccb9','#d8c7b0','#cbc3b3','#d7d0b9','#c4c7b5'][plan.palette],plasterMap),dark=mat('#211e18'),iron=mat('#37372e',undefined,.7),brick=mat('#c2aa93',brickMap),stone=mat('#8a8170'),cream=mat('#e9dfc9',clothMap),blanket=mat(['#786a53','#6a7773','#827064','#77794f','#8b7b66','#697071'][plan.palette],clothMap),ceramic=mat('#b5a787',undefined,.34),earthenware=mat('#835a3d',undefined,.42);
+  const lime=mat(['#ddd6ba','#c7ccb9','#d8c7b0','#cbc3b3','#d7d0b9','#c4c7b5'][plan.palette],plasterMap),dark=mat('#211e18',undefined,.93,'coal'),iron=mat('#37372e',undefined,.7),brick=mat('#c2aa93',brickMap),stone=mat('#8a8170',undefined,.93,'stone'),cream=mat('#e9dfc9',clothMap),blanket=mat(['#786a53','#6a7773','#827064','#77794f','#8b7b66','#697071'][plan.palette],clothMap),ceramic=mat('#b5a787',undefined,.34),earthenware=mat('#835a3d',undefined,.42);
   const batches=new Map<T.Material,T.BufferGeometry[]>();
   function add(g:T.BufferGeometry,m:T.Material,x=0,y=0,z=0,rx=0,ry=0,rz=0){const matrix=new T.Matrix4().compose(new T.Vector3(x,y+base,z),new T.Quaternion().setFromEuler(new T.Euler(rx,ry,rz)),new T.Vector3(1,1,1));const n=g.index?g.toNonIndexed():g.clone();g.dispose();n.applyMatrix4(matrix);const b=batches.get(m)||[];b.push(n);batches.set(m,b);}
   function box(x:number,y:number,z:number,a:number,b:number,c:number,m:T.Material=woods[0],ry=0){add(new T.BoxGeometry(a,b,c),m,x,y,z,0,ry);}
@@ -71,6 +79,7 @@ export function createInteriors(scene:T.Scene){
   box(-w/2+.105,.12,0,.045,.17,d-.18,woods[2]);box(0,.12,-d/2+.10,w-.20,.17,.045,woods[2]);
   for(const side of [-1,1])box(side*.51,.29,d/2,.06,.57,.21,woods[1]);box(0,.04,d/2,.98,.08,.36,stone);
   const glass=own(new T.MeshPhysicalMaterial({color:'#a4b7ae',transparent:true,opacity:.37,roughness:.18,metalness:.10,depthWrite:false,side:T.DoubleSide}));
+  refineSurface(glass,'glass');
   for(const wx of windows){const mid=(windowLow+windowHigh)/2,wh=windowHigh-windowLow;
    for(const dx of [-windowW/2,0,windowW/2])box(wx+dx,mid,-d/2+.07,.04,wh+.08,.07,woods[1]);
    for(const yy of [windowLow,mid,windowHigh])box(wx,yy,-d/2+.07,windowW+.06,.036,.07,woods[1]);

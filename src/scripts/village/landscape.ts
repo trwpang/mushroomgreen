@@ -1,3 +1,4 @@
+import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {brookWater,downstreamLine} from './brook-water';
 import { roads,brooks,baseGround,streamSurface,ground,streamWidth,streamDistance,nearestRoad,roundedLine,chainshopPosition,type Point,type Home } from './layout';
@@ -73,11 +74,12 @@ rockMaterial.onBeforeCompile=shader=>{
  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nstonePoint=position;');
  shader.fragmentShader='varying vec3 stonePoint;\n'+shader.fragmentShader;
  shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
- float grit=fract(sin(dot(floor(stonePoint*95.),vec3(12.9898,78.233,31.17)))*43758.5453);
+ float grit=mix(.5,fract(sin(dot(floor(stonePoint*95.),vec3(12.9898,78.233,31.17)))*43758.5453),1.-smoothstep(.3,1.2,length(fwidth(stonePoint*95.))));
  float vein=sin(stonePoint.x*23.+sin(stonePoint.z*17.)+stonePoint.y*11.);
  diffuseColor.rgb*=.75+grit*.4+vein*.055;
  diffuseColor.rgb*=mix(.57,1.,smoothstep(-.35,.55,stonePoint.y));`);
 };
+refineSurface(rockMaterial,'stone');
 const rockMesh=new T.InstancedMesh(stoneGeo,rockMaterial,rocks.length);
 rocks.forEach(({p,s,wet,surface},i)=>{d.position.set(p[0],surface?streamSurface(...p)-s*.16:ground(...p)+s*.33,p[1]);d.rotation.set(rand()*.3,rand()*6.28,rand()*.2);d.scale.set(s*1.3,s*.7,s);d.updateMatrix();rockMesh.setMatrixAt(i,d.matrix);rockMesh.setColorAt(i,new T.Color(wet?'#959188':'#a49879').multiplyScalar(.8+rand()*.35));});rockMesh.castShadow=rockMesh.receiveShadow=true;scene.add(rockMesh);
 const wakeVerts:number[]=[],wakeUvs:number[]=[];
@@ -96,5 +98,6 @@ const leaves:number[]=[],colors:number[]=[];for(let i=0;i<720;i++){const a=rand(
 const bushGeo=new T.BufferGeometry();bushGeo.setAttribute('position',new T.Float32BufferAttribute(leaves,3));bushGeo.setAttribute('color',new T.Float32BufferAttribute(colors,3));bushGeo.computeVertexNormals();const bushes=new T.InstancedMesh(bushGeo,new T.MeshStandardMaterial({color:'#a9b58b',vertexColors:true,side:T.DoubleSide,roughness:1}),shrubs.length);
 shrubs.forEach(({p,s},i)=>{d.position.set(p[0],ground(...p),p[1]);d.rotation.set(0,rand()*6.28,0);d.scale.set(s,s,s);d.updateMatrix();bushes.setMatrixAt(i,d.matrix);});bushes.castShadow=bushes.receiveShadow=true;scene.add(bushes);
 const reedGeo=new T.BufferGeometry();reedGeo.setAttribute('position',new T.Float32BufferAttribute([-.025,0,0,.10,1.1,.03,.025,0,0,0,0,-.025,-.04,.8,.17,0,0,.025],3));reedGeo.computeVertexNormals();const reedMesh=new T.InstancedMesh(reedGeo,new T.MeshStandardMaterial({color:'#8b9160',side:T.DoubleSide,roughness:1}),reeds.length);reeds.forEach((p,i)=>{d.position.set(p[0],ground(...p),p[1]);d.rotation.set(0,rand()*6.28,0);d.scale.setScalar(.65+rand()*.65);d.updateMatrix();reedMesh.setMatrixAt(i,d.matrix);});scene.add(reedMesh);
+refineSurface(bushes.material,'leaf');refineSurface(reedMesh.material,'leaf');
 return {update:(time:number)=>{waterTime.value=time;},reflect:(renderer:T.WebGLRenderer,camera:T.Camera,target:T.Vector3,force=false)=>water.reflect(renderer,camera,target,[...waterMeshes,wakeMesh],force),waterMeshes,counts:{rocks:rocks.length,shrubs:shrubs.length,reeds:reeds.length},waterMaterial:waterMat};
 }

@@ -1,3 +1,4 @@
+import {refineObject,weatherArchitecture} from '../rendering/surfaces';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -5,7 +6,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import {cinematicOutput} from '../rendering/finish';
 
 const mount = document.querySelector<HTMLDivElement>('#forge-canvas')!;
 const status = document.querySelector<HTMLElement>('#render-status')!;
@@ -72,7 +73,7 @@ async function start() {
   ao.blendIntensity = .75;
   ao.updateGtaoMaterial({ radius: .32, distanceExponent: 1.8, thickness: .7, scale: 1 });
   composer.addPass(ao);
-  composer.addPass(new OutputPass());
+  composer.addPass(cinematicOutput());
 
   const fireMaterials: THREE.MeshStandardMaterial[] = [];
   const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync('/forge/mushroom-green-forge.glb', (progress) => {
@@ -91,6 +92,7 @@ async function start() {
       if (material.normalMap) material.normalMap.anisotropy = 4;
     }
   });
+  weatherArchitecture(gltf.scene,0);refineObject(gltf.scene);
   scene.add(gltf.scene);
   const hearthLights = [-3, 0, 3].map(x => {
     const light = new THREE.PointLight('#ff781f', 30, 4.8, 2);

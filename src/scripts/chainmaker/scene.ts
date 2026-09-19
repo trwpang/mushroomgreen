@@ -1,3 +1,4 @@
+import {refineObject} from '../rendering/surfaces';
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -42,7 +43,7 @@ window.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===renderer.d
 Promise.all([loader.loadAsync('/chainmaker/chainmaker.glb'),loader.loadAsync('/forge/mushroom-green-forge.glb')]).then(([figure,forge])=>{
  figure.scene.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(figure.scene);rig=createChainmakerRig(figure.scene);
  forge.scene.updateMatrixWorld(true);forge.scene.traverse(o=>{if(!(o instanceof T.Mesh)||!/^Anvil|^Hearth/.test(o.name))return;const geo=centralWorkstation(o.geometry,o.matrixWorld);if(!geo.index?.count){geo.dispose();return;}const materials=(Array.isArray(o.material)?o.material:[o.material]).map(mat=>{const copy=mat.clone();if(copy instanceof T.MeshStandardMaterial&&copy.emissive.getHex()!==0){copy.color.set('#342f25');copy.emissive.set('#a82c05');copy.emissiveIntensity=.35;}return copy;});const m=new T.Mesh(geo,Array.isArray(o.material)?materials:materials[0]);if(!/^Anvil/.test(o.name))m.position.set(-1.35,0,-.5);m.castShadow=true;m.receiveShadow=true;scene.add(m);});
- ready=true;loading.hidden=true;rig.update(time);
+ refineObject(scene);ready=true;loading.hidden=true;rig.update(time);
 }).catch(error=>{console.error(error);loading.textContent='The study could not load. Reload to try again.';});
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 renderer.setAnimationLoop(now=>{const dt=Math.min((now-last)/1000,.05);last=now;if(!paused&&ready)time+=dt;if(rig)rig.update(time);fire.intensity=2.5+Math.sin(time*7)*.2;controls.update();renderer.render(scene,camera);});
