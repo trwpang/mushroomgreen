@@ -8,7 +8,7 @@ The main village now uses the same individual furnishing plans as the cutaway ro
 
 Detailed exterior glazing now transmits the view. The window reveals cover the rough brick edges seen from within. Nearby exterior detail also follows camera proximity, so a distant orbit target cannot leave a low-detail solid shell around the camera.
 
-The household panel offers **Step inside** for an eye-level view within the village. **Back outside** or Escape returns to the house view. **Look inside** retains the separate cutaway and floor selector. The room view is bookmarkable with `room=1`. This is still the existing orbit camera, not a walking controller with collisions or opening doors.
+The household panel offers **Go inside** for an eye-level view within the village. **Back outside** or Escape returns to the house view. **View cutaway**, available after entering the room, opens the separate cutaway and floor selector. The room view is bookmarkable with `room=1`. This is still the existing orbit camera, not a walking controller with collisions or opening doors.
 
 Validation:
 - `npm run village:check`

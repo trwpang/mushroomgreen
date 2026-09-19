@@ -1,0 +1,24 @@
+{
+  "triangles": 8832,
+  "draws": 3,
+  "supportGaps": [
+    0.011999999999936506,
+    0.012000000000302435,
+    0.07464834293201505,
+    0.030685613933506772
+  ],
+  "spec": {
+    "wheels": 2,
+    "spokesPerWheel": 14,
+    "horse": false,
+    "bodyWidth": 1.83,
+    "bodyLength": 2.44,
+    "shaftLength": 3.05
+  },
+  "position": [
+    35.77292040769322,
+    18.111660353032047,
+    40.79395900165533
+  ],
+  "clearOfHousesAndDoor": true
+}
