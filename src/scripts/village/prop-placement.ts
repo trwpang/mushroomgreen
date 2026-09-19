@@ -3,7 +3,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {createPropKit,type PropKind} from './working-props';
 import {planVillageLife} from './village-life';
 import {ground,localPoint,nearestRoad,nearestSegment,streamDistance,chainshopPosition,weaverWorkshop,type Home,type Point} from './layout';
-export type PropPlacement={kind:PropKind;p:Point;angle:number;home:number;group:string;tilt?:number;lift?:number};
+export type PropPlacement={kind:PropKind;p:Point;angle:number;home:number;group:string;tilt?:number;lift?:number;support?:string};
 const dims=(h:Home)=>({w:[6.4,7.2,9.2][h.style]*h.sx,d:[4.6,4.8,4.5][h.style]*h.sz});
 const local=(p:Point,c:Point,a:number):Point=>{const x=p[0]-c[0],z=p[1]-c[1];return [x*Math.cos(a)-z*Math.sin(a),x*Math.sin(a)+z*Math.cos(a)];};
 export function propGroundIssue(p:Point,homes:Home[],paths:Point[][],trees:Point[]=[]):string|null{
@@ -25,10 +25,11 @@ export function propGroundIssue(p:Point,homes:Home[],paths:Point[][],trees:Point
 }
 export function planWorkingProps(homes:Home[],models:Record<PropKind,T.Group>,paths:Point[][]=[],trees:Point[]=[]){
  const out:PropPlacement[]=[];const bounds=Object.fromEntries(Object.entries(models).map(([k,m])=>[k,new T.Box3().setFromObject(m)])) as Record<PropKind,T.Box3>;
- const samples=(a:PropPlacement):Point[]=>{const b=bounds[a.kind],v:Point[]=[];for(let x=b.min.x-.06;x<=b.max.x+.1;x+=.16)for(let z=b.min.z-.06;z<=b.max.z+.1;z+=.16)v.push([a.p[0]+x*Math.cos(a.angle)+z*Math.sin(a.angle),a.p[1]-x*Math.sin(a.angle)+z*Math.cos(a.angle)]);return v;};
+ const tiltedBounds=(a:PropPlacement)=>bounds[a.kind].clone().applyMatrix4(new T.Matrix4().makeRotationX(a.tilt??0));
+ const samples=(a:PropPlacement):Point[]=>{const b=tiltedBounds(a),v:Point[]=[];for(let x=b.min.x-.06;x<=b.max.x+.1;x+=.16)for(let z=b.min.z-.06;z<=b.max.z+.1;z+=.16)v.push([a.p[0]+x*Math.cos(a.angle)+z*Math.sin(a.angle),a.p[1]-x*Math.sin(a.angle)+z*Math.cos(a.angle)]);return v;};
  const occupied:{p:Point;radius:number;group:string}[]=planVillageLife(homes,paths).map(a=>({p:a.p,radius:.45,group:'animal'}));
  const accept=(a:PropPlacement)=>{
-  const b=bounds[a.kind],radius=Math.hypot(b.max.x-b.min.x,b.max.z-b.min.z)/2;
+  const b=tiltedBounds(a),radius=a.kind==='broom'?Math.max(Math.hypot(b.min.x,b.min.z),Math.hypot(b.max.x,b.max.z)):Math.hypot(b.max.x-b.min.x,b.max.z-b.min.z)/2;
   if(occupied.some(b=>b.group!==a.group&&Math.hypot(a.p[0]-b.p[0],a.p[1]-b.p[1])<radius+b.radius+.10))return false;
   const points=samples(a);if(points.some(p=>propGroundIssue(p,homes,paths,trees)))return false;
   const ys=points.map(p=>ground(...p));if(Math.max(...ys)-Math.min(...ys)>.21)return false;
@@ -54,14 +55,42 @@ export function planWorkingProps(homes:Home[],models:Record<PropKind,T.Group>,pa
   choices.forEach(kind=>{if(!requests.some(([k,id])=>k===kind&&id===h.number))requests.push([kind,h.number]);});
  }
  requests.unshift(['churn',40],['churn',31],['trestles',53],['trestles',6],['pump',24],['handcart',46],['grindstone',57]);
- for(const [kind,id] of requests){const h=homes.find(h=>h.number===id)!;const {w,d}=dims(h);let placed=false;
+ for(const [kind,id] of requests.filter(([kind])=>kind!=='broom')){const h=homes.find(h=>h.number===id)!;const {w,d}=dims(h);let placed=false;
   for(const rear of [3.8,5.1,6.4,7.5]){if(placed)break;for(const x of [w*.25,-w*.25,w*.48,-w*.48,0]){const p=localPoint(h,x,-d/2-rear),group=kind==='tub'?'wash-'+id:kind+'-'+id;
    if(accept({kind,p,angle:h.angle+(kind==='wheelbarrow'?.35:0),home:id,group})){placed=true;if(kind==='tub')out.push({kind:'washboard',p:localPoint(h,x,-d/2-rear-.18),angle:h.angle,tilt:-.55,lift:.07,home:id,group});break;}
   }}
  }
  // Guarantee one example of each requested type, with the same clearance rules.
- for(const kind of Object.keys(models) as PropKind[]){if(out.some(p=>p.kind===kind))continue;
+ for(const kind of Object.keys(models) as PropKind[]){if(kind==='broom'||out.some(p=>p.kind===kind))continue;
   outer:for(const h of homes.filter(h=>h.number!==5)){const {w,d}=dims(h);for(const rear of [4,5.5,7])for(const x of [-w*.4,w*.4])if(accept({kind,p:localPoint(h,x,-d/2-rear),angle:h.angle,home:h.number,group:kind+'-fallback'}))break outer;}
+ }
+ // Brooms need two supports: bristles and a barrel, or bristles and the handle tip.
+ // Fit the actual rotated geometry to terrain; an upright origin alone is not ground contact.
+ const broomPoints:T.Vector3[]=[];models.broom.traverse(o=>{if(o instanceof T.Mesh){const p=o.geometry.attributes.position;for(let i=0;i<p.count;i++)broomPoints.push(new T.Vector3().fromBufferAttribute(p,i));}});
+ // Keep extremal points from the brush and handle for the repeated terrain fit.
+ const contactPoints:T.Vector3[]=[];
+ for(const region of [broomPoints.filter(p=>p.y<.5),broomPoints.filter(p=>p.y>=.5)])for(const x of [-1,0,1])for(const y of [-1,0,1])for(const z of [-1,0,1]){
+  if(!x&&!y&&!z)continue;const direction=new T.Vector3(x,y,z);const v=region.reduce((best,p)=>p.dot(direction)>best.dot(direction)?p:best);if(!contactPoints.includes(v))contactPoints.push(v);
+ }
+ const fitBroom=(p:Point,angle:number,tilt:number,support:string,exact=false):PropPlacement&{contactDifference:number}=>{
+  const matrix=new T.Matrix4().makeRotationFromEuler(new T.Euler(tilt,angle,0,'YXZ'));
+  let head=-Infinity,tip=-Infinity,all=-Infinity;
+  for(const point of exact?broomPoints:contactPoints){const v=point.clone().applyMatrix4(matrix),height=ground(p[0]+v.x,p[1]+v.z)-v.y;all=Math.max(all,height);if(point.y<.3)head=Math.max(head,height);if(point.y>1.35)tip=Math.max(tip,height);}
+  return {kind:'broom',p,angle,tilt,lift:all-ground(...p)-.008,home:0,group:'',support, ...{contactDifference:tip-head}};
+ };
+ for(const [,id] of requests.filter(([kind])=>kind==='broom')){
+  const h=homes.find(h=>h.number===id)!,barrel=out.find(p=>p.home===id&&p.kind==='barrel');let placed=false;
+  if(barrel){const x=-.065,z=-.70,point:Point=[barrel.p[0]+x*Math.cos(barrel.angle)+z*Math.sin(barrel.angle),barrel.p[1]-x*Math.sin(barrel.angle)+z*Math.cos(barrel.angle)];
+   const a=fitBroom(point,barrel.angle,.38,barrel.group,true);a.home=id;a.group=barrel.group;placed=accept(a);
+  }
+  if(placed)continue;
+  const {w,d}=dims(h);
+  outer:for(const rear of [3.8,5.1,6.4,7.5])for(const x of [w*.25,-w*.25,w*.48,-w*.48,0]){
+   const p=localPoint(h,x,-d/2-rear),angle=h.angle+.35;let low=1.38,high=1.90;
+   // A small pitch adjustment lets both ends rest on uneven ground.
+   for(let i=0;i<14;i++){const mid=(low+high)/2,a=fitBroom(p,angle,mid,'ground');if(a.contactDifference>0)high=mid;else low=mid;}
+   const a=fitBroom(p,angle,(low+high)/2,'ground',true);a.home=id;a.group='broom-'+id;if(accept(a))break outer;
+  }
  }
  return out;
 }

@@ -70,3 +70,12 @@ References from other places and dates inform the surfaces and construction. The
 - Second-pass evidence is in `artifacts/village/props-round-2/`. `/props` opens the new set, with first-ten, all-twenty and individual controls.
 
 Local commit only. No push or deployment.
+
+
+## Broom support correction
+
+The original placement rule allowed brooms to stand without support. It also used an unrotated footprint and placed the origin above terrain. This was visible as a floating broom near household 31.
+
+Brooms are now placed after other objects. Seven lean against existing barrels. Fourteen lie on the ground, with pitch adjusted so the brush and handle tip both have support. Four unsafe broom placements are omitted. The current plan contains 215 objects; deferring brooms also allows one additional scuttle to fit.
+
+The planner tests rotated footprints. Terrain fitting uses contact extrema for pitch search, then all mesh vertices for the final height. Regression checks test the complete broom mesh against the terrain, the handle tip against the ground, and the handle against its recorded support barrel. Scene type checks and production build pass.
