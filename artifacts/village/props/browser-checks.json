@@ -1,0 +1,20 @@
+{
+  "counts": {
+    "wheelbarrow": 3,
+    "handcart": 1,
+    "pump": 1,
+    "tub": 2,
+    "washboard": 2,
+    "scuttle": 3,
+    "woodpile": 3,
+    "block": 2,
+    "grindstone": 2,
+    "tools": 3
+  },
+  "errors": [],
+  "reviewed": [
+    "all ten models",
+    "forge placement",
+    "Henry laundry placement"
+  ]
+}

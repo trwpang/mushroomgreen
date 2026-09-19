@@ -1,3 +1,4 @@
+import {addWorkingProps} from './prop-placement';
 import {addForgeCart} from './cart';
 import {panDestination,zoomDestination} from './navigation';
 import {inhabitHouses} from './inhabited-houses';
@@ -204,8 +205,9 @@ const shopGlow=new T.PointLight('#ffab57',5,4,2);shopGlow.position.copy(weaverSh
 const showcase=addShowcase(scene);
 let cartOak:T.MeshStandardMaterial|undefined;highTemplates[0].traverse(o=>{if(o instanceof T.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])if(m instanceof T.MeshStandardMaterial&&/Old oak/.test(m.name))cartOak=m;});
 const yardCart=addForgeCart(scene,cartOak);mount.dataset.carts='1';
+const workingProps=addWorkingProps(scene,homes,cartOak,paths,treePositions);mount.dataset.workingProps=JSON.stringify(workingProps.counts);
 let landscapeSeed=9321865;const landscapeRandom=()=>{landscapeSeed=(Math.imul(landscapeSeed,1664525)+1013904223)>>>0;return landscapeSeed/4294967296;};
-const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,life.placements.map(a=>a.p));mount.dataset.shrubs=String(landscape.counts.shrubs);mount.dataset.forgePosition=forgePos.join(',');
+const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)]);mount.dataset.shrubs=String(landscape.counts.shrubs);mount.dataset.forgePosition=forgePos.join(',');
 weatherArchitecture(forgeRoot,forgeRoot.position.y);weatherArchitecture(weaverShop,weaverShop.position.y);
 refineSurface(timber,'wood');refineSurface(iron,'iron');refineSurface(stone,'stone');refineSurface(brick,'brick');refineSurface(lime,'plaster');refineSurface(glass,'glass');
 refineSurface(meadow.material,'leaf');refineSurface(treeTrunks.material as T.MeshStandardMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);
