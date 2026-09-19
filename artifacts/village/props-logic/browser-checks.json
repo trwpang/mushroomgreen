@@ -1,0 +1,10 @@
+{
+  "url": "http://127.0.0.1:4326/village?view=washing&still=1",
+  "counts": "{\"wheelbarrow\":3,\"handcart\":2,\"pump\":1,\"tub\":10,\"washboard\":10,\"scuttle\":11,\"woodpile\":9,\"block\":7,\"grindstone\":1,\"tools\":26,\"basket\":27,\"bucket\":13,\"churn\":2,\"ladder\":1,\"broom\":29,\"trough\":2,\"barrel\":2,\"hayfork\":13,\"sacks\":18,\"trestles\":2}",
+  "errors": [],
+  "visualChecks": [
+    "Sacks show darker woven cloth, seams, ties and stripes.",
+    "House 6 chopping block and firewood share a wall-side work area.",
+    "Henry’s washing tub, washboard and bucket remain beside the clothes line."
+  ]
+}

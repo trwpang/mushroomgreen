@@ -86,3 +86,25 @@ The planner tests rotated footprints. Terrain fitting uses contact extrema for p
 At the user's request, all 28 brooms now lean against blank cottage gable walls. The handle reach uses the rotated mesh. The support face includes the authored brick relief and each cottage's horizontal scale. The bristles touch terrain; doors and windows are on the other elevations. Existing authored rain barrels also have explicit clearance.
 
 The regression check now requires wall support for every broom. It checks all vertices for wall penetration, handle-to-wall contact and bristle-to-ground contact. Current total: 222 objects. Type checks and production build pass.
+
+
+## Working-area pass (supersedes individual scatter placement)
+
+Props are now arranged by use. A placement transaction must fit the whole required group; it cannot leave a lone axe or basket behind.
+
+- Fuel: wood stack and chopping block within two metres, beside a cottage wall.
+- Garden: rack beside a blank gable, with optional barrow or fork within 2.5 metres.
+- Washing: tub, leaning washboard, basket and bucket in a working yard. Henry’s original tub and board remain in their wash-day position; companions are optional if space is blocked.
+- Storage: sacks and a carrying basket beside a wall, on timber support boards.
+- Water: barrel or pump with a bucket; shared facilities stay scarce.
+- Delivery: handcart and churn together.
+- Repairs: saw trestles beside a timber stack.
+- Feeding: troughs near existing hens, outside their motion envelopes.
+- Coal: scuttles beside existing coal bunkers.
+- Housekeeping: brooms retain their wall and terrain supports.
+
+Rotated rectangles now prevent overlap between group members as well as unrelated props. Only the washboard/tub pair has deliberate overlap. Roads, paths, foundations, fences, rear stores, authored barrels, workshops, animals and tree trunks remain excluded. Unrelated types no longer have an arbitrary empty-ground fallback.
+
+All twenty types remain in use: 189 placed objects across 58 household areas. Geometry and purpose checks pass, including partner distance and actual rack/wall spacing. Scene type check and guarded build pass. Evidence is in `artifacts/village/props-logic/`.
+
+The grain sacks now have darker woven hemp cloth, original repeating yarn texture, visible ties and seams, stronger folds, faded woven stripes, outward normals and closed bases. Their identity and contents are interpreted; no household inventory establishes these sacks.

@@ -11,6 +11,15 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
  const mats=[new T.MeshStandardMaterial({vertexColors:true,roughness:.96,map:oak?.map??null,normalMap:oak?.normalMap??null,roughnessMap:oak?.roughnessMap??null}),new T.MeshStandardMaterial({vertexColors:true,roughness:.78,metalness:.55}),new T.MeshStandardMaterial({vertexColors:true,roughness:1}),new T.MeshStandardMaterial({vertexColors:true,roughness:.96}),new T.MeshStandardMaterial({vertexColors:true,roughness:.25,metalness:.22}),new T.MeshStandardMaterial({vertexColors:true,roughness:1,side:T.DoubleSide})];
  mats.forEach((m,i)=>{m.name=['Prop oak','Prop iron','Prop stone','Prop end grain','Prop still water','Prop sack cloth'][i];if(i<4)refineSurface(m,['wood','iron','stone','wood'][i] as 'wood'|'iron'|'stone');});
  refineSurface(mats[5],'cloth');
+ // Original woven hemp texture: crossing yarns and fine fibres, with mipmaps for distant views.
+ const clothPixels=new Uint8Array(256*256*4);
+ for(let y=0;y<256;y++)for(let x=0;x<256;x++){const cellX=Math.floor(x/8),cellY=Math.floor(y/8),over=(cellX+cellY)%2===0;
+  const strand=over?Math.sin((x%8+.5)/8*Math.PI):Math.sin((y%8+.5)/8*Math.PI),fibre=Math.sin(x*1.7+y*2.3)*5;
+  const shade=Math.round(174+strand*59+fibre),i=(y*256+x)*4;clothPixels[i]=shade;clothPixels[i+1]=shade;clothPixels[i+2]=shade;clothPixels[i+3]=255;
+ }
+ const hemp=new T.DataTexture(clothPixels,256,256);hemp.wrapS=hemp.wrapT=T.RepeatWrapping;hemp.repeat.set(10,8);hemp.generateMipmaps=true;hemp.minFilter=T.LinearMipmapLinearFilter;hemp.magFilter=T.LinearFilter;hemp.colorSpace=T.SRGBColorSpace;hemp.needsUpdate=true;
+ mats[5].map=hemp;mats[5].bumpMap=hemp;mats[5].bumpScale=.0025;
+
  const W=0,I=1,S=2,E=3,A=4,C=5;
  const brown='#837057',dark='#33342e',cut='#b49b72',rust='#77553c';
  const make=(kind:PropKind)=>{
@@ -136,7 +145,7 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
   for(const x of [-.3,.3])for(const z of [-.45,.45])nail([x,.79,z+.06]);
  }
  if(kind==='tools'){
-  for(const x of [-.50,.50]){plank([x,.71,0],[.07,1.42,.09]);plank([x,.035,0],[.13,.07,.52]);}
+  for(const x of [-.50,.50]){plank([x,.71,0],[.07,1.42,.09]);plank([x,.035,.13],[.13,.07,.35]);}
   for(const y of [.24,1.12])plank([0,y,0],[1.13,.09,.065]);
   for(const x of [-.34,0,.34]){rod([x,.14,.16],[x,1.28,.07],.018,W,brown,.020);rod([x-.07,1.28,.07],[x+.07,1.28,.07],.02,W,brown);for(const dx of [-.04,.04])tube([[x+dx,1.14,.03],[x+dx,1.14,.15],[x+dx,1.18,.15]],.007,I,dark);}
   blade([[-.10,.22],[.10,.22],[.105,.035],[.07,0],[-.07,0],[-.105,.035]],.013,[-.34,.02,.165],[.04,0,0],'#625e4b');
@@ -209,13 +218,18 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
  }
  if(kind==='sacks'){
   const sack=(p:V,height:number,width:number,rot:V)=>{
-   const rows=18,n=28,vertices:number[]=[];const pt=(i:number,j:number):V=>{const t=i/rows,a=j*tau/n;let r=width*(.64+.36*Math.sin(t*Math.PI));r*=t>.77?Math.max(.12,1-(t-.77)*4.2):1;const fold=.008*Math.sin(a*9+t*16)*(t>.7?1.5:.4);return [Math.cos(a)*(r+fold),.025+t*height,Math.sin(a)*(r+fold)*.71];};
-   for(let i=0;i<rows;i++)for(let j=0;j<n;j++){const a=pt(i,j),b=pt(i,j+1),c=pt(i+1,j+1),d=pt(i+1,j);vertices.push(...a,...b,...c,...a,...c,...d);}
-   const raw=new T.BufferGeometry();raw.setAttribute('position',new T.Float32BufferAttribute(vertices,3));const g=mergeVertices(raw);raw.dispose();g.computeVertexNormals();add(g,C,'#a48e68',p,rot);
+   const rows=24,n=36,vertices:number[]=[],uvs:number[]=[];const pt=(i:number,j:number):V=>{const t=i/rows,a=j*tau/n;let r=width*(.64+.36*Math.sin(t*Math.PI));r*=t>.77?Math.max(.12,1-(t-.77)*4.2):1;const fold=.012*Math.sin(a*9+t*16)*(t>.7?1.5:.4)+.009*Math.sin(a*3+t*7)*Math.sin(t*Math.PI);return [Math.cos(a)*(r+fold),.025+t*height,Math.sin(a)*(r+fold)*.71];};
+   for(let i=0;i<rows;i++)for(let j=0;j<n;j++){const a=pt(i,j),b=pt(i,j+1),c=pt(i+1,j+1),d=pt(i+1,j);vertices.push(...a,...c,...b,...a,...d,...c);uvs.push(j/n,i/rows,(j+1)/n,(i+1)/rows,(j+1)/n,i/rows,j/n,i/rows,j/n,(i+1)/rows,(j+1)/n,(i+1)/rows);}
+   for(let j=0;j<n;j++){vertices.push(0,.025,0,...pt(0,j),...pt(0,j+1));uvs.push(.5,.5,j/n,0,(j+1)/n,0);}
+   const raw=new T.BufferGeometry();raw.setAttribute('position',new T.Float32BufferAttribute(vertices,3));raw.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));const g=mergeVertices(raw);raw.dispose();g.computeVertexNormals();add(g,C,'#8d704b',p,rot);
+   for(const offset of [-.08,.08]){
+    const ribbon:number[]=[],tex:number[]=[];for(let i=2;i<20;i++){const a=.5*Math.PI+offset;const pts=[pt(i,(a-.018)/tau*n),pt(i+1,(a-.018)/tau*n),pt(i+1,(a+.018)/tau*n),pt(i,(a+.018)/tau*n)];pts.forEach(q=>{q[0]*=1.003;q[2]*=1.003;});ribbon.push(...pts[0],...pts[1],...pts[2],...pts[0],...pts[2],...pts[3]);tex.push(0,i/24,0,(i+1)/24,1,(i+1)/24,0,i/24,1,(i+1)/24,1,i/24);}
+    const stripe=new T.BufferGeometry();stripe.setAttribute('position',new T.Float32BufferAttribute(ribbon,3));stripe.setAttribute('uv',new T.Float32BufferAttribute(tex,2));stripe.computeVertexNormals();add(stripe,C,'#514f42',p,rot);
+   }
    // Sewn side edges and a tied, puckered neck follow the same shape transform.
    for(const a of [0,Math.PI]){const points=[];for(let i=0;i<=18;i++)points.push(pt(i,a/ tau*n));const seam=new T.TubeGeometry(new T.CatmullRomCurve3(points.map(q=>new T.Vector3(...q))),24,.003,4,false);add(seam,C,'#77674d',p,rot);}
    const neck=new T.TorusGeometry(width*.14,.007,5,18);neck.rotateX(Math.PI/2);neck.translate(0,height*.975,0);add(neck,E,'#68583d',p,rot);
-   const cap=new T.ConeGeometry(width*.14,.045,8);cap.scale(1,1,.71);cap.translate(0,height+.012,0);add(cap,C,'#a99166',p,rot);
+   const cap=new T.ConeGeometry(width*.14,.045,8);cap.scale(1,1,.71);cap.translate(0,height+.012,0);add(cap,C,'#8f724e',p,rot);
    for(const dx of [-.012,.012]){const cord=new T.TubeGeometry(new T.CatmullRomCurve3([new T.Vector3(dx,height*.97,.018),new T.Vector3(dx*2,height*.92,.047),new T.Vector3(dx*3,height*.84,.033)]),8,.003,4,false);add(cord,E,'#68583d',p,rot);}
   };
   for(const z of [-.19,0,.19])plank([0,.03,z],[1.10,.06,.18]);

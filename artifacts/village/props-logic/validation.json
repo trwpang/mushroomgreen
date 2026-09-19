@@ -1,0 +1,2616 @@
+{
+  "models": {
+    "wheelbarrow": {
+      "triangles": 1404,
+      "size": [
+        0.8352360725402832,
+        0.7789999806554988,
+        2.1470701694488525
+      ],
+      "draws": 3
+    },
+    "handcart": {
+      "triangles": 2500,
+      "size": [
+        1.4695000052452087,
+        0.8139999866252765,
+        2.495108962059021
+      ],
+      "draws": 3
+    },
+    "pump": {
+      "triangles": 1276,
+      "size": [
+        1.2266426086425781,
+        1.4600000382959843,
+        1.4946717619895935
+      ],
+      "draws": 4
+    },
+    "tub": {
+      "triangles": 2056,
+      "size": [
+        1.0471681356430054,
+        0.4332027016207576,
+        0.8735061287879944
+      ],
+      "draws": 3
+    },
+    "washboard": {
+      "triangles": 768,
+      "size": [
+        0.453000009059906,
+        0.8399999606609345,
+        0.10649999603629112
+      ],
+      "draws": 3
+    },
+    "scuttle": {
+      "triangles": 5344,
+      "size": [
+        0.37146541476249695,
+        0.5187750551849604,
+        0.578130453824997
+      ],
+      "draws": 2
+    },
+    "woodpile": {
+      "triangles": 7976,
+      "size": [
+        1.4500000476837158,
+        0.9099999642372132,
+        0.874238520860672
+      ],
+      "draws": 2
+    },
+    "block": {
+      "triangles": 3010,
+      "size": [
+        1.0725088119506836,
+        0.8739219568669796,
+        0.9901197850704193
+      ],
+      "draws": 3
+    },
+    "grindstone": {
+      "triangles": 6704,
+      "size": [
+        1.147252470254898,
+        1.2584870103746653,
+        1.4364848136901855
+      ],
+      "draws": 4
+    },
+    "tools": {
+      "triangles": 2636,
+      "size": [
+        1.1299999952316284,
+        1.4199999572336675,
+        0.3500000089406967
+      ],
+      "draws": 2
+    },
+    "basket": {
+      "triangles": 11456,
+      "size": [
+        0.6179797351360321,
+        0.6209998838603497,
+        0.492000013589859
+      ],
+      "draws": 1
+    },
+    "bucket": {
+      "triangles": 2480,
+      "size": [
+        0.36890000104904175,
+        0.5093637220561504,
+        0.36702436208724976
+      ],
+      "draws": 3
+    },
+    "churn": {
+      "triangles": 2616,
+      "size": [
+        0.6425432562828064,
+        0.9404999930411577,
+        0.5239999890327454
+      ],
+      "draws": 2
+    },
+    "ladder": {
+      "triangles": 520,
+      "size": [
+        0.5699999928474426,
+        1.5104757938534021,
+        1.020810604095459
+      ],
+      "draws": 2
+    },
+    "broom": {
+      "triangles": 2600,
+      "size": [
+        0.34640516340732574,
+        1.4832669403403997,
+        0.32436373829841614
+      ],
+      "draws": 2
+    },
+    "trough": {
+      "triangles": 1752,
+      "size": [
+        1.4700000286102295,
+        0.3941682049771771,
+        0.6499999761581421
+      ],
+      "draws": 3
+    },
+    "barrel": {
+      "triangles": 3812,
+      "size": [
+        0.7009958624839783,
+        1.063500045388937,
+        0.8210880756378174
+      ],
+      "draws": 4
+    },
+    "hayfork": {
+      "triangles": 1136,
+      "size": [
+        0.3667459189891815,
+        0.44166788101196297,
+        2.1774052381515503
+      ],
+      "draws": 3
+    },
+    "sacks": {
+      "triangles": 7668,
+      "size": [
+        1.100000023841858,
+        0.8124446266144514,
+        0.5600000023841858
+      ],
+      "draws": 3
+    },
+    "trestles": {
+      "triangles": 736,
+      "size": [
+        2.0999999046325684,
+        0.8380000074394047,
+        0.9164587259292603
+      ],
+      "draws": 3
+    }
+  },
+  "placements": [
+    {
+      "kind": "tub",
+      "p": [
+        -2.748857562289067,
+        7.363849679498231
+      ],
+      "angle": 2.73340989322218,
+      "home": 22,
+      "group": "washing-22",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        -2.8203071299245352,
+        7.529061541314218
+      ],
+      "angle": 2.73340989322218,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 22,
+      "group": "washing-22",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        -3.5290246875312254,
+        7.026448943441853
+      ],
+      "angle": 2.73340989322218,
+      "home": 22,
+      "group": "washing-22",
+      "station": "washing"
+    },
+    {
+      "kind": "trestles",
+      "p": [
+        -29.173333922158193,
+        -96.98852112515164
+      ],
+      "angle": -3.0880823458976128,
+      "home": 53,
+      "group": "repair-53",
+      "station": "repair"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        -29.23858534749267,
+        -98.20677489653583
+      ],
+      "angle": -3.0880823458976128,
+      "home": 53,
+      "group": "repair-53",
+      "station": "repair"
+    },
+    {
+      "kind": "trestles",
+      "p": [
+        20.136948228147418,
+        58.929312798900035
+      ],
+      "angle": 2.070477703027712,
+      "home": 6,
+      "group": "repair-6",
+      "station": "repair"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        21.207785262076555,
+        58.34475480625444
+      ],
+      "angle": 2.070477703027712,
+      "home": 6,
+      "group": "repair-6",
+      "station": "repair"
+    },
+    {
+      "kind": "handcart",
+      "p": [
+        -7.307521595070514,
+        -71.48336334063957
+      ],
+      "angle": 6.495355578069589,
+      "home": 40,
+      "group": "delivery-40",
+      "station": "delivery"
+    },
+    {
+      "kind": "churn",
+      "p": [
+        -6.958845376344934,
+        -69.38984360237693
+      ],
+      "angle": 4.924559251274692,
+      "home": 40,
+      "group": "delivery-40",
+      "station": "delivery"
+    },
+    {
+      "kind": "handcart",
+      "p": [
+        57.916971953769554,
+        -50.21359660899699
+      ],
+      "angle": 5.914140191400867,
+      "home": 31,
+      "group": "delivery-31",
+      "station": "delivery"
+    },
+    {
+      "kind": "churn",
+      "p": [
+        57.058967726188634,
+        -48.27240399994108
+      ],
+      "angle": 4.343343864605971,
+      "home": 31,
+      "group": "delivery-31",
+      "station": "delivery"
+    },
+    {
+      "kind": "grindstone",
+      "p": [
+        35.73966115904914,
+        38.032819051855675
+      ],
+      "angle": 1.03,
+      "home": 5,
+      "group": "workshop-5",
+      "station": "workshop"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        77.77056246397296,
+        11.739856064598124
+      ],
+      "angle": -0.623829467114269,
+      "home": 1,
+      "group": "washing-1",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        77.87570903437094,
+        11.593759525509945
+      ],
+      "angle": -0.623829467114269,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 1,
+      "group": "washing-1",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        77.03196329413828,
+        11.208281736475033
+      ],
+      "angle": -0.623829467114269,
+      "home": 1,
+      "group": "washing-1",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        78.4185889358639,
+        12.24320653070359
+      ],
+      "angle": -0.623829467114269,
+      "home": 1,
+      "group": "washing-1",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        61.26029443516437,
+        21.179901390021946
+      ],
+      "angle": -2.237735189804133,
+      "home": 2,
+      "group": "storage-2",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        60.656925545883524,
+        21.913962684089412
+      ],
+      "angle": -2.237735189804133,
+      "home": 2,
+      "group": "storage-2",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        55.40985823339557,
+        28.340726660481696
+      ],
+      "angle": 4.021385372043846,
+      "home": 3,
+      "group": "garden-3",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        54.55331239662274,
+        29.376422189827622
+      ],
+      "angle": 4.021385372043846,
+      "home": 3,
+      "group": "garden-3",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        59.075999851089016,
+        41.07323522769349
+      ],
+      "angle": 4.08677567746429,
+      "home": 4,
+      "group": "coal-4",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        32.27667566611691,
+        62.83515234109865
+      ],
+      "angle": 0.4996813762328154,
+      "home": 6,
+      "group": "fuel-6",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "block",
+      "p": [
+        33.54383672096317,
+        62.23456690914004
+      ],
+      "angle": 0.4996813762328154,
+      "home": 6,
+      "group": "fuel-6",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        27.3820640478618,
+        73.4660387026528
+      ],
+      "angle": -1.69790328484969,
+      "home": 7,
+      "group": "washing-7",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        27.560611948382935,
+        73.48885639796794
+      ],
+      "angle": -1.69790328484969,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 7,
+      "group": "washing-7",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        27.497420174177208,
+        72.56337987224039
+      ],
+      "angle": -1.69790328484969,
+      "home": 7,
+      "group": "washing-7",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        27.248358785783772,
+        74.27562063358545
+      ],
+      "angle": -1.69790328484969,
+      "home": 7,
+      "group": "washing-7",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        7.6116643870349705,
+        73.11534495064745
+      ],
+      "angle": 0.9432483746378053,
+      "home": 8,
+      "group": "storage-8",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        8.18565736416942,
+        72.3580919795735
+      ],
+      "angle": 0.9432483746378053,
+      "home": 8,
+      "group": "storage-8",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        1.9813250512502445,
+        77.86176180167959
+      ],
+      "angle": 2.514044701432702,
+      "home": 8,
+      "group": "coal-8",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -12.026347052452605,
+        53.93132258679353
+      ],
+      "angle": 0.07250408951294851,
+      "home": 9,
+      "group": "garden-9",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -10.685878103690825,
+        53.83396244399633
+      ],
+      "angle": 0.07250408951294851,
+      "home": 9,
+      "group": "garden-9",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        -34.52588267251871,
+        11.593970523316734
+      ],
+      "angle": -2.1355491419871635,
+      "home": 11,
+      "group": "storage-11",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -35.0512237696204,
+        12.385751257924488
+      ],
+      "angle": -2.1355491419871635,
+      "home": 11,
+      "group": "storage-11",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        -3.725212494526805,
+        17.00393168620621
+      ],
+      "angle": 1.0253563617331993,
+      "home": 12,
+      "group": "fuel-12",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "block",
+      "p": [
+        -2.930508591724386,
+        15.848576456473554
+      ],
+      "angle": 1.0253563617331993,
+      "home": 12,
+      "group": "fuel-12",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -14.034789080701543,
+        11.47749108069075
+      ],
+      "angle": 4.1669490153229924,
+      "home": 12,
+      "group": "garden-12",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        -9.027143651459749,
+        21.979242110953628
+      ],
+      "angle": 2.596152688528096,
+      "home": 12,
+      "group": "coal-12",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        -24.76363636438912,
+        4.990241307121341
+      ],
+      "angle": 2.7196825346441154,
+      "home": 13,
+      "group": "washing-13",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        -24.83734705137984,
+        5.154456819857977
+      ],
+      "angle": 2.7196825346441154,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 13,
+      "group": "washing-13",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -23.933435716665016,
+        5.362889780241084
+      ],
+      "angle": 2.7196825346441154,
+      "home": 13,
+      "group": "washing-13",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        -25.499444141246457,
+        4.627078925374184
+      ],
+      "angle": 2.7196825346441154,
+      "home": 13,
+      "group": "washing-13",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        29.964840533519535,
+        27.178405971765336
+      ],
+      "angle": -0.4998544196952375,
+      "home": 14,
+      "group": "storage-14",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        30.789024308155028,
+        27.65129190476355
+      ],
+      "angle": -0.4998544196952375,
+      "home": 14,
+      "group": "storage-14",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        68.37193301785085,
+        -4.264525152728163
+      ],
+      "angle": -3.571186758266509,
+      "home": 15,
+      "group": "garden-15",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        67.22642306816526,
+        -4.789317449900414
+      ],
+      "angle": -3.571186758266509,
+      "home": 15,
+      "group": "garden-15",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        88.23606672076112,
+        -15.64748334668176
+      ],
+      "angle": -1.5555437844615514,
+      "home": 16,
+      "group": "coal-16",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        72.23050865328264,
+        -17.66633781469198
+      ],
+      "angle": 0.00771970758800733,
+      "home": 17,
+      "group": "storage-17",
+      "station": "storage",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        73.180634738946,
+        -17.653672059995863
+      ],
+      "angle": 0.00771970758800733,
+      "home": 17,
+      "group": "storage-17",
+      "station": "storage",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        57.277985856580436,
+        -6.276976607786684
+      ],
+      "angle": 1.6339789584144473,
+      "home": 18,
+      "group": "fuel-18",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "block",
+      "p": [
+        57.269429385061535,
+        -7.6792343539928325
+      ],
+      "angle": 1.6339789584144473,
+      "home": 18,
+      "group": "fuel-18",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        44.445133193039176,
+        -4.839834952030201
+      ],
+      "angle": 4.77557161200424,
+      "home": 18,
+      "group": "garden-18",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        23.63043859260863,
+        11.040876112687396
+      ],
+      "angle": -2.9605049879844163,
+      "home": 19,
+      "group": "washing-19",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        23.66285651345599,
+        11.217932822269198
+      ],
+      "angle": -2.9605049879844163,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 19,
+      "group": "washing-19",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        24.525558624383297,
+        10.876985512847984
+      ],
+      "angle": -2.9605049879844163,
+      "home": 19,
+      "group": "washing-19",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        22.818443928816972,
+        11.159048300506164
+      ],
+      "angle": -2.9605049879844163,
+      "home": 19,
+      "group": "washing-19",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        24.74649863983167,
+        -58.19815403779628
+      ],
+      "angle": 1.3543116060979892,
+      "home": 20,
+      "group": "storage-20",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        24.97008965416009,
+        -59.1216837115543
+      ],
+      "angle": 1.3543116060979892,
+      "home": 20,
+      "group": "storage-20",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        20.983429547334072,
+        -52.988885048900244
+      ],
+      "angle": 2.9251079328928857,
+      "home": 20,
+      "group": "coal-20",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -0.738623444859277,
+        -12.65630346922548
+      ],
+      "angle": -1.7314350105504155,
+      "home": 21,
+      "group": "garden-21",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -0.9535944978017136,
+        -11.329607028287757
+      ],
+      "angle": -1.7314350105504155,
+      "home": 21,
+      "group": "garden-21",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        62.53901829917072,
+        -33.961267364758136
+      ],
+      "angle": -0.002918987051610422,
+      "home": 23,
+      "group": "storage-23",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        63.4889558722849,
+        -33.938494416201834
+      ],
+      "angle": -0.002918987051610422,
+      "home": 23,
+      "group": "storage-23",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        20.364879438690267,
+        -26.80950860137076
+      ],
+      "angle": 0.27535320666384133,
+      "home": 24,
+      "group": "fuel-24",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "block",
+      "p": [
+        21.73389130266304,
+        -27.113163860343484
+      ],
+      "angle": 0.27535320666384133,
+      "home": 24,
+      "group": "fuel-24",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        16.257592469977077,
+        -39.05196249671001
+      ],
+      "angle": 3.4169458602536347,
+      "home": 24,
+      "group": "garden-24",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        13.014743711821964,
+        -27.064211686175945
+      ],
+      "angle": 1.846149533458738,
+      "home": 24,
+      "group": "coal-24",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        13.754651360747726,
+        -43.61827271839039
+      ],
+      "angle": 2.935733254954565,
+      "home": 25,
+      "group": "washing-25",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        13.717857832853506,
+        -43.4420732964132
+      ],
+      "angle": 2.935733254954565,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 25,
+      "group": "washing-25",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        14.645437327410207,
+        -43.432260994036284
+      ],
+      "angle": 2.935733254954565,
+      "home": 25,
+      "group": "washing-25",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        12.95809735972288,
+        -43.81525424912692
+      ],
+      "angle": 2.935733254954565,
+      "home": 25,
+      "group": "washing-25",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        -20.203390987768262,
+        -16.65448914092611
+      ],
+      "angle": -1.7854224241183814,
+      "home": 26,
+      "group": "storage-26",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -20.425265123051926,
+        -15.730545491079363
+      ],
+      "angle": -1.7854224241183814,
+      "home": 26,
+      "group": "storage-26",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -10.46082761631605,
+        -29.89390537976819
+      ],
+      "angle": -1.940229302719256,
+      "home": 27,
+      "group": "garden-27",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -2.49219071142331,
+        -27.870417493331754
+      ],
+      "angle": 1.201363350870537,
+      "home": 27,
+      "group": "garden-27",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        39.96602117089803,
+        -46.38505001462516
+      ],
+      "angle": 0.20397213017861038,
+      "home": 29,
+      "group": "storage-29",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        40.90037860743888,
+        -46.55789729050999
+      ],
+      "angle": 0.20397213017861038,
+      "home": 29,
+      "group": "storage-29",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        33.04900653809473,
+        -28.133914759744197
+      ],
+      "angle": -1.3214245366378607,
+      "home": 30,
+      "group": "garden-30",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        59.79440534936991,
+        -52.29559805112097
+      ],
+      "angle": 4.343343864605971,
+      "home": 31,
+      "group": "washing-31",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        59.962286349217216,
+        -52.23066755065878
+      ],
+      "angle": 4.343343864605971,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 31,
+      "group": "washing-31",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        60.12266510170652,
+        -53.14432977257122
+      ],
+      "angle": 4.343343864605971,
+      "home": 31,
+      "group": "washing-31",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        59.47063068062318,
+        -51.541628579671396
+      ],
+      "angle": 4.343343864605971,
+      "home": 31,
+      "group": "washing-31",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        48.3581984053873,
+        -56.16823476787844
+      ],
+      "angle": 5.984403998996305,
+      "home": 32,
+      "group": "storage-32",
+      "station": "storage",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        49.260222422126354,
+        -55.86948290892867
+      ],
+      "angle": 5.984403998996305,
+      "home": 32,
+      "group": "storage-32",
+      "station": "storage",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        55.0674801411924,
+        -59.94440458022959
+      ],
+      "angle": 4.413607672201408,
+      "home": 32,
+      "group": "coal-32",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        46.183864181916576,
+        -61.31370650342092
+      ],
+      "angle": 1.2586629570927474,
+      "home": 33,
+      "group": "garden-33",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        31.60514173071414,
+        -68.17078662075609
+      ],
+      "angle": -3.465300934376396,
+      "home": 35,
+      "group": "storage-35",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        30.71084414578913,
+        -68.49192806871524
+      ],
+      "angle": -3.465300934376396,
+      "home": 35,
+      "group": "storage-35",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        25.187240552282855,
+        -61.46860178654207
+      ],
+      "angle": -0.2384115205605446,
+      "home": 36,
+      "group": "garden-36",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        13.807763885477698,
+        -71.11490678563838
+      ],
+      "angle": -3.327270935848756,
+      "home": 38,
+      "group": "storage-38",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        12.877785455447098,
+        -71.30994555019
+      ],
+      "angle": -3.327270935848756,
+      "home": 38,
+      "group": "storage-38",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -1.0094581056430818,
+        -72.9410766482655
+      ],
+      "angle": 2.9498040588667553,
+      "home": 39,
+      "group": "garden-39",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -1.2915263549571208,
+        -65.68507100326757
+      ],
+      "angle": 6.0913967124565485,
+      "home": 39,
+      "group": "garden-39",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        -14.367132375587323,
+        -63.090067720637556
+      ],
+      "angle": 6.495355578069589,
+      "home": 40,
+      "group": "fuel-40",
+      "station": "fuel",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "block",
+      "p": [
+        -12.981679139386305,
+        -63.30667642383326
+      ],
+      "angle": 6.495355578069589,
+      "home": 40,
+      "group": "fuel-40",
+      "station": "fuel",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        -9.222264357883109,
+        -71.91933103611525
+      ],
+      "angle": 4.924559251274692,
+      "home": 40,
+      "group": "coal-40",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        -23.68321828618796,
+        -58.573094517052354
+      ],
+      "angle": 6.556720931841112,
+      "home": 41,
+      "group": "storage-41",
+      "station": "storage",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -22.763134818692926,
+        -58.81046851066227
+      ],
+      "angle": 6.556720931841112,
+      "home": 41,
+      "group": "storage-41",
+      "station": "storage",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        -32.19787394542148,
+        -56.04840423728022
+      ],
+      "angle": 0.4548368974697201,
+      "home": 42,
+      "group": "fuel-42",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "block",
+      "p": [
+        -30.905062910372443,
+        -56.59157974082896
+      ],
+      "angle": 0.4548368974697201,
+      "home": 42,
+      "group": "fuel-42",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -36.76514216631221,
+        -63.982796320671625
+      ],
+      "angle": 3.5964295510595132,
+      "home": 42,
+      "group": "garden-42",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        -41.01563628558693,
+        -47.94379334770864
+      ],
+      "angle": -2.5590551214305375,
+      "home": 43,
+      "group": "washing-43",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        -40.91661023580566,
+        -47.79348086830417
+      ],
+      "angle": -2.5590551214305375,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 43,
+      "group": "washing-43",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -40.255723195264345,
+        -48.444425043825035
+      ],
+      "angle": -2.5590551214305375,
+      "home": 43,
+      "group": "washing-43",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        -41.71689747783749,
+        -47.51772675638363
+      ],
+      "angle": -2.5590551214305375,
+      "home": 43,
+      "group": "washing-43",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        3.1094748348020786,
+        -92.6330935477757
+      ],
+      "angle": -1.424351684671703,
+      "home": 44,
+      "group": "storage-44",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        3.228314584462551,
+        -91.69034378569637
+      ],
+      "angle": -1.424351684671703,
+      "home": 44,
+      "group": "storage-44",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        3.818148024280739,
+        -99.96296232356976
+      ],
+      "angle": 0.14644464212319352,
+      "home": 44,
+      "group": "coal-44",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -57.316427321766234,
+        -96.19175916746384
+      ],
+      "angle": 3.5695756798720506,
+      "home": 45,
+      "group": "garden-45",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -52.41421772177826,
+        -88.371509150217
+      ],
+      "angle": 6.711168333461844,
+      "home": 45,
+      "group": "garden-45",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        -65.54097598752062,
+        -84.82499338941224
+      ],
+      "angle": 1.889769126195755,
+      "home": 47,
+      "group": "storage-47",
+      "station": "storage",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -65.819896599376,
+        -85.7333453543918
+      ],
+      "angle": 1.889769126195755,
+      "home": 47,
+      "group": "storage-47",
+      "station": "storage",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "woodpile",
+      "p": [
+        -67.6601774725732,
+        -68.3173386833892
+      ],
+      "angle": -1.1035310149585085,
+      "home": 48,
+      "group": "fuel-48",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "block",
+      "p": [
+        -67.10097674182136,
+        -67.03137813083458
+      ],
+      "angle": -1.1035310149585085,
+      "home": 48,
+      "group": "fuel-48",
+      "station": "fuel",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -56.42588733438373,
+        -74.68430096644438
+      ],
+      "angle": 2.0380616386312846,
+      "home": 48,
+      "group": "garden-48",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        -68.81208768081768,
+        -75.58111674559191
+      ],
+      "angle": 0.4672653118363881,
+      "home": 48,
+      "group": "coal-48",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        -49.65970206440827,
+        -81.10517515248473
+      ],
+      "angle": 0.29768707728825783,
+      "home": 49,
+      "group": "washing-49",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        -49.712497828176,
+        -81.27725829322833
+      ],
+      "angle": 0.29768707728825783,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 49,
+      "group": "washing-49",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -50.52967794261204,
+        -80.838263235659
+      ],
+      "angle": 0.29768707728825783,
+      "home": 49,
+      "group": "washing-49",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        -48.86696846261502,
+        -81.31700866396933
+      ],
+      "angle": 0.29768707728825783,
+      "home": 49,
+      "group": "washing-49",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        -39.89259349836715,
+        -76.52867774325523
+      ],
+      "angle": -1.311319839664149,
+      "home": 50,
+      "group": "storage-50",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -39.668178117839034,
+        -75.6053480421287
+      ],
+      "angle": -1.311319839664149,
+      "home": 50,
+      "group": "storage-50",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -26.29401543409015,
+        -82.65481612721378
+      ],
+      "angle": -0.9651560573699056,
+      "home": 51,
+      "group": "garden-51",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -26.987950775914452,
+        -83.65696243856215
+      ],
+      "angle": -0.9651560573699056,
+      "home": 51,
+      "group": "garden-51",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -30.021997171743923,
+        -118.79909146368914
+      ],
+      "angle": 2.302814921984477,
+      "home": 54,
+      "group": "garden-54",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "tub",
+      "p": [
+        -59.55034233476816,
+        -126.86025899230306
+      ],
+      "angle": 0.33603279361376587,
+      "home": 55,
+      "group": "washing-55",
+      "station": "washing"
+    },
+    {
+      "kind": "washboard",
+      "p": [
+        -59.60969632232111,
+        -127.03019163825893
+      ],
+      "angle": 0.33603279361376587,
+      "tilt": -0.55,
+      "lift": 0.07,
+      "home": 55,
+      "group": "washing-55",
+      "station": "washing"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -60.40944626710063,
+        -126.56019161078535
+      ],
+      "angle": 0.33603279361376587,
+      "home": 55,
+      "group": "washing-55",
+      "station": "washing"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        -58.7663123941548,
+        -127.10232727238498
+      ],
+      "angle": 0.33603279361376587,
+      "home": 55,
+      "group": "washing-55",
+      "station": "washing"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        -51.31637960268263,
+        -99.94221857299885
+      ],
+      "angle": -1.017360489795502,
+      "home": 56,
+      "group": "storage-56",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -50.834061465546085,
+        -99.12351886334388
+      ],
+      "angle": -1.017360489795502,
+      "home": 56,
+      "group": "storage-56",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "scuttle",
+      "p": [
+        -53.56710822378339,
+        -106.9538813311472
+      ],
+      "angle": 0.5534358369993946,
+      "home": 56,
+      "group": "coal-56",
+      "station": "coal",
+      "support": "coal bunker"
+    },
+    {
+      "kind": "tools",
+      "p": [
+        -48.01587430840277,
+        -112.53144897033928
+      ],
+      "angle": -1.1097870927910276,
+      "home": 57,
+      "group": "garden-57",
+      "station": "garden",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "sacks",
+      "p": [
+        -9.789274341050133,
+        -119.262642940997
+      ],
+      "angle": -3.5584351509393137,
+      "home": 59,
+      "group": "storage-59",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "basket",
+      "p": [
+        -10.649830130820517,
+        -119.66556195605173
+      ],
+      "angle": -3.5584351509393137,
+      "home": 59,
+      "group": "storage-59",
+      "station": "storage",
+      "wallSide": -1,
+      "support": "wall"
+    },
+    {
+      "kind": "barrel",
+      "p": [
+        34.72366921457257,
+        17.028980251053465
+      ],
+      "angle": 2.6417382338945554,
+      "home": 14,
+      "group": "water-14",
+      "station": "water",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        34.18519078326328,
+        16.5753934577992
+      ],
+      "angle": 2.6417382338945554,
+      "home": 14,
+      "group": "water-14",
+      "station": "water",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "barrel",
+      "p": [
+        14.59555679975811,
+        -95.02274131821166
+      ],
+      "angle": 1.71724096891809,
+      "home": 44,
+      "group": "water-44",
+      "station": "water",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        14.633372243814339,
+        -95.72578469680991
+      ],
+      "angle": 1.71724096891809,
+      "home": 44,
+      "group": "water-44",
+      "station": "water",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        53.984235666959584,
+        27.161701513138148
+      ],
+      "angle": 5.5921816988387425,
+      "home": 3,
+      "group": "garden-3",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        52.62679541495249,
+        27.78314496368769
+      ],
+      "angle": 5.5921816988387425,
+      "home": 3,
+      "group": "garden-3",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -11.89233197494158,
+        55.77646213680044
+      ],
+      "angle": 1.643300416307845,
+      "home": 9,
+      "group": "garden-9",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -10.504776647594845,
+        56.327394268329996
+      ],
+      "angle": 1.643300416307845,
+      "home": 9,
+      "group": "garden-9",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        69.14246139068312,
+        -5.946424682028427
+      ],
+      "angle": -2.0003904314716126,
+      "home": 15,
+      "group": "garden-15",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        68.2676776260467,
+        -7.0621546516575275
+      ],
+      "angle": -2.0003904314716126,
+      "home": 15,
+      "group": "garden-15",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "wheelbarrow",
+      "p": [
+        42.598824606338034,
+        -4.723024838283019
+      ],
+      "angle": 6.346367938799137,
+      "home": 18,
+      "group": "garden-18",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -2.564805301804803,
+        -12.952208564421541
+      ],
+      "angle": -0.16063868375551893,
+      "home": 21,
+      "group": "garden-21",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -3.4214078179983702,
+        -11.729478778552707
+      ],
+      "angle": -0.16063868375551893,
+      "home": 21,
+      "group": "garden-21",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "wheelbarrow",
+      "p": [
+        31.25623138168506,
+        -27.67734358395637
+      ],
+      "angle": 0.2493717901570358,
+      "home": 30,
+      "group": "garden-30",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -1.644164104118182,
+        -63.86899098909787
+      ],
+      "angle": 7.662193039251445,
+      "home": 39,
+      "group": "garden-39",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -58.08424502379606,
+        -97.87489789509435
+      ],
+      "angle": 5.140372006666947,
+      "home": 45,
+      "group": "garden-45",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -51.646400019748434,
+        -86.68837042258649
+      ],
+      "angle": 8.28196466025674,
+      "home": 45,
+      "group": "garden-45",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -27.814970305074148,
+        -81.60163224942697
+      ],
+      "angle": 0.6056402694249909,
+      "home": 51,
+      "group": "garden-51",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "hayfork",
+      "p": [
+        -29.0432951961631,
+        -82.2337409820935
+      ],
+      "angle": 0.6056402694249909,
+      "home": 51,
+      "group": "garden-51",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "wheelbarrow",
+      "p": [
+        -28.64591769306597,
+        -120.03558055315229
+      ],
+      "angle": 3.8736112487793735,
+      "home": 54,
+      "group": "garden-54",
+      "station": "garden",
+      "support": "tools"
+    },
+    {
+      "kind": "trough",
+      "p": [
+        -5.602913913092109,
+        8.166933103832726
+      ],
+      "angle": 4.304206220017077,
+      "home": 22,
+      "group": "feeding-22",
+      "station": "feeding",
+      "support": "trough"
+    },
+    {
+      "kind": "trough",
+      "p": [
+        -24.855453014364215,
+        22.143320376883896
+      ],
+      "angle": 2.539258012562569,
+      "home": 10,
+      "group": "feeding-10",
+      "station": "feeding",
+      "support": "trough"
+    },
+    {
+      "kind": "pump",
+      "p": [
+        10.910933147840534,
+        -27.963697578716868
+      ],
+      "angle": 1.846149533458738,
+      "home": 24,
+      "group": "water-24",
+      "station": "water"
+    },
+    {
+      "kind": "bucket",
+      "p": [
+        10.729841478277462,
+        -28.972462074134334
+      ],
+      "angle": 1.846149533458738,
+      "home": 24,
+      "group": "water-24",
+      "station": "water"
+    },
+    {
+      "kind": "ladder",
+      "p": [
+        8.511788739089525,
+        -11.157414359423182
+      ],
+      "angle": 1.4101576430393776,
+      "home": 21,
+      "group": "garden-21",
+      "station": "garden",
+      "wallSide": 1,
+      "support": "wall"
+    },
+    {
+      "kind": "broom",
+      "p": [
+        61.79066277766862,
+        20.032006417822863
+      ],
+      "angle": 0.90385746378566,
+      "tilt": 0.38,
+      "lift": 0.02665228320112601,
+      "home": 2,
+      "group": "housekeeping-2",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        54.078047158833556,
+        34.91634893123391
+      ],
+      "angle": 5.657572004259187,
+      "tilt": 0.38,
+      "lift": 0.02744694530835102,
+      "home": 4,
+      "group": "housekeeping-4",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        31.493516681254146,
+        63.404068273715495
+      ],
+      "angle": 3.6412740298226085,
+      "tilt": 0.38,
+      "lift": 0.03194777446342823,
+      "home": 6,
+      "group": "housekeeping-6",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        7.126912398793243,
+        74.28323576567527
+      ],
+      "angle": 4.084841028227599,
+      "tilt": 0.38,
+      "lift": 0.027419498834418306,
+      "home": 8,
+      "group": "housekeeping-8",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -20.44138510644118,
+        35.20220110427647
+      ],
+      "angle": 2.539258012562569,
+      "tilt": 0.38,
+      "lift": 0.0349026989872785,
+      "home": 10,
+      "group": "housekeeping-10",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -4.117153316105212,
+        17.889022487388225
+      ],
+      "angle": 4.1669490153229924,
+      "tilt": 0.38,
+      "lift": 0.02168770276092414,
+      "home": 12,
+      "group": "housekeeping-12",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        28.744726778263328,
+        26.846327863234755
+      ],
+      "angle": 2.6417382338945554,
+      "tilt": 0.38,
+      "lift": 0.037259752439612555,
+      "home": 14,
+      "group": "housekeeping-14",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        80.5486769547669,
+        -17.5944858035993
+      ],
+      "angle": 0.015252542333345165,
+      "tilt": 0.38,
+      "lift": 0.02977685573124856,
+      "home": 16,
+      "group": "housekeeping-16",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        57.46246335886687,
+        -5.326728542749594
+      ],
+      "angle": 4.77557161200424,
+      "tilt": 0.38,
+      "lift": 0.02996593019615102,
+      "home": 18,
+      "group": "housekeeping-18",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        9.315318546851316,
+        -59.695006036499045
+      ],
+      "angle": 1.3543116060979892,
+      "tilt": 0.38,
+      "lift": 0.03909378458681357,
+      "home": 20,
+      "group": "housekeeping-20",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": 1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -5.050431898700241,
+        -3.7277902976511057
+      ],
+      "angle": 1.1626135664272836,
+      "tilt": 0.38,
+      "lift": 0.03925521978894065,
+      "home": 22,
+      "group": "housekeeping-22",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": 1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        19.474787305719666,
+        -26.429062378127018
+      ],
+      "angle": 3.4169458602536347,
+      "tilt": 0.38,
+      "lift": 0.023870996935129625,
+      "home": 24,
+      "group": "housekeeping-24",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -20.228041093844453,
+        -17.918746163133655
+      ],
+      "angle": 1.3561702294714117,
+      "tilt": 0.38,
+      "lift": 0.04190895664483119,
+      "home": 26,
+      "group": "housekeeping-26",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -1.6785167434467854,
+        -41.46756413573388
+      ],
+      "angle": 4.418823158391332,
+      "tilt": 0.38,
+      "lift": 0.016758296032292293,
+      "home": 28,
+      "group": "housekeeping-28",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        32.879059116356586,
+        -26.66039306087398
+      ],
+      "angle": 1.8201681169519324,
+      "tilt": 0.38,
+      "lift": 0.025030094910561303,
+      "home": 30,
+      "group": "housekeeping-30",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        49.77220074415616,
+        -62.3090173748618
+      ],
+      "angle": 5.984403998996305,
+      "tilt": 0.38,
+      "lift": 0.02913204472263598,
+      "home": 32,
+      "group": "housekeeping-32",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        36.827309256582105,
+        -67.50129776370714
+      ],
+      "angle": 5.951867631009316,
+      "tilt": 0.38,
+      "lift": 0.028980158358840498,
+      "home": 34,
+      "group": "housekeeping-34",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        26.20171439608045,
+        -60.67832201103078
+      ],
+      "angle": -3.3800041741503377,
+      "tilt": 0.38,
+      "lift": 0.023029388614339126,
+      "home": 36,
+      "group": "housekeeping-36",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": 1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        13.355034196588326,
+        -63.67163909921188
+      ],
+      "angle": -3.327270935848756,
+      "tilt": 0.38,
+      "lift": 0.024502654295690547,
+      "home": 38,
+      "group": "housekeeping-38",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": 1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -11.913363186911562,
+        -63.49168291334754
+      ],
+      "angle": 3.3537629244797955,
+      "tilt": 0.38,
+      "lift": 0.028800090719905753,
+      "home": 40,
+      "group": "housekeeping-40",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": 1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -32.99813928216213,
+        -55.51889064163185
+      ],
+      "angle": 3.5964295510595132,
+      "tilt": 0.38,
+      "lift": 0.033338120308747506,
+      "home": 42,
+      "group": "housekeeping-42",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        2.639782358253691,
+        -93.80712183678942
+      ],
+      "angle": 1.71724096891809,
+      "tilt": 0.38,
+      "lift": 0.03412517191288612,
+      "home": 44,
+      "group": "housekeeping-44",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -65.3527302302246,
+        -92.59518742520974
+      ],
+      "angle": 6.738965623177982,
+      "tilt": 0.38,
+      "lift": 0.027618070827810655,
+      "home": 46,
+      "group": "housekeeping-46",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -68.20341203636616,
+        -69.11852501793145
+      ],
+      "angle": 2.0380616386312846,
+      "tilt": 0.38,
+      "lift": 0.03910867639388283,
+      "home": 48,
+      "group": "housekeeping-48",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -32.46510155856984,
+        -77.9980214023867
+      ],
+      "angle": -1.311319839664149,
+      "tilt": 0.38,
+      "lift": 0.02590632073925559,
+      "home": 50,
+      "group": "housekeeping-50",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": 1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -33.12492015417281,
+        -88.93451825224093
+      ],
+      "angle": -4.1241261138405205,
+      "tilt": 0.38,
+      "lift": 0.030936583035116712,
+      "home": 52,
+      "group": "housekeeping-52",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": 1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -28.640875420291124,
+        -118.05255171869175
+      ],
+      "angle": -0.8387777316053162,
+      "tilt": 0.38,
+      "lift": 0.022778871638382554,
+      "home": 54,
+      "group": "housekeeping-54",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": 1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -52.2124425783453,
+        -100.83442067430617
+      ],
+      "angle": 2.124232163794291,
+      "tilt": 0.38,
+      "lift": 0.0314498294270722,
+      "home": 56,
+      "group": "housekeeping-56",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    },
+    {
+      "kind": "broom",
+      "p": [
+        -14.821236818763614,
+        -102.45551276706829
+      ],
+      "angle": 0.6479390831049783,
+      "tilt": 0.38,
+      "lift": 0.029711826213813637,
+      "home": 58,
+      "group": "housekeeping-58",
+      "station": "housekeeping",
+      "support": "wall",
+      "wallSide": -1
+    }
+  ],
+  "counts": {
+    "wheelbarrow": 3,
+    "handcart": 2,
+    "pump": 1,
+    "tub": 10,
+    "washboard": 10,
+    "scuttle": 11,
+    "woodpile": 9,
+    "block": 7,
+    "grindstone": 1,
+    "tools": 26,
+    "basket": 27,
+    "bucket": 13,
+    "churn": 2,
+    "ladder": 1,
+    "broom": 29,
+    "trough": 2,
+    "barrel": 2,
+    "hayfork": 13,
+    "sacks": 18,
+    "trestles": 2
+  },
+  "triangles": 853702,
+  "draws": 6
+}
