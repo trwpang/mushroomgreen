@@ -40,6 +40,20 @@ export function planWorkingProps(homes:Home[],models:Record<PropKind,T.Group>,pa
  if(accept({kind:'tub',p:localPoint(henry,-.4,-7.85),angle:henry.angle,home:22,group:'wash-22'}))out.push({kind:'washboard',p:localPoint(henry,-.4,-8.03),angle:henry.angle,tilt:-.55,lift:.07,home:22,group:'wash-22'});
  // Each small working group belongs to a yard. Prefer open rear corners and omit unsafe candidates.
  const requests:[PropKind,number][]=[['wheelbarrow',22],['tools',22],['block',22],['handcart',10],['pump',40],['grindstone',6],['tub',31],['woodpile',31],['block',31],['tools',15],['wheelbarrow',15],['scuttle',15],['tub',46],['woodpile',46],['scuttle',46],['tools',53],['block',53],['wheelbarrow',24],['woodpile',24],['scuttle',24],['handcart',57],['scuttle',22]];
+ // Different household work leaves different objects. Shared machinery stays uncommon.
+ const ordinary:PropKind[][]=[
+  ['bucket','broom','scuttle','woodpile'],
+  ['basket','tub','tools','sacks'],
+  ['barrel','block','bucket','broom'],
+  ['trough','hayfork','woodpile','basket'],
+  ['ladder','bucket','scuttle','tools'],
+  ['sacks','wheelbarrow','broom','woodpile'],
+ ];
+ for(const h of homes.filter(h=>h.number!==5)){
+  const choices=ordinary[h.number%ordinary.length];
+  choices.forEach(kind=>{if(!requests.some(([k,id])=>k===kind&&id===h.number))requests.push([kind,h.number]);});
+ }
+ requests.unshift(['churn',40],['churn',31],['trestles',53],['trestles',6],['pump',24],['handcart',46],['grindstone',57]);
  for(const [kind,id] of requests){const h=homes.find(h=>h.number===id)!;const {w,d}=dims(h);let placed=false;
   for(const rear of [3.8,5.1,6.4,7.5]){if(placed)break;for(const x of [w*.25,-w*.25,w*.48,-w*.48,0]){const p=localPoint(h,x,-d/2-rear),group=kind==='tub'?'wash-'+id:kind+'-'+id;
    if(accept({kind,p,angle:h.angle+(kind==='wheelbarrow'?.35:0),home:id,group})){placed=true;if(kind==='tub')out.push({kind:'washboard',p:localPoint(h,x,-d/2-rear-.18),angle:h.angle,tilt:-.55,lift:.07,home:id,group});break;}

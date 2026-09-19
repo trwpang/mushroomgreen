@@ -1,16 +1,17 @@
 import * as T from 'three';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 import {refineSurface} from '../rendering/surfaces';
 
-export const propNames={wheelbarrow:'Wooden wheelbarrow',handcart:'Low timber handcart',pump:'Village hand pump',tub:'Staved washing tub',washboard:'Wooden washboard',scuttle:'Coal scuttle',woodpile:'Split firewood stack',block:'Chopping block and axe',grindstone:'Hand-cranked grindstone',tools:'Garden tool rack'} as const;
+export const propNames={wheelbarrow:'Wooden wheelbarrow',handcart:'Low timber handcart',pump:'Village hand pump',tub:'Staved washing tub',washboard:'Wooden washboard',scuttle:'Coal scuttle',woodpile:'Split firewood stack',block:'Chopping block and axe',grindstone:'Hand-cranked grindstone',tools:'Garden tool rack',basket:'Wicker carrying basket',bucket:'Oak water bucket',churn:'Conical milk churn',ladder:'Wooden step ladder',broom:'Birch besom broom',trough:'Carved feeding trough',barrel:'Rain barrel and tap',hayfork:'Three-tine hay fork',sacks:'Tied grain sacks',trestles:'Saw trestles and hand saw'} as const;
 export type PropKind=keyof typeof propNames;
 type V=[number,number,number];
 const tau=Math.PI*2;
 // Original metre-scale geometry. References inform construction, not exact historical ownership.
 export function createPropKit(oak?:T.MeshStandardMaterial){
- const mats=[new T.MeshStandardMaterial({vertexColors:true,roughness:.96,map:oak?.map??null,normalMap:oak?.normalMap??null,roughnessMap:oak?.roughnessMap??null}),new T.MeshStandardMaterial({vertexColors:true,roughness:.78,metalness:.55}),new T.MeshStandardMaterial({vertexColors:true,roughness:1}),new T.MeshStandardMaterial({vertexColors:true,roughness:.96}),new T.MeshStandardMaterial({vertexColors:true,roughness:.25,metalness:.22})];
- mats.forEach((m,i)=>{m.name=['Prop oak','Prop iron','Prop stone','Prop end grain','Prop still water'][i];if(i<4)refineSurface(m,['wood','iron','stone','wood'][i] as 'wood'|'iron'|'stone');});
- const W=0,I=1,S=2,E=3,A=4;
+ const mats=[new T.MeshStandardMaterial({vertexColors:true,roughness:.96,map:oak?.map??null,normalMap:oak?.normalMap??null,roughnessMap:oak?.roughnessMap??null}),new T.MeshStandardMaterial({vertexColors:true,roughness:.78,metalness:.55}),new T.MeshStandardMaterial({vertexColors:true,roughness:1}),new T.MeshStandardMaterial({vertexColors:true,roughness:.96}),new T.MeshStandardMaterial({vertexColors:true,roughness:.25,metalness:.22}),new T.MeshStandardMaterial({vertexColors:true,roughness:1,side:T.DoubleSide})];
+ mats.forEach((m,i)=>{m.name=['Prop oak','Prop iron','Prop stone','Prop end grain','Prop still water','Prop sack cloth'][i];if(i<4)refineSurface(m,['wood','iron','stone','wood'][i] as 'wood'|'iron'|'stone');});
+ refineSurface(mats[5],'cloth');
+ const W=0,I=1,S=2,E=3,A=4,C=5;
  const brown='#837057',dark='#33342e',cut='#b49b72',rust='#77553c';
  const make=(kind:PropKind)=>{
  let seed=Object.keys(propNames).indexOf(kind)*1931+1865;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
@@ -19,7 +20,7 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
   const g=geo.index?geo.toNonIndexed():geo.clone();geo.dispose();g.applyQuaternion(new T.Quaternion().setFromEuler(new T.Euler(...rot,'YXZ')));g.translate(...p);
   const color=new T.Color(k===W&&oak?.map?'#cbbda5':c).multiplyScalar(.84+rand()*.27),data=new Float32Array(g.attributes.position.count*3);for(let i=0;i<data.length;i+=3)color.toArray(data,i);g.setAttribute('color',new T.BufferAttribute(data,3));
   if(!g.attributes.uv)g.setAttribute('uv',new T.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));
-  if(k===W&&oak?.map){const t=Math.floor(rand()*16),uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,(t%4+.015+uv.getX(i)*.97)/4,(Math.floor(t/4)+.015+uv.getY(i)*.97)/4);}
+  if(k===W&&oak?.map){const t=(parts[k].length*7+g.attributes.position.count)%16,uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,(t%4+.015+uv.getX(i)*.97)/4,(Math.floor(t/4)+.015+uv.getY(i)*.97)/4);}
   parts[k].push(g);
  };
  const box=(p:V,size:V,k=W,c=brown,rot:V=[0,0,0])=>add(new T.BoxGeometry(...size),k,c,p,rot);
@@ -143,6 +144,96 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
   box([.34,.12,.19],[.31,.045,.06],W,brown);for(let i=0;i<9;i++)rod([.20+i*.036,.12,.20],[.20+i*.036,.03,.27],.007,I,dark);
   for(const x of [-.5,.5])for(const y of [.24,1.12])nail([x,y,.039]);
  }
+ if(kind==='basket'){
+  const wicker=(ps:V[],r=.004,c='#927247')=>add(new T.TubeGeometry(new T.CatmullRomCurve3(ps.map(p=>new T.Vector3(...p))),ps.length-1,r,4,false),E,c);
+  for(let row=0;row<18;row++){const y=.04+row*.017,t=(y-.04)/.30,ps:V[]=[];
+   for(let j=0;j<=48;j++){const a=j*tau/48,wave=Math.cos(a*24/2+row*Math.PI)*.004;ps.push([Math.cos(a)*(.22+t*.075+wave),y,Math.sin(a)*(.16+t*.07+wave)]);}wicker(ps,.0085,row%3?'#917144':'#ad8b55');}
+  for(let j=0;j<24;j++){const a=j*tau/24,ps:V[]=[];for(let row=0;row<=12;row++){const t=row/12;ps.push([Math.cos(a)*(.22+t*.075),.035+t*.31,Math.sin(a)*(.16+t*.07)]);}wicker(ps,.005,'#705732');}
+  for(let j=0;j<14;j++){const x=(j-6.5)*.029,zmax=.16*Math.sqrt(Math.max(0,1-x*x/(.22*.22)));rod([x,.035,-zmax],[x,.035,zmax],.008,E,'#987748',.008,4);}
+  for(let j=0;j<12;j++){const z=(j-5.5)*.026,xmax=.22*Math.sqrt(Math.max(0,1-z*z/(.16*.16)));rod([-xmax,.040,z],[xmax,.040,z],.006,E,'#aa8652',.006,4);}
+  for(let row=0;row<3;row++){const ps:V[]=[];for(let j=0;j<=48;j++){const a=j*tau/48;ps.push([Math.cos(a)*(.297+row*.003),.343+row*.005,Math.sin(a)*(.234+row*.003)]);}wicker(ps,.006);}
+  for(const dz of [-.01,0,.01]){const ps:V[]=[];for(let j=0;j<=28;j++){const a=j*Math.PI/28;ps.push([Math.cos(a)*.294,.34+Math.sin(a)*.30,dz+Math.sin(a*5)*.002]);}wicker(ps,.008,'#8c693e');}
+ }
+ if(kind==='bucket'||kind==='barrel'){
+  const big=kind==='barrel',height=big?.88:.30,rad=big?.29:.145,n=big?26:18,base=big?.12:.016;
+  const radius=(y:number)=>rad+(big?Math.sin(y/height*Math.PI)*.047:y*.075);
+  for(let i=0;i<n;i++){const a=i*tau/n,g=new T.BoxGeometry(rad*tau/n-.002,height,.027,1,10,1),p=g.attributes.position;
+   for(let j=0;j<p.count;j++){const y=p.getY(j)+height/2,r=radius(y)+p.getZ(j),angle=a+p.getX(j)/rad;p.setXYZ(j,Math.sin(angle)*r,base+y,Math.cos(angle)*r);}g.computeVertexNormals();add(g,W,brown);}
+  add(new T.CylinderGeometry(rad-.02,rad-.02,.03,32),W,brown,[0,base+.012,0]);
+  for(const t of big?[.05,.20,.76,.95]:[.13,.82]){const y=t*height,r=radius(y)+.014;add(new T.CylinderGeometry(r,r,.027,40,1,true),I,dark,[0,base+y,0]);for(let j=0;j<4;j++){const a=j*tau/4;add(new T.SphereGeometry(.007,6,4),I,rust,[Math.sin(a)*r,base+y,Math.cos(a)*r]);}}
+  if(!big){tube([[-.17,.27,0],[-.165,.43,0],[0,.51,0],[.165,.43,0],[.17,.27,0]],.008,I,dark);rod([-.04,.51,0],[.04,.51,0],.013,W,brown);for(const x of [-.17,.17])box([x,.26,0],[.018,.075,.025],I,dark);add(new T.CircleGeometry(.139,28),A,'#4b5a51',[0,.105,0],[-Math.PI/2,0,0]);}
+  else{
+   for(const x of [-.20,.20])box([x,.06,0],[.13,.12,.69],S,'#797364');
+   // Half lid leaves rain collection visible; no invented plumbing connection.
+   for(let i=0;i<4;i++){const x=-.22+i*.069,len=Math.sqrt(rad*rad-x*x)*2;plank([x,base+height+.014,0],[.066,.038,len]);}
+   box([-.12,base+height+.046,0],[.24,.035,.07],W,brown);add(new T.CircleGeometry(.28,40),A,'#405148',[0,base+height-.12,0],[-Math.PI/2,0,0]);
+   rod([0,.31,.28],[0,.31,.45],.027,W,'#9f835c',.037);rod([0,.31,.45],[0,.255,.45],.023,W,brown);rod([0,.31,.395],[0,.40,.395],.017,W,brown);rod([-.045,.40,.395],[.045,.40,.395],.015,W,brown);torus([0,.252,.45],.016,.005,I,dark,[Math.PI/2,0,0]);
+  }
+ }
+ if(kind==='churn'){
+  const profile=[[.24,0],[.255,.025],[.25,.075],[.15,.63],[.16,.69],[.18,.76],[.18,.785]];
+  add(new T.LatheGeometry(profile.map(p=>new T.Vector2(...p)),48),I,'#697165',[0,.016,0]);
+  for(const [r,y] of [[.25,.06],[.153,.66],[.18,.80]])torus([0,y,0],r,.012,I,'#777b6b',[Math.PI/2,0,0]);
+  add(new T.ConeGeometry(.19,.09,40),I,'#687060',[0,.84,0]);rod([0,.88,0],[0,.94,0],.022,I,dark);box([0,.945,0],[.095,.023,.035],W,brown);
+  for(const side of [-1,1]){tube([[side*.19,.40,0],[side*.29,.43,0],[side*.30,.56,0],[side*.18,.57,0]],.012,I,dark);for(const y of [.41,.55])box([side*.185,y,0],[.025,.058,.065],I,rust);}
+  box([0,.765,.18],[.035,.105,.014],I,'#807054');box([0,.73,.19],[.045,.025,.018],I,dark);
+  for(let i=0;i<11;i++)add(new T.SphereGeometry(.0045,6,4),I,rust,[.001,.09+i*.049,.244-i*.008]);
+ }
+ if(kind==='ladder'){
+  for(const x of [-.23,.23])for(const side of [-1,1])rod([x,.027,side*.48],[x,1.49,0],.032,W,brown,.030,4);
+  for(let i=0;i<5;i++){const y=.22+i*.255,z=.48*(1-y/1.49);plank([0,y,z],[.51,.042,.16]);for(const x of [-.23,.23])nail([x,y,z+.09]);}
+  plank([0,1.5,0],[.57,.055,.30]);
+  for(const y of [.25,1.1])plank([0,y,-.48*(1-y/1.49)],[.50,.055,.055]);rod([-.23,.27,-.40],[.23,1.13,-.11],.015,W,brown,.015,4);
+  for(const x of [-.23,.23]){rod([x,.56,-.30],[x,.56,.30],.008,I,dark);box([x,1.45,0],[.06,.08,.05],I,'#514c3c');}
+ }
+ if(kind==='broom'){
+  rod([0,.34,0],[.10,1.49,.035],.018,W,'#9b8059',.022);
+  for(let i=0;i<90;i++){const a=i*2.399,r=.03+rand()*.125,x=Math.cos(a)*r,z=Math.sin(a)*r;
+   rod([x,.009+rand()*.025,z],[x*.20,.45+rand()*.025,z*.20],.0025,E,i%3?'#665039':'#947148',.004,4);
+   if(i%3===0)rod([x,.03,z],[x+Math.cos(a)*.035,.13,z+Math.sin(a)*.026],.0015,E,'#5d4731',.002,4);
+  }
+  for(const y of [.32,.40])torus([0,y,0],y>.35?.033:.046,.007,E,'#ae9868',[Math.PI/2,0,0]);
+ }
+ if(kind==='trough'){
+  const s=new T.Shape();const outline=[[-.25,.38],[-.29,.26],[-.24,.12],[0,.075],[.24,.12],[.29,.26],[.25,.38],[.195,.37],[.19,.24],[.14,.19],[0,.17],[-.14,.19],[-.19,.24],[-.195,.37]];outline.forEach(([x,y],i)=>i?s.lineTo(x,y):s.moveTo(x,y));s.closePath();const g=new T.ExtrudeGeometry(s,{depth:1.45,bevelEnabled:true,bevelSize:.012,bevelThickness:.01,bevelSegments:1});g.translate(0,0,-.725);add(g,W,brown,[0,0,0],[0,Math.PI/2,0]);
+  for(const x of [-.70,.70]){box([x,.24,0],[.07,.27,.45],W,brown);for(const z of [-.19,.19])nail([x,.28,z]);}
+  for(const x of [-.50,.50])box([x,.042,0],[.14,.085,.65],W,brown);
+  for(let i=0;i<75;i++){const g=new T.IcosahedronGeometry(.009+rand()*.012,0);g.scale(1,.5,1.5);add(g,E,'#b09c6c',[(rand()-.5)*1.21,.18+rand()*.015,(rand()-.5)*.20]);}
+ }
+ if(kind==='hayfork'){
+  // Stored low on a timber rest, with the curved tines on the ground.
+  box([0,.16,.45],[.32,.32,.11],W,brown);rod([0,.13,-.42],[0,.42,1.23],.018,W,'#a18a63',.022);
+  tube([[0,.13,-.42],[0,.10,-.57],[0,.08,-.65]],.023,I,dark);
+  for(const x of [-.105,0,.105])tube([[0,.10,-.55],[x,.10,-.67],[x,.065,-.84],[x*.93,.015,-.94]],.008,I,'#6a6250');
+  rod([0,.13,-.42],[0,.16,-.26],.026,I,dark,.023);for(let i=0;i<12;i++)rod([-.08+rand()*.16,.018,-.85+rand()*.5],[.03+rand()*.19,.021,-.60+rand()*.5],.0015,E,'#ae9763',.001,3);
+ }
+ if(kind==='sacks'){
+  const sack=(p:V,height:number,width:number,rot:V)=>{
+   const rows=18,n=28,vertices:number[]=[];const pt=(i:number,j:number):V=>{const t=i/rows,a=j*tau/n;let r=width*(.64+.36*Math.sin(t*Math.PI));r*=t>.77?Math.max(.12,1-(t-.77)*4.2):1;const fold=.008*Math.sin(a*9+t*16)*(t>.7?1.5:.4);return [Math.cos(a)*(r+fold),.025+t*height,Math.sin(a)*(r+fold)*.71];};
+   for(let i=0;i<rows;i++)for(let j=0;j<n;j++){const a=pt(i,j),b=pt(i,j+1),c=pt(i+1,j+1),d=pt(i+1,j);vertices.push(...a,...b,...c,...a,...c,...d);}
+   const raw=new T.BufferGeometry();raw.setAttribute('position',new T.Float32BufferAttribute(vertices,3));const g=mergeVertices(raw);raw.dispose();g.computeVertexNormals();add(g,C,'#a48e68',p,rot);
+   // Sewn side edges and a tied, puckered neck follow the same shape transform.
+   for(const a of [0,Math.PI]){const points=[];for(let i=0;i<=18;i++)points.push(pt(i,a/ tau*n));const seam=new T.TubeGeometry(new T.CatmullRomCurve3(points.map(q=>new T.Vector3(...q))),24,.003,4,false);add(seam,C,'#77674d',p,rot);}
+   const neck=new T.TorusGeometry(width*.14,.007,5,18);neck.rotateX(Math.PI/2);neck.translate(0,height*.975,0);add(neck,E,'#68583d',p,rot);
+   const cap=new T.ConeGeometry(width*.14,.045,8);cap.scale(1,1,.71);cap.translate(0,height+.012,0);add(cap,C,'#a99166',p,rot);
+   for(const dx of [-.012,.012]){const cord=new T.TubeGeometry(new T.CatmullRomCurve3([new T.Vector3(dx,height*.97,.018),new T.Vector3(dx*2,height*.92,.047),new T.Vector3(dx*3,height*.84,.033)]),8,.003,4,false);add(cord,E,'#68583d',p,rot);}
+  };
+  for(const z of [-.19,0,.19])plank([0,.03,z],[1.10,.06,.18]);
+  sack([-.23,.045,0],.65,.22,[0,-.10,-.08]);sack([.23,.045,-.04],.55,.23,[0,.28,.15]);
+  sack([-.08,.49,.015],.52,.18,[0,.15,-1.20]);
+ }
+ if(kind==='trestles'){
+  for(const x of [-.67,.67]){
+   for(const z of [-.29,.29])for(const dx of [-.085,.085])rod([x+dx,.026,z],[x+dx,.69,z*.20],.027,W,brown,.031,4);
+   plank([x,.69,0],[.17,.12,.81]);for(const z of [-.22,.22])box([x,.24,z],[.25,.06,.045],W,brown);rod([x-.085,.23,-.22],[x+.085,.62,.045],.019,W,brown,.019,4);
+  }
+  for(let i=0;i<2;i++)plank([0,.785,i*.20-.11],[2.10,.075,.18]);
+  // A real toothed blade lies flat on the boards, beside its open wooden grip.
+  const outline:[number,number][]=[[-.45,.055],[.37,.023],[.38,-.06]];for(let i=0;i<17;i++)outline.push([.38-i*.049,-.06-(i%2)*.023]);outline.push([-.45,.055]);blade(outline,.004,[.08,.827,-.06],[Math.PI/2,0,.15],'#827c65');
+  const shape=new T.Shape();shape.moveTo(-.10,-.12);shape.lineTo(.10,-.09);shape.lineTo(.10,.10);shape.lineTo(-.10,.13);shape.closePath();const hole=new T.Path();hole.absellipse(0,0,.054,.075,0,tau,true,0);shape.holes.push(hole);const grip=new T.ExtrudeGeometry(shape,{depth:.028,bevelEnabled:true,bevelThickness:.006,bevelSize:.008,bevelSegments:1});add(grip,W,brown,[-.46,.836,-.07],[Math.PI/2,0,.15]);
+  for(let i=0;i<18;i++){const g=new T.ConeGeometry(.010,.040,3);add(g,E,cut,[(rand()-.5)*1.8,.014,(rand()-.5)*.9],[Math.PI/2,rand()*tau,0]);}
+ }
+
  parts.forEach((list,i)=>{if(!list.length)return;const g=mergeGeometries(list);const m=new T.Mesh(g,mats[i]);m.castShadow=m.receiveShadow=true;root.add(m);list.forEach(p=>p.dispose());});
  root.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(root);root.userData.size=bounds.getSize(new T.Vector3()).toArray();return root;
  };

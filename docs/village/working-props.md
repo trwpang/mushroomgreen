@@ -1,4 +1,4 @@
-# Ten working objects — 19 September 2026
+# Working objects — 19 September 2026
 
 Ten original Three.js models are added to the village. Their construction follows the browsed images below. These are plausible working objects, not claims about recorded possessions or a surveyed pump position. Some surviving references are later objects or come from other regions. Plain timber and iron finishes replace ornate decoration.
 
@@ -17,7 +17,7 @@ Ten original Three.js models are added to the village. Their construction follow
 
 The reference photographs were inspected in the browser. No reference photograph or external mesh is embedded in the project. Geometry and placement code are original project work. Existing cottage oak maps and project surface shaders provide material detail. No paid generation service was used.
 
-## Placement
+## First pass placement
 
 The main forge gains a grindstone and timber stack. Henry’s rear yard gains a tub and leaning washboard, a wheelbarrow, tools and a coal scuttle. Other examples appear in selected working yards, with one shared pump near household 40. Each placement is interpreted.
 
@@ -25,7 +25,7 @@ The planner checks the full footprint against house walls, rear stores, fences, 
 
 The final scene has 22 placed objects, 80,932 triangles and five material batches. Ten templates are kept as independent source models. The local `/props` study allows individual inspection with orbit and zoom controls. `/props?item=grindstone` and equivalent item names open a selected model.
 
-## Validation and evidence
+## First pass validation and evidence
 
 - `npm run village:props`: all ten templates; finite positions, normals, UVs and colours; dimensions; per-template 15,000-triangle limit; deterministic placements; all ten types present; maximum five placed material batches and 180,000 triangles.
 - `npm run village:check`: scene type check.
@@ -35,3 +35,38 @@ The final scene has 22 placed objects, 80,932 triangles and five material batche
 - Screenshots in the same folder show the object study and village placements.
 
 Changes stay local. No push or deployment.
+
+
+## Second pass: twenty types across the village
+
+The first ten now appear in more yards. Six household combinations mix washing, fuel, gardening, repairs and storage. Two pumps, two churns and two trestle sets remain scarce. Placement belongs to the interpreted yard, not a recorded household inventory.
+
+The final second-pass plan contains **218 placed objects across 53 household areas**. Of these, 97 use the first ten models, up from 22. The ten new models account for 121 objects. All twenty types are present. Road, path, building, animal and workshop exclusions remain active.
+
+| New object | Browsed reference image source | Construction used |
+| --- | --- | --- |
+| Wicker carrying basket | [Vest-Agder museum exhibit](https://agderkultur.no/pages/museer/vest-agder-fylkesmuseum-bondedrakter/vest-agder-fylkesmuseum-bondedrakter.html) | Woven reeds, upright stakes, crossed base, rolled rim and bound handle. The model uses an interpreted oval carrying shape. |
+| Oak water bucket | [Nineteenth-century oak and iron bucket](https://www.antiques-delaval.com/en/various-collectibles/12934-bucket-old-wood-oak-circle-wrought-iron-nineteenth-century.html) | Separate staves, two iron hoops, bail handle, wooden grip and recessed water. |
+| Conical milk churn | [Seven-gallon steel churn, Hemswell](https://www.hemswell-antiques.com/antiques/kitchenalia/7-gallon-steel-conical-milk-churn--116068.html) | Broad foot, tapered body, flared neck, lid, hasp, side handles and riveted seam. No maker or date copied. |
+| Wooden step ladder | [Oak folding steps](https://www.sellingantiques.co.uk/670170/vintage-oak-folding-shop-steps-ladder/) | Treads, platform, four splayed rails, cross brace, hinges and spreaders. The reference is Edwardian; this simpler form is an interpretation. |
+| Birch besom broom | [Former village museum hand tools](https://auctionet.com/sv/3364802-tunna-med-4-st-redskap-tra-metall) | Ninety fanned twigs, smaller branches, two bindings and a worn timber handle. |
+| Carved feeding trough | [Eighteenth-century hollow timber trough](https://www.sellingantiques.co.uk/410451/18th-century-french-cattle-water-trough) | Shortened hollow body, thick ends, bearers and a little grain. French reference used for timber construction. |
+| Rain barrel and tap | [Nineteenth-century oak barrel](https://www.historic-gallery.com/katalog/item/derevjannaja-posuda/porohovaja-bochka-s-bronzovym-kranom/) | Bulged staves, four hoops, rivets, partial cover, water and a wooden tap. Reference is a powder barrel; rain collection is an interpreted use. |
+| Three-tine hay fork | [Museum tool group](https://auctionet.com/sv/3364802-tunna-med-4-st-redskap-tra-metall) | Long handle, iron socket, three curved tines and a low timber rest. |
+| Tied grain sacks | [Wittelshofen local museum](https://www.wittelshofen.de/kultur-und-freizeit/heimatmuseum) | Three soft bags with folds, sewn edges, tied necks and timber support boards. No reference lettering copied. |
+| Saw trestles and hand saw | [Norsk Skogmuseum working trestle](https://digitaltmuseum.no/011022738404/arbeidsbukk) | Braced legs, transverse beams, loose boards, saw teeth, open wooden grip and sawdust. Early-twentieth-century reference used for construction. |
+
+References from other places and dates inform the surfaces and construction. They do not establish exact local use in 1865. All geometry remains original. Reference images are not redistributed.
+
+### Second-pass checks
+
+- Twenty templates pass finite geometry, dimension and 15,000-triangle checks.
+- Textured and untextured templates have identical bounds. Atlas selection cannot change geometry random draws.
+- Placement is deterministic, with at least 100 examples and at least 35 household areas required by the check.
+- Final geometry: **890,154 placed triangles in six material batches**. This is below the explicit one-million-triangle placement budget. This check is not a frame-rate guarantee.
+- Scene type check and guarded production build pass.
+- Browser review inspected all ten new models. Corrections tightened the wicker weave, fitted the bucket hoops, smoothed the sacks, added tie ends and gave the sacks continuous support boards.
+- The live browser counts match the placement check. The forge, Henry’s yard and another household are reviewed in the scene.
+- Second-pass evidence is in `artifacts/village/props-round-2/`. `/props` opens the new set, with first-ten, all-twenty and individual controls.
+
+Local commit only. No push or deployment.

@@ -1,0 +1,45 @@
+{
+  "url": "http://127.0.0.1:4326/village?view=washing&still=1&house=31",
+  "counts": {
+    "wheelbarrow": 8,
+    "handcart": 1,
+    "pump": 2,
+    "tub": 10,
+    "washboard": 10,
+    "scuttle": 16,
+    "woodpile": 21,
+    "block": 9,
+    "grindstone": 3,
+    "tools": 17,
+    "basket": 19,
+    "bucket": 26,
+    "churn": 2,
+    "ladder": 5,
+    "broom": 25,
+    "trough": 8,
+    "barrel": 10,
+    "hayfork": 8,
+    "sacks": 16,
+    "trestles": 2
+  },
+  "total": 218,
+  "errors": [],
+  "reviewedModels": [
+    "basket",
+    "bucket",
+    "churn",
+    "ladder",
+    "broom",
+    "trough",
+    "barrel",
+    "hayfork",
+    "sacks",
+    "trestles"
+  ],
+  "reviewedViews": [
+    "forge",
+    "henry",
+    "washing",
+    "household31"
+  ]
+}
