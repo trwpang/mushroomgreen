@@ -27,7 +27,9 @@
     "village:inhabited": "esbuild scripts/village/check-inhabited.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-inhabited-check.mjs && node /tmp/mushroom-inhabited-check.mjs",
     "village:navigation": "esbuild scripts/village/check-navigation.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-navigation-check.mjs && node /tmp/mushroom-navigation-check.mjs",
     "village:cart": "esbuild scripts/village/check-cart.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-cart-check.mjs && node /tmp/mushroom-cart-check.mjs",
-    "village:props": "esbuild scripts/village/check-props.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-props-check.mjs && node /tmp/mushroom-props-check.mjs"
+    "village:props": "esbuild scripts/village/check-props.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-props-check.mjs && node /tmp/mushroom-props-check.mjs",
+    "village:objects": "esbuild scripts/village/check-interior-objects.ts --bundle --platform=node --format=esm --outfile=/tmp/interior-objects-check.mjs && node /tmp/interior-objects-check.mjs",
+    "village:objects:export": "esbuild scripts/village/export-interior-objects.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/mushroom-interior-export.mjs && node node_modules/.cache/mushroom-interior-export.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",

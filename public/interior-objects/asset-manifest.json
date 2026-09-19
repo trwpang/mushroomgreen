@@ -1,0 +1,1018 @@
+{
+  "models": 100,
+  "bytes": 889976,
+  "triangles": 113844,
+  "sha256": "404d1944e90c8d820219e8deb21ba234b99e66928516182062dba38fcdc65f44",
+  "compression": "EXT_meshopt_compression",
+  "validationErrors": 0,
+  "sourceHashes": {
+    "src/scripts/village/interior-catalogue.ts": "6f69a1dd3f3184ce5507279b92dfa36b1a81457f38c3b7c1d65556647f1fd2f0",
+    "src/scripts/village/interior-objects.ts": "bd445c6b7eec656356db0f77cb4e6fababdc98a6937543962bcfba23eb62ed68"
+  },
+  "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
+  "usage": "Same terms as this repository; no new third-party asset licence.",
+  "appearance": "Portable PBR colours. The village adds its shared procedural surface finishes and household palettes.",
+  "layout": "Named objects arranged on a 2.5 metre grid for Blender inspection.",
+  "items": [
+    {
+      "id": "open-range",
+      "name": "Open grate cooking range",
+      "support": "core",
+      "dimensions": [
+        0.9599999785423279,
+        1.1777942171692848,
+        0.550000011920929
+      ]
+    },
+    {
+      "id": "oven-range",
+      "name": "Side-oven kitchen range",
+      "support": "core",
+      "dimensions": [
+        0.9599999785423279,
+        1.1777942171692848,
+        0.550000011920929
+      ]
+    },
+    {
+      "id": "hob-stove",
+      "name": "Compact enclosed hob stove",
+      "support": "core",
+      "dimensions": [
+        0.9599999785423279,
+        1.1777942171692848,
+        0.550000011920929
+      ]
+    },
+    {
+      "id": "scrubbed-table",
+      "name": "Scrubbed plank dining table",
+      "support": "core",
+      "dimensions": [
+        1.2970000505447388,
+        0.7825000357627867,
+        0.7050000131130219
+      ]
+    },
+    {
+      "id": "turned-table",
+      "name": "Turned-leg kitchen table",
+      "support": "core",
+      "dimensions": [
+        1.2970000505447388,
+        0.7825000286102295,
+        0.7050000131130219
+      ]
+    },
+    {
+      "id": "trestle-table",
+      "name": "Braced trestle dining table",
+      "support": "core",
+      "dimensions": [
+        1.2970000505447388,
+        0.7325000278651714,
+        0.6800000071525574
+      ]
+    },
+    {
+      "id": "rope-bed",
+      "name": "Rope-strung timber bed",
+      "support": "core",
+      "dimensions": [
+        1.2100000381469727,
+        1.0570000398159027,
+        1.8144999742507935
+      ]
+    },
+    {
+      "id": "iron-bed",
+      "name": "Hoop-ended iron bed",
+      "support": "core",
+      "dimensions": [
+        1.2100000381469727,
+        1.0570000398159027,
+        1.809999942779541
+      ]
+    },
+    {
+      "id": "box-bed",
+      "name": "Boarded box bed",
+      "support": "core",
+      "dimensions": [
+        1.2100000381469727,
+        1.0570000398159027,
+        1.8144999742507935
+      ]
+    },
+    {
+      "id": "dresser",
+      "name": "Kitchen dresser with plate shelves",
+      "support": "core",
+      "dimensions": [
+        0.7699999809265137,
+        1.7400000071525574,
+        0.46049998700618744
+      ]
+    },
+    {
+      "id": "drawers",
+      "name": "Kitchen chest of drawers",
+      "support": "core",
+      "dimensions": [
+        0.7419999837875366,
+        0.8424999690055848,
+        0.43949998915195465
+      ]
+    },
+    {
+      "id": "food-cupboard",
+      "name": "Ventilated food cupboard",
+      "support": "core",
+      "dimensions": [
+        0.7419999837875366,
+        1.502500066757202,
+        0.46049998700618744
+      ]
+    },
+    {
+      "id": "spindle-chair",
+      "name": "Spindle-back chair",
+      "support": "core",
+      "dimensions": [
+        0.430400013923645,
+        0.9524999856948853,
+        0.37800000607967377
+      ]
+    },
+    {
+      "id": "ladder-chair",
+      "name": "Ladder-back chair",
+      "support": "core",
+      "dimensions": [
+        0.430400013923645,
+        0.9524999856948853,
+        0.37800000607967377
+      ]
+    },
+    {
+      "id": "bench",
+      "name": "Plain settle bench",
+      "support": "core",
+      "dimensions": [
+        0.9150000214576721,
+        0.9524999856948853,
+        0.37800000607967377
+      ]
+    },
+    {
+      "id": "stool",
+      "name": "Splayed four-leg stool",
+      "support": "core",
+      "dimensions": [
+        0.37951937317848206,
+        0.4438795242458582,
+        0.36000001430511475
+      ]
+    },
+    {
+      "id": "cradle",
+      "name": "Rocking wooden cradle",
+      "support": "floor",
+      "dimensions": [
+        0.723611056804657,
+        0.48998409882187843,
+        0.7619999945163727
+      ]
+    },
+    {
+      "id": "blanket-box",
+      "name": "Iron-strapped blanket box",
+      "support": "core",
+      "dimensions": [
+        0.7870000004768372,
+        0.5010000262409449,
+        0.46400000154972076
+      ]
+    },
+    {
+      "id": "washstand",
+      "name": "Basin washstand",
+      "support": "core",
+      "dimensions": [
+        0.5870000123977661,
+        0.9350000023841858,
+        0.37599998712539673
+      ]
+    },
+    {
+      "id": "plate-rack",
+      "name": "Wall plate rack",
+      "support": "wall",
+      "dimensions": [
+        0.7519999742507935,
+        0.7490000069141387,
+        0.25999999791383743
+      ]
+    },
+    {
+      "id": "cooking-pot",
+      "name": "Bail-handled iron cooking pot",
+      "support": "hearth",
+      "dimensions": [
+        0.2879999876022339,
+        0.3490000069141388,
+        0.27000001072883606
+      ]
+    },
+    {
+      "id": "saucepan",
+      "name": "Lidded saucepan",
+      "support": "hearth",
+      "dimensions": [
+        0.482214018702507,
+        0.24300000071525574,
+        0.27000001072883606
+      ]
+    },
+    {
+      "id": "iron-kettle",
+      "name": "Iron hob kettle",
+      "support": "hearth",
+      "dimensions": [
+        0.405491903424263,
+        0.328000009059906,
+        0.27000001072883606
+      ]
+    },
+    {
+      "id": "copper-kettle",
+      "name": "Copper kettle",
+      "support": "hearth",
+      "dimensions": [
+        0.450546532869339,
+        0.3400000035762787,
+        0.30000001192092896
+      ]
+    },
+    {
+      "id": "griddle",
+      "name": "Handled flat griddle",
+      "support": "hearth",
+      "dimensions": [
+        0.5699999928474426,
+        0.06395876418054104,
+        0.3199999928474426
+      ]
+    },
+    {
+      "id": "skillet",
+      "name": "Long-handled skillet",
+      "support": "hearth",
+      "dimensions": [
+        0.5549999922513962,
+        0.06395876407623291,
+        0.28999999165534973
+      ]
+    },
+    {
+      "id": "toast-fork",
+      "name": "Long toasting fork",
+      "support": "wall",
+      "dimensions": [
+        0.059818584471940994,
+        0.6878469871007837,
+        0.014000000432133675
+      ]
+    },
+    {
+      "id": "poker",
+      "name": "Loop-ended fire poker",
+      "support": "wall",
+      "dimensions": [
+        0.07421359606087208,
+        0.6636407598853111,
+        0.014000000432133675
+      ]
+    },
+    {
+      "id": "tongs",
+      "name": "Fire tongs",
+      "support": "wall",
+      "dimensions": [
+        0.09100000374019146,
+        0.6664999779313803,
+        0.017999999225139618
+      ]
+    },
+    {
+      "id": "coal-shovel",
+      "name": "Small coal shovel",
+      "support": "wall",
+      "dimensions": [
+        0.12399999797344208,
+        0.6869999769330024,
+        0.04099999833852053
+      ]
+    },
+    {
+      "id": "coal-scuttle",
+      "name": "Open coal scuttle with coal",
+      "support": "floor",
+      "dimensions": [
+        0.3199999928474426,
+        0.46000000834465027,
+        0.3199999928474426
+      ]
+    },
+    {
+      "id": "water-pail",
+      "name": "Hooped wooden water pail",
+      "support": "floor",
+      "dimensions": [
+        0.3199999928474426,
+        0.46000000834465027,
+        0.3199999928474426
+      ]
+    },
+    {
+      "id": "slop-pail",
+      "name": "Lidded domestic slop pail",
+      "support": "floor",
+      "dimensions": [
+        0.3199999928474426,
+        0.46000000834465027,
+        0.3199999928474426
+      ]
+    },
+    {
+      "id": "fireguard",
+      "name": "Three-sided iron fireguard",
+      "support": "hearth",
+      "dimensions": [
+        0.7379999756813049,
+        0.6999999821186065,
+        0.33799999952316284
+      ]
+    },
+    {
+      "id": "bellows",
+      "name": "Leather and timber bellows",
+      "support": "wall",
+      "dimensions": [
+        0.20999999344348907,
+        0.4499999871850014,
+        0.10000000149011612
+      ]
+    },
+    {
+      "id": "flat-iron",
+      "name": "Solid flat iron",
+      "support": "shelf",
+      "dimensions": [
+        0.1462862640619278,
+        0.12200000139698386,
+        0.20724264532327652
+      ]
+    },
+    {
+      "id": "trivet",
+      "name": "Three-foot iron trivet",
+      "support": "hearth",
+      "dimensions": [
+        0.21400000154972076,
+        0.08039230123162269,
+        0.21400000154972076
+      ]
+    },
+    {
+      "id": "candlestick",
+      "name": "Brass chamber candlestick",
+      "support": "surface",
+      "dimensions": [
+        0.20900000631809235,
+        0.25600001215934753,
+        0.18000000715255737
+      ]
+    },
+    {
+      "id": "oil-lamp",
+      "name": "Glass-chimney oil lamp",
+      "support": "surface",
+      "dimensions": [
+        0.18000000715255737,
+        0.4280000065919012,
+        0.18000000715255737
+      ]
+    },
+    {
+      "id": "tinderbox",
+      "name": "Tin tinderbox",
+      "support": "shelf",
+      "dimensions": [
+        0.1340000033378601,
+        0.09200000227428973,
+        0.1340000033378601
+      ]
+    },
+    {
+      "id": "dinner-plate",
+      "name": "Blue-banded dinner plate",
+      "support": "surface",
+      "dimensions": [
+        0.25999999046325684,
+        0.031000000424683094,
+        0.25999999046325684
+      ]
+    },
+    {
+      "id": "side-plate",
+      "name": "Scalloped side plate",
+      "support": "surface",
+      "dimensions": [
+        0.20800000429153442,
+        0.031000000424683094,
+        0.20800000429153442
+      ]
+    },
+    {
+      "id": "soup-bowl",
+      "name": "Slip-banded soup bowl",
+      "support": "surface",
+      "dimensions": [
+        0.20000000298023224,
+        0.07999999821186066,
+        0.20000000298023224
+      ]
+    },
+    {
+      "id": "mixing-bowl",
+      "name": "Earthenware mixing bowl",
+      "support": "surface",
+      "dimensions": [
+        0.3400000035762787,
+        0.11500000208616257,
+        0.3400000035762787
+      ]
+    },
+    {
+      "id": "jug",
+      "name": "Brown salt-glazed jug",
+      "support": "surface",
+      "dimensions": [
+        0.22300000488758087,
+        0.2199999988079071,
+        0.15000000596046448
+      ]
+    },
+    {
+      "id": "teapot",
+      "name": "Brown pottery teapot",
+      "support": "surface",
+      "dimensions": [
+        0.38436436653137207,
+        0.2280000001192093,
+        0.20000000298023224
+      ]
+    },
+    {
+      "id": "teacup",
+      "name": "Blue-banded teacup",
+      "support": "surface",
+      "dimensions": [
+        0.15035000443458557,
+        0.08860000222921371,
+        0.11270000040531158
+      ]
+    },
+    {
+      "id": "saucer",
+      "name": "Ringed saucer",
+      "support": "surface",
+      "dimensions": [
+        0.15000000596046448,
+        0.031000000424683094,
+        0.15000000596046448
+      ]
+    },
+    {
+      "id": "tankard",
+      "name": "Pewter tankard",
+      "support": "surface",
+      "dimensions": [
+        0.14900000393390656,
+        0.15000000596046448,
+        0.10999999940395355
+      ]
+    },
+    {
+      "id": "egg-cup",
+      "name": "Turned wooden egg cup",
+      "support": "surface",
+      "dimensions": [
+        0.07000000029802322,
+        0.11799999698996544,
+        0.07000000029802322
+      ]
+    },
+    {
+      "id": "bread",
+      "name": "Scored cottage loaf",
+      "support": "surface",
+      "dimensions": [
+        0.27000001072883606,
+        0.15000000894069676,
+        0.20000000298023224
+      ]
+    },
+    {
+      "id": "bread-board",
+      "name": "Handled bread board",
+      "support": "surface",
+      "dimensions": [
+        0.3270000070333481,
+        0.020732050374150268,
+        0.1599999964237213
+      ]
+    },
+    {
+      "id": "rolling-pin",
+      "name": "Turned rolling pin",
+      "support": "surface",
+      "dimensions": [
+        0.3799999952316284,
+        0.054000000352971256,
+        0.05400000140070915
+      ]
+    },
+    {
+      "id": "wooden-spoon",
+      "name": "Carved wooden spoon",
+      "support": "surface",
+      "dimensions": [
+        0.06599999964237213,
+        0.0249965765979141,
+        0.2852340415120125
+      ]
+    },
+    {
+      "id": "ladle",
+      "name": "Deep iron ladle",
+      "support": "wall",
+      "dimensions": [
+        0.08799999952316284,
+        0.46700000762939453,
+        0.08799999579787254
+      ]
+    },
+    {
+      "id": "knife",
+      "name": "Wood-handled kitchen knife",
+      "support": "surface",
+      "dimensions": [
+        0.02850000001490116,
+        0.02399999974295497,
+        0.23399999737739563
+      ]
+    },
+    {
+      "id": "fork",
+      "name": "Two-tined eating fork",
+      "support": "surface",
+      "dimensions": [
+        0.0258799996227026,
+        0.02399999974295497,
+        0.23042000085115433
+      ]
+    },
+    {
+      "id": "salt-cellar",
+      "name": "Wooden salt cellar",
+      "support": "surface",
+      "dimensions": [
+        0.10999999940395355,
+        0.04500000178813934,
+        0.10999999940395355
+      ]
+    },
+    {
+      "id": "spice-jar",
+      "name": "Small stoppered spice jar",
+      "support": "shelf",
+      "dimensions": [
+        0.07000000029802322,
+        0.13300000131130219,
+        0.07000000029802322
+      ]
+    },
+    {
+      "id": "storage-crock",
+      "name": "Lidded stoneware storage crock",
+      "support": "shelf",
+      "dimensions": [
+        0.1899999976158142,
+        0.2630000114440918,
+        0.1899999976158142
+      ]
+    },
+    {
+      "id": "stone-bottle",
+      "name": "Stoneware bottle with cork",
+      "support": "shelf",
+      "dimensions": [
+        0.15000000596046448,
+        0.2434999942779541,
+        0.15000000596046448
+      ]
+    },
+    {
+      "id": "glass-bottle",
+      "name": "Dark green glass bottle",
+      "support": "shelf",
+      "dimensions": [
+        0.15000000596046448,
+        0.28349998593330383,
+        0.15000000596046448
+      ]
+    },
+    {
+      "id": "bread-crock",
+      "name": "Large covered bread crock",
+      "support": "shelf",
+      "dimensions": [
+        0.3199999928474426,
+        0.31299999356269836,
+        0.3199999928474426
+      ]
+    },
+    {
+      "id": "butter-dish",
+      "name": "Covered butter dish",
+      "support": "surface",
+      "dimensions": [
+        0.17000000178813934,
+        0.07800000254064798,
+        0.17000000178813934
+      ]
+    },
+    {
+      "id": "cheese",
+      "name": "Cut cheese wedge",
+      "support": "surface",
+      "dimensions": [
+        0.1905255913734436,
+        0.072999999076128,
+        0.16499999910593033
+      ]
+    },
+    {
+      "id": "flour-sack",
+      "name": "Tied flour sack",
+      "support": "floor",
+      "dimensions": [
+        0.2800000011920929,
+        0.3950000083446503,
+        0.2199999988079071
+      ]
+    },
+    {
+      "id": "onion-string",
+      "name": "Hanging string of onions",
+      "support": "wall",
+      "dimensions": [
+        0.12999999523162842,
+        0.5500000178813935,
+        0.07000000029802322
+      ]
+    },
+    {
+      "id": "herb-bundle",
+      "name": "Hanging dried herbs",
+      "support": "wall",
+      "dimensions": [
+        0.15101976692676544,
+        0.5500000178813935,
+        0.07985637709498405
+      ]
+    },
+    {
+      "id": "coffee-mill",
+      "name": "Hand coffee mill",
+      "support": "shelf",
+      "dimensions": [
+        0.2019999995827675,
+        0.2829999932646751,
+        0.18800000101327896
+      ]
+    },
+    {
+      "id": "mortar",
+      "name": "Mortar and pestle",
+      "support": "surface",
+      "dimensions": [
+        0.17000000178813934,
+        0.18001990020275116,
+        0.17000000178813934
+      ]
+    },
+    {
+      "id": "hand-machine",
+      "name": "Hand-cranked sewing machine",
+      "support": "surface",
+      "dimensions": [
+        0.5526050627231598,
+        0.3664367254823446,
+        0.23999999463558197
+      ]
+    },
+    {
+      "id": "treadle-machine",
+      "name": "Treadle sewing machine",
+      "support": "core",
+      "dimensions": [
+        0.8169999718666077,
+        1.0873626954853535,
+        0.4300000071525574
+      ]
+    },
+    {
+      "id": "sewing-basket",
+      "name": "Woven sewing basket",
+      "support": "surface",
+      "dimensions": [
+        0.23000000417232513,
+        0.11365741456393152,
+        0.23000000417232513
+      ]
+    },
+    {
+      "id": "thread-spools",
+      "name": "Three thread spools",
+      "support": "surface",
+      "dimensions": [
+        0.12999999523162842,
+        0.06300000322517008,
+        0.03999999910593033
+      ]
+    },
+    {
+      "id": "scissors",
+      "name": "Tailor’s shears",
+      "support": "surface",
+      "dimensions": [
+        0.0860000029206276,
+        0.015748995821923018,
+        0.18502234667539597
+      ]
+    },
+    {
+      "id": "pincushion",
+      "name": "Pins in a cloth cushion",
+      "support": "surface",
+      "dimensions": [
+        0.0860000029206276,
+        0.07000000067055226,
+        0.06599999964237213
+      ]
+    },
+    {
+      "id": "darning-mushroom",
+      "name": "Wooden darning mushroom",
+      "support": "surface",
+      "dimensions": [
+        0.10999999940395355,
+        0.16499999130610377,
+        0.10999999940395355
+      ]
+    },
+    {
+      "id": "needle-case",
+      "name": "Sliding needle case",
+      "support": "surface",
+      "dimensions": [
+        0.03500000014901161,
+        0.02650000073481351,
+        0.11999999731779099
+      ]
+    },
+    {
+      "id": "folded-linen",
+      "name": "Stack of folded linen",
+      "support": "shelf",
+      "dimensions": [
+        0.3114999979734421,
+        0.1055000014603138,
+        0.23000000417232513
+      ]
+    },
+    {
+      "id": "patchwork-quilt",
+      "name": "Pieced patchwork quilt",
+      "support": "bed",
+      "dimensions": [
+        1.2000000476837158,
+        0.046104324981570244,
+        1.2999999523162842
+      ]
+    },
+    {
+      "id": "pillow",
+      "name": "Ticking pillow",
+      "support": "bed",
+      "dimensions": [
+        0.5199999809265137,
+        0.14000000089406966,
+        0.3199999928474426
+      ]
+    },
+    {
+      "id": "bolster",
+      "name": "Rolled bolster",
+      "support": "bed",
+      "dimensions": [
+        0.8199999928474426,
+        0.18999999642372134,
+        0.1899999976158142
+      ]
+    },
+    {
+      "id": "chamber-pot",
+      "name": "Handled chamber pot",
+      "support": "floor",
+      "dimensions": [
+        0.3009999990463257,
+        0.14519615471363068,
+        0.25999999046325684
+      ]
+    },
+    {
+      "id": "boots",
+      "name": "Laced leather work boots",
+      "support": "floor",
+      "dimensions": [
+        0.3100000023841858,
+        0.23999999468028546,
+        0.28999999165534973
+      ]
+    },
+    {
+      "id": "clogs",
+      "name": "Wood-soled leather clogs",
+      "support": "floor",
+      "dimensions": [
+        0.3100000023841858,
+        0.1250000000447035,
+        0.28999999165534973
+      ]
+    },
+    {
+      "id": "cap",
+      "name": "Soft working cap",
+      "support": "shelf",
+      "dimensions": [
+        0.23999999463558197,
+        0.09600000125169755,
+        0.255000002682209
+      ]
+    },
+    {
+      "id": "apron",
+      "name": "Hanging working apron",
+      "support": "wall",
+      "dimensions": [
+        0.3700000047683716,
+        0.8410000018775463,
+        0.04944462515413761
+      ]
+    },
+    {
+      "id": "towel",
+      "name": "Hanging woven towel",
+      "support": "wall",
+      "dimensions": [
+        0.28999999165534973,
+        0.5599999940022826,
+        0.03969239443540573
+      ]
+    },
+    {
+      "id": "curtains",
+      "name": "Gathered curtain pair and rod",
+      "support": "wall",
+      "dimensions": [
+        1.3700000047683716,
+        1.099999994970858,
+        0.07450242713093758
+      ]
+    },
+    {
+      "id": "rag-rug",
+      "name": "Striped rag rug",
+      "support": "floor",
+      "dimensions": [
+        0.8999999761581421,
+        0.04040965207241243,
+        1.3600000143051147
+      ]
+    },
+    {
+      "id": "mirror",
+      "name": "Small timber-framed mirror",
+      "support": "wall",
+      "dimensions": [
+        0.3199999928474426,
+        0.5112630760669707,
+        0.04800000227987766
+      ]
+    },
+    {
+      "id": "wall-clock",
+      "name": "Wooden pendulum wall clock",
+      "support": "wall",
+      "dimensions": [
+        0.25999999046325684,
+        0.5699999751523137,
+        0.06950000021606684
+      ]
+    },
+    {
+      "id": "framed-print",
+      "name": "Small framed landscape print",
+      "support": "wall",
+      "dimensions": [
+        0.38999998569488525,
+        0.3714090245962143,
+        0.05599999986588955
+      ]
+    },
+    {
+      "id": "book",
+      "name": "Cloth-bound household book",
+      "support": "shelf",
+      "dimensions": [
+        0.14650000631809235,
+        0.05400000046938658,
+        0.1899999976158142
+      ]
+    },
+    {
+      "id": "candle-snuffer",
+      "name": "Conical candle snuffer",
+      "support": "shelf",
+      "dimensions": [
+        0.19391615502536297,
+        0.07389366663992405,
+        0.04600000008940697
+      ]
+    },
+    {
+      "id": "scrub-brush",
+      "name": "Wooden scrubbing brush",
+      "support": "shelf",
+      "dimensions": [
+        0.15199999511241913,
+        0.07500000253319741,
+        0.07800000160932541
+      ]
+    },
+    {
+      "id": "soap-dish",
+      "name": "Soap on a pottery dish",
+      "support": "surface",
+      "dimensions": [
+        0.12999999523162842,
+        0.040500001050531864,
+        0.12999999523162842
+      ]
+    },
+    {
+      "id": "quarry-tiles",
+      "name": "Worn quarry-tile floor kit",
+      "support": "finish",
+      "dimensions": [
+        1,
+        0.02669999953731894,
+        1
+      ]
+    },
+    {
+      "id": "flagstones",
+      "name": "Uneven flagstone floor kit",
+      "support": "finish",
+      "dimensions": [
+        1,
+        0.02669999953731894,
+        1
+      ]
+    },
+    {
+      "id": "board-ceiling",
+      "name": "Narrow wooden ceiling kit",
+      "support": "finish",
+      "dimensions": [
+        0.9959999918937683,
+        0.08999999798834324,
+        1
+      ]
+    }
+  ]
+}

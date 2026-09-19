@@ -4,6 +4,9 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {Home} from './layout';
 import {localPoint} from './layout';
 import {planInterior,seeded,type InteriorPlan,type Furnishing} from './interior-plans';
+import {interiorObject,type ObjectMaterial} from './interior-objects';
+import {planDressing} from './interior-dressing';
+import type {InteriorObjectId} from './interior-catalogue';
 
 export interface InteriorView {group:T.Group;plan:InteriorPlan;floor:number;floors:number;target:T.Vector3;camera:T.Vector3;}
 /** Shared room builder for isolated cutaways and furnished village shells. */
@@ -41,20 +44,29 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   const woods=['#e3ccaa','#c5b59d','#d3b590','#b59f84'].map(c=>mat(c,woodMap));
   const lime=mat(['#ddd6ba','#c7ccb9','#d8c7b0','#cbc3b3','#d7d0b9','#c4c7b5'][plan.palette],plasterMap),dark=mat('#211e18',undefined,.93,'coal'),iron=mat('#37372e',undefined,.7),brick=mat('#c2aa93',brickMap),stone=mat('#8a8170',undefined,.93,'stone'),cream=mat('#e9dfc9',clothMap),blanket=mat(['#786a53','#6a7773','#827064','#77794f','#8b7b66','#697071'][plan.palette],clothMap),ceramic=mat('#b5a787',undefined,.34),earthenware=mat('#835a3d',undefined,.42);
   const batches=new Map<T.Material,T.BufferGeometry[]>();
-  function add(g:T.BufferGeometry,m:T.Material,x=0,y=0,z=0,rx=0,ry=0,rz=0){const matrix=new T.Matrix4().compose(new T.Vector3(x,y+base,z),new T.Quaternion().setFromEuler(new T.Euler(rx,ry,rz)),new T.Vector3(1,1,1));const n=g.index?g.toNonIndexed():g.clone();g.dispose();n.applyMatrix4(matrix);const b=batches.get(m)||[];b.push(n);batches.set(m,b);}
+  function add(g:T.BufferGeometry,m:T.Material,x=0,y=0,z=0,rx=0,ry=0,rz=0){const matrix=new T.Matrix4().compose(new T.Vector3(x,y+base,z),new T.Quaternion().setFromEuler(new T.Euler(rx,ry,rz)),new T.Vector3(1,1,1));const n=g.index?g.toNonIndexed():g.clone();g.dispose();if(!n.hasAttribute('color'))n.setAttribute('color',new T.Float32BufferAttribute(new Float32Array(n.getAttribute('position').count*3).fill(1),3));n.applyMatrix4(matrix);const b=batches.get(m)||[];b.push(n);batches.set(m,b);}
   function box(x:number,y:number,z:number,a:number,b:number,c:number,m:T.Material=woods[0],ry=0){add(new T.BoxGeometry(a,b,c),m,x,y,z,0,ry);}
   function cylinder(x:number,y:number,z:number,rt:number,rb:number,h:number,m:T.Material,sides=12){add(new T.CylinderGeometry(rt,rb,h,sides),m,x,y,z);}
   function sphere(x:number,y:number,z:number,a:number,b:number,c:number,m:T.Material){const g=new T.SphereGeometry(1,12,7);g.scale(a,b,c);add(g,m,x,y,z);}
   function rod(a:T.Vector3,b:T.Vector3,r:number,m:T.Material){const g=new T.CylinderGeometry(r,r,a.distanceTo(b),8);g.applyQuaternion(new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),b.clone().sub(a).normalize()));const p=a.clone().add(b).multiplyScalar(.5);add(g,m,p.x,p.y,p.z);}
   const stair=plan.floors[floor].items.find(a=>a.kind==='stairs');
   // Ground-floor finishes vary by household. These are material interpretations, not recorded fittings.
-  const hardFloor=!floor&&(home.number%5===0||home.number%7===0);
-  if(hardFloor){const flags=home.number%7===0,stepX=flags?.55:.31,stepZ=flags?.47:.31;
-   const tones=(flags?['#817968','#918a76','#766f62','#a09681']:['#8b5d43','#79503b','#95654a','#715442']).map(c=>mat(c,plasterMap));
-   for(let row=0,z=-d/2+.10;z<d/2-.10;z+=stepZ,row++)for(let x=-w/2+.1;x<w/2-.1;){const length=Math.min(stepX*(flags&&row%2===0&&x===-w/2+.1?.5:1),w/2-.1-x),depth=Math.min(stepZ,d/2-.1-z);if(length>.01&&depth>.01)box(x+length/2,.002+(rand()-.5)*.005,z+depth/2,length-.009,.062,depth-.009,tones[Math.floor(rand()*tones.length)]);x+=length;}
-  }else{
-  // Narrow, staggered floorboards. Upper floors leave a true opening over the stair.
-  for(let z=-d/2+.10;z<d/2-.10;z+=.19)for(let x=-w/2+.1;x<w/2-.1;){let length=Math.min(.95+rand()*1.5,w/2-.1-x);if(floor&&stair&&z>stair.z-stair.d/2&&z<stair.z+stair.d/2){if(x<stair.x-stair.w/2&&x+length>stair.x-stair.w/2)length=stair.x-stair.w/2-x;else if(x>=stair.x-stair.w/2&&x<stair.x+stair.w/2){x=stair.x+stair.w/2;continue;}}if(length>.008){box(x+length/2,0,z,Math.max(.004,length-.009),.065,.179,woods[Math.floor(rand()*4)]);if(length>.2)for(const dx of [-length/2+.04,length/2-.04])cylinder(x+length/2+dx,.035,z+.06,.008,.008,.006,iron,5);}x+=Math.max(.01,length);}
+  const finish:InteriorObjectId=!floor&&(home.number%3!==0||home.number===22)?(home.number%7===0?'flagstones':'quarry-tiles'):'board-ceiling';
+  const objectMats:Record<ObjectMaterial,T.Material>={oak:woods[0],darkwood:woods[2],iron,steel:mat('#8f9389',undefined,.44,'iron'),copper:mat('#a17b43',undefined,.48,'iron'),cream:ceramic,blue:mat('#394e69',undefined,.4,'ceramic'),clay:earthenware,cloth:blanket,green:mat('#636e54',clothMap,.92,'cloth'),coal:dark,glass:mat('#71867c',undefined,.18,'glass'),paper:mat('#c3b79c',plasterMap,.95,'cloth'),linen:mat('#d0c7ae',clothMap,.97,'cloth'),tile:mat('#755038',plasterMap,.92,'stone'),stone:mat('#807b69',plasterMap,.97,'stone')};
+  const fabric=own(new T.MeshStandardMaterial({color:blanket.color,map:clothMap,roughness:.98,side:T.DoubleSide}));refineSurface(fabric,'cloth');objectMats.cloth=fabric;for(const key of ['tile','stone'] as const)(objectMats[key] as T.MeshStandardMaterial).vertexColors=true;for(const key of ['steel','copper'] as const)(objectMats[key] as T.MeshStandardMaterial).metalness=.55;
+  function object(id:InteriorObjectId,x:number,y:number,z:number,sx=1,scaleY=1,sz=1,angle=0,tilt=0){
+   for(const part of interiorObject(id).parts){const g=part.geometry.clone();g.scale(sx,scaleY,sz);g.rotateX(tilt);add(g,objectMats[part.material],x,y,z,0,angle);}
+  }
+  // Short metre-scale modules fit the room boundaries and leave the actual stair opening.
+  for(let z=-d/2+.10;z<d/2-.10;z+=.72)for(let x=-w/2+.10;x<w/2-.10;x+=.72){
+   const fw=Math.min(.72,w/2-.10-x),fd=Math.min(.72,d/2-.10-z);
+   const xs=[x,x+fw],zs=[z,z+fd];
+   if(floor&&stair){for(const edge of [stair.x-stair.w/2,stair.x+stair.w/2])if(edge>x&&edge<x+fw)xs.push(edge);for(const edge of [stair.z-stair.d/2,stair.z+stair.d/2])if(edge>z&&edge<z+fd)zs.push(edge);}
+   xs.sort((a,b)=>a-b);zs.sort((a,b)=>a-b);
+   for(let i=1;i<xs.length;i++)for(let j=1;j<zs.length;j++){const cx=(xs[i-1]+xs[i])/2,cz=(zs[j-1]+zs[j])/2;
+    if(floor&&stair&&Math.abs(cx-stair.x)<stair.w/2&&Math.abs(cz-stair.z)<stair.d/2)continue;
+    object(finish,cx,finish==='board-ceiling'?-.06:0,cz,xs[i]-xs[i-1],1,zs[j]-zs[j-1]);
+   }
   }
   if(floor&&stair){
    const left=stair.x-stair.w/2,right=stair.x+stair.w/2,back=stair.z-stair.d/2,front=stair.z+stair.d/2;
@@ -168,15 +180,15 @@ export function createInteriors(scene:T.Object3D,embedded=false){
     // The chimney breast is on the exterior stack's gable. The fire opens into the room (+X).
     const face=x+ww/2;box(x,.04,z,ww+.13,.09,dd+.17,stone);
     box(x-ww*.32,wallH/2,z,ww*.36,wallH,dd,brick);
-    for(const side of [-1,1])box(x+.03,.62,z+side*(dd/2-.11),ww-.16,1.24,.22,brick);
+    for(const side of [-1,1])box(x+.03,.62,z+side*(dd/2-.07),ww-.16,1.24,.14,brick);
     box(x+.02,1.25,z,ww-.08,.22,dd,brick);box(x-.08,(wallH+1.36)/2,z,ww-.24,wallH-1.36,dd-.10,brick);
     box(face-.06,1.42,z,.24,.09,dd+.21,woods[1]);box(x-.12,.54,z,.03,.85,dd-.40,dark);
-    box(face-.14,.21,z,.26,.07,dd-.40,iron);for(let i=0;i<7;i++)box(face-.005,.32,z-dd*.28+i*dd*.092,.025,.25,.022,iron);
+
     for(let i=0;i<5;i++)sphere(face-.18,.25,z+(rand()-.5)*dd*.5,.07,.035,.055,dark);
     const ember=own(new T.MeshStandardMaterial({color:'#a95319',emissive:'#e96117',emissiveIntensity:.7,roughness:1}));
     flame=new T.Mesh(own(new T.SphereGeometry(.085,8,5)),ember);flame.scale.set(.65,.50,2.1);flame.position.set(face-.16,base+.27,z);root.add(flame);
     glow=new T.PointLight('#e7a15e',1.0,3.2,2);glow.position.set(face+.16,base+.55,z);root.add(glow);
-    cylinder(face-.14,.62,z,.105,.13,.18,iron);rod(new T.Vector3(face-.14,.72,z-.13),new T.Vector3(face-.14,.80,z+.13),.012,iron);
+
     for(let i=0;i<2;i++){rod(new T.Vector3(face-.08,.10,z+dd*.40-i*.09),new T.Vector3(face-.13,.94,z+dd*.43-i*.09),.012,iron);add(new T.TorusGeometry(.027,.008,5,10),iron,face-.13,.97,z+dd*.43-i*.09,0,Math.PI/2);}
     for(const side of [-1,1]){cylinder(face-.06,1.51,z+side*dd*.34,.026,.035,.09,ceramic);cylinder(face-.06,1.64,z+side*dd*.34,.018,.018,.18,cream);}
    }else if(a.kind==='bed'||a.kind==='pallet'){
@@ -204,22 +216,30 @@ export function createInteriors(scene:T.Object3D,embedded=false){
     else{for(const side of [-1,1]){for(let i=0;i<6;i++)box(x+side*ww/2,.42,z-dd/2+i*dd/5,.04,.84,.04,wood);box(x+side*ww/2,.85,z,.045,.055,dd+.08,wood);}box(x,.85,z+dd/2,ww,.055,.045,wood);}
    }
   }
-  const table=plan.floors[floor].items.find(a=>a.kind==='table');
-  if(table&&plan.number%3!==0){
-   const rw=table.w+.30,rd=table.d+1.08;
-   box(table.x,.039,table.z,rw,.009,rd,blanket);
-   for(let i=0;i<5;i++)box(table.x,.045,table.z-rd/2+.08+i*.042,rw-.10,.003,.018,cream);
-   for(const side of [-1,1])for(let i=0;i<14;i++)box(table.x-rw/2+(i+.5)*rw/14,.043,table.z+side*(rd/2+.025),.009,.003,.07,cream);
-  }
-  for(const bed of plan.floors[floor].items.filter(a=>a.kind==='bed')){
-   const mx=bed.x-bed.w/2-.31;
-   if(mx-.27>.52){
-    box(mx,.038,bed.z+.18,.53,.008,1.20,blanket);
-    for(const side of [-1,1])for(let i=0;i<10;i++)box(mx-.24+i*.051,.043,bed.z+.18+side*.63,.008,.003,.065,cream);
-    for(let i=0;i<4;i++)box(mx,.044,bed.z-.31+i*.037,.48,.003,.014,cream);
+  const dressing=planDressing(home,plan,floor,sy);
+  const replaced=new Set(dressing.filter(p=>p.role==='core').map(p=>p.anchor));
+  for(const item of plan.floors[floor].items)if(item.kind==='hearth'||!replaced.has(item.id))furniture(item);
+  for(const p of dressing){
+   if(!embedded&&p.id==='curtains'&&p.z>0)continue; // Front wall is removed in the cutaway.
+   const curtainOffset=!embedded&&p.id==='curtains'?.12:0;
+   object(p.id,p.x,p.y+.03+curtainOffset,p.z,p.sx,p.sy,p.sz,p.angle,p.tilt??0);
+   if(p.role==='wall'&&['rear-wall-hanging','hearth-tools'].includes(p.anchor)){
+    const top=p.y+.03+interiorObject(p.id).bounds.max.y*p.sy;
+    const start=p.anchor==='hearth-tools'?new T.Vector3(-w/2+.18,top,p.z):new T.Vector3(p.x,top,-d/2+.18);
+    const end=new T.Vector3(p.x,top,p.z);rod(start,end,.006,iron);cylinder(end.x,top+.005,end.z,.010,.010,.019,iron,8);
    }
+   if(p.id==='curtains')for(const dx of [-.60,.60]){const side=p.z<0?-1:1;rod(new T.Vector3(p.x+dx*p.sx,p.y+.03+curtainOffset+1.09*p.sy,side*(d/2-.18)),new T.Vector3(p.x+dx*p.sx,p.y+.03+curtainOffset+1.09*p.sy,p.z),.007,iron);}
   }
-  for(const item of plan.floors[floor].items)furniture(item);
+  const table=plan.floors[floor].items.find(a=>a.kind==='table');
+  if(table&&home.number%3!==0)object('rag-rug',table.x,.03,table.z,Math.min(1.3,table.w/.9),.12,Math.min(1.2,(table.d+.7)/1.28));
+  // Timber boards are visible overhead inside; cutaways retain their open viewing plane.
+  if(embedded)for(let z=-d/2+.18;z<d/2-.18;z+=1)for(let x=-w/2+.18;x<w/2-.18;x+=1){
+   const cw=Math.min(1,w/2-.18-x),cd=Math.min(1,d/2-.18-z),xs=[x,x+cw],zs=[z,z+cd];
+   if(floor<plan.floors.length-1&&stair){for(const edge of [stair.x-stair.w/2,stair.x+stair.w/2])if(edge>x&&edge<x+cw)xs.push(edge);for(const edge of [stair.z-stair.d/2,stair.z+stair.d/2])if(edge>z&&edge<z+cd)zs.push(edge);}
+   xs.sort((a,b)=>a-b);zs.sort((a,b)=>a-b);
+   for(let i=1;i<xs.length;i++)for(let j=1;j<zs.length;j++){const cx=(xs[i-1]+xs[i])/2,cz=(zs[j-1]+zs[j])/2;if(floor<plan.floors.length-1&&stair&&Math.abs(cx-stair.x)<stair.w/2&&Math.abs(cz-stair.z)<stair.d/2)continue;object('board-ceiling',cx,wallH-.11,cz,xs[i]-xs[i-1],1,zs[j]-zs[j-1]);}
+  }
+  root.userData.interiorObjects=dressing;root.userData.floorFinish=finish;
   if(floor||plan.width>7){
    // Pegs and spare clothes occupy the gable wall, above floor-level circulation.
    const hz=-d*.29;box(-w/2+.115,1.65,hz,.055,.09,.91,woods[1]);
@@ -229,10 +249,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
    // A candle and simple bowl are set on the window sill rather than the floor.
    const wx=-w*.32;cylinder(wx,windowLow+.01,-d/2+.14,.07,.075,.03,earthenware);cylinder(wx,windowLow+.12,-d/2+.14,.02,.02,.19,cream);
   }
-  // A rail, hanging work cloths and plate shelf add domestic detail without blocking circulation.
-  const shelfX=w*.16;box(shelfX,1.76,-d/2+.25,1.0,.055,.30,woods[1]);
-  for(const xx of [-.32,.32]){box(shelfX+xx,1.61,-d/2+.20,.035,.28,.12,iron);bowl(shelfX+xx,1.795,-d/2+.23,.095);}
-  for(let i=0;i<2;i++){const x=-w*.22+i*.24;box(x,1.62,-d/2+.13,.18,.048,.07,woods[1]);const cloth=new T.PlaneGeometry(.21,.57,8,14);const a=cloth.attributes.position;for(let j=0;j<a.count;j++)a.setZ(j,.012*Math.sin(a.getX(j)*65)+.014*Math.sin(a.getY(j)*20));cloth.computeVertexNormals();add(cloth,cream,x,1.31,-d/2+.15);}
+  // Wall fittings and their supported contents come from the shared dressing plan.
   if(plan.floors[floor].curtain&&!plan.floors[floor].items.some(a=>a.kind==='partition')){
    const bed=plan.floors[floor].items.find(a=>a.kind==='bed')!;
    const cx=bed.x-bed.w/2-.20,startZ=bed.z-bed.d/2+.08,length=1.05;

@@ -39,7 +39,7 @@ export function planInterior(h:Home):InteriorPlan{
    const seats:[number,number][]=[[table.x,table.z+td/2+.34],[table.x,table.z-td/2-.34],[table.x-tw/2-.34,table.z],[table.x+tw/2+.34,table.z]];
    place('stool',.34,.34,seats);
    if(count>1)place('stool',.34,.34,seats);
-   place('cupboard',.64,.36,candidates(.64,.36,-1,true),true);
+   if(!place('cupboard',.92,.43,candidates(.92,.43,-1,true)))place('cupboard',.64,.36,candidates(.64,.36,-1,true),true);
    const fuelCandidates=candidates(.36,.36,-1,true).sort((a,b)=>Math.hypot(a[0]+width*.34,a[1]+.85)-Math.hypot(b[0]+width*.34,b[1]+.85));place('fuelbucket',.36,.36,fuelCandidates);
    const washCandidates=candidates(.58,.36,1,false).sort((a,b)=>Math.hypot(a[0]-width*.27,a[1]+depth*.15)-Math.hypot(b[0]-width*.27,b[1]+depth*.15));
    place('washstand',.58,.36,washCandidates);

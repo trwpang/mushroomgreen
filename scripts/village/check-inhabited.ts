@@ -40,6 +40,9 @@ for(const h of homes){
    }
   }
   if(!f)assert.equal(ray(0,.85,plan.depth/2-.3,0,0,1).length,0,'Front door route is blocked');
+  const stair=plan.floors[f].items.find(a=>a.kind==='stairs');
+  if(!f&&stair){const origin=new T.Vector3(stair.x,2.225*sy-.18,stair.z).applyMatrix4(v.group.matrixWorld),direction=new T.Vector3(0,1,0).transformDirection(v.group.matrixWorld);assert.equal(new T.Raycaster(origin,direction,0,.27).intersectObjects(v.group.children,false).length,0,'Ceiling boards must leave the stair opening clear');}
+
   assert(!v.group.children.some(o=>o instanceof T.HemisphereLight),'Embedded rooms must not add global ambient lights');
   controller.hide();assert.equal(scene.children.length,0);floors++;
  }
