@@ -1,5 +1,6 @@
 {
   "samples": 560,
+  "raisedForgeFloor": true,
   "reachableArms": true,
   "constantLimbLengths": true,
   "anvilContact": true,

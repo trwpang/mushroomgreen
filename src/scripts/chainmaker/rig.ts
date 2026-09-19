@@ -14,14 +14,14 @@ export function solveArm(shoulder:T.Vector3,wrist:T.Vector3,side:number){
  return shoulder.clone().addScaledVector(axis,along).addScaledVector(pole,height);
 }
 function basis(axis:T.Vector3){const x=axis.clone().normalize();const y=new T.Vector3(0,1,0).addScaledVector(x,-x.y).normalize();const z=new T.Vector3().crossVectors(x,y);return {x,y,z,q:new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(x,y,z))};}
-export function poseAt(time:number){
+export function poseAt(time:number,floorHeight=0){
  const {phase,lift}=stroke(time);const follow=-.006*Math.sin(phase*Math.PI*2);
  const a=-.10+lift*1.06;const hammer=basis(new T.Vector3(0,Math.sin(a),Math.cos(a)));
- const contact=LINK.clone().add(new T.Vector3(0,.007,0));
+ const contact=LINK.clone().add(new T.Vector3(0,.007-floorHeight,0));
  const strike=basis(new T.Vector3(0,Math.sin(-.1),Math.cos(-.1)));
  const grip=contact.clone().addScaledVector(strike.x,-.32).addScaledVector(strike.y,.063);
  grip.y+=lift*.105;grip.z-=lift*.035;
- const tongGrip=new T.Vector3(-.225,1.133,.425),tongTip=LINK.clone().add(new T.Vector3(-.037,0,0));
+ const tongGrip=new T.Vector3(-.225,1.133-floorHeight,.425),tongTip=LINK.clone().add(new T.Vector3(-.037,-floorHeight,0));
  const tongs=basis(tongTip.clone().sub(tongGrip));
  // Jaws are .43m from grip, so solve grip from the contact, preserving the physical reins length.
  tongGrip.copy(tongTip).addScaledVector(tongs.x,-.43);
@@ -32,7 +32,7 @@ export function poseAt(time:number){
  });
  return {phase,lift,follow,arms,hammer,grip,tongs,tongGrip,contact,hammerFace:grip.clone().addScaledVector(hammer.x,.32).addScaledVector(hammer.y,-.063)};
 }
-export function createChainmakerRig(root:T.Object3D){
+export function createChainmakerRig(root:T.Object3D,floorHeight=0){
  const required=['Body','Torso','Head','Upper_L','Upper_R','Fore_L','Fore_R','Hand_L','Hand_R','Hammer','Tongs'];
  const nodes=Object.fromEntries(required.map(name=>{const node=root.getObjectByName(name);if(!node)throw new Error(`Missing character node ${name}`);return[name,node];}));
  const bridges=new Map<string,T.Mesh>();
@@ -45,7 +45,7 @@ export function createChainmakerRig(root:T.Object3D){
   g.setAttribute('position',new T.BufferAttribute(positions,3));g.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));g.setIndex(indices);
   const m=new T.Mesh(g,sleeve.material);m.castShadow=m.receiveShadow=true;root.add(m);bridges.set(label,m);
  }
- function update(time:number){const p=poseAt(time);
+ function update(time:number){const p=poseAt(time,floorHeight);
   nodes.Torso.position.y=p.follow;
   const pivot=new T.Vector3(0,1.465,.145);nodes.Head.quaternion.setFromAxisAngle(new T.Vector3(1,0,0),.32+p.lift*.035);nodes.Head.position.copy(pivot).sub(pivot.clone().applyQuaternion(nodes.Head.quaternion));nodes.Head.position.y+=p.follow;
   for(const a of p.arms){

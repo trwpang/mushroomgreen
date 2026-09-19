@@ -96,3 +96,5 @@ Quick-reference notes Claude should internalize on every session start. Update w
 - Heathcock #41 has a 2m visual setback away from the nearest lane in makeHomes. All attached yard, terrain, path and interior positions follow that transform; source map coordinates stay intact.
 
 - Chainmaker demo lives at /chainmaker, separate from village placement. Character GLB uses named limb groups and a Three.js analytic rig with dynamic shoulder cloth; the GLB download does not embed the animation. Anvil face is 1.055m; link centre 1.062m with 7mm tube, hammer face contact 1.069m. Five adversarial visual rounds recorded in docs/chainmaker/review.md.
+
+- Main forge now owns one Working chainmaker group. Its figure stands at local Y .125 for brick-floor contact; poseAt floorHeight offsets tool targets to keep the link at1.062m. Remove only central idle Hammer geometry with centralWorkstation(..., false). Interior watch-worker camera and pause share village state.

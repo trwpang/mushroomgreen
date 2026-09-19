@@ -10,4 +10,4 @@ assert.equal(geometry.index!.count,3,'Only the central workstation remains');
 assert.ok(Math.abs(p.getY(1)-4)<1e-6,'Quantized positions must decode before world scaling');
 assert.ok(p.getX(0)>-.001&&p.getX(0)<.001,'World translation is preserved');
 assert.ok(source.getAttribute('position').array instanceof Uint16Array,'Original shared asset stays unchanged');
-geometry.dispose();source.dispose();console.log('Compressed workshop extraction passes');
+const outer=centralWorkstation(source,world,false);assert.equal(outer.index!.count,6,'Only idle outer workstation tools remain');for(const index of outer.index!.array)assert.ok(Math.abs(outer.getAttribute('position').getX(index))>1.3);outer.dispose();geometry.dispose();source.dispose();console.log('Compressed workshop extraction passes');

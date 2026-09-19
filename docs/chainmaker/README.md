@@ -1,6 +1,6 @@
 # The chainmaker study
 
-A separate character demo at `/chainmaker`. This does not place a worker in the village yet.
+The original character demo remains at `/chainmaker`. The same worker now stands at the main village forge’s centre anvil.
 
 ## Reference and interpretation
 
@@ -49,3 +49,11 @@ This is a character and stroke demo. It does not simulate heating, turning and w
 - At 390 × 844, the figure and controls remain visible; notes open and Escape closes them with focus returned.
 - Browser console showed no errors in the checked flows. Viewport override was reset.
 - Reduced motion is implemented and covered by source inspection; no physical phone or full assistive-technology certification is claimed.
+
+## Main forge placement
+
+Open `/village?house=5&inside=main&worker=1` to watch him. The workshop toolbar switches between a close view and the whole room. Interior Play/Pause uses the village’s existing clock, including its reduced-motion and fixed-time settings.
+
+The worker stands on the finished brick floor, 0.125m above the forge asset datum. The arm solver compensates for this height so the tongs and hammer still meet the anvil. The idle hammer is removed only from the centre station. The two other stations and Henry’s small shop retain their tools. The door and main aisle remain clear.
+
+Placement verification: checked feet, working station, whole-room view, pause/play, exit and re-entry in the browser. No console errors observed. TypeScript, workshop extraction, arm/contact tests at both floor heights, and production build pass.

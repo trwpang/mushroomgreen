@@ -71,3 +71,7 @@ The original X watermill poster was reviewed again for bank treatment, foliage l
 Each household number now seeds a fixed combination of wall and roof colours, joinery, building height, service additions, extra chimneys, shutters, repairs, thresholds, and stored timber or boxes. These are artistic details, not claims about each family's recorded home. Main footprints remain tied to the map. Materials are cloned per home so changes do not spread to neighbouring houses; geometry and textures remain shared. Character stays consistent across the close and distant models.
 
 The visible + / − controls and keyboard shortcuts share the same distance limits. Buttons stop a running camera transition and zoom around the current target.
+
+### Main forge chainmaker
+
+One male chainmaker now works at the main forge’s centre anvil. Use **Watch chainmaker** inside the main workshop for a close view; **Whole workshop** restores the room view. Interior **Pause** shares the village clock. He is an interpreted worker based on the reference photograph, not a named household member. His original study remains at `/chainmaker`.
