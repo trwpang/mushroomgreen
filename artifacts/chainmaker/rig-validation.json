@@ -1,0 +1,10 @@
+{
+  "samples": 560,
+  "reachableArms": true,
+  "constantLimbLengths": true,
+  "anvilContact": true,
+  "tongContact": true,
+  "hammerContact": true,
+  "pausedDeterministic": true,
+  "continuousLoop": true
+}

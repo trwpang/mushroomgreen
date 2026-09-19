@@ -1,0 +1,20 @@
+import {NodeIO} from '@gltf-transform/core';
+import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
+import {dedup,weld,prune,meshopt,textureCompress} from '@gltf-transform/functions';
+import {MeshoptEncoder,MeshoptDecoder} from 'meshoptimizer';
+import {validateBytes} from 'gltf-validator';
+import sharp from 'sharp';
+import {readFile,writeFile,rename} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+await Promise.all([MeshoptEncoder.ready,MeshoptDecoder.ready]);
+const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.encoder':MeshoptEncoder,'meshopt.decoder':MeshoptDecoder});
+const doc=await io.read('artifacts/chainmaker/raw/chainmaker.glb');
+await doc.transform(dedup(),weld(),prune(),textureCompress({encoder:sharp,targetFormat:'webp',quality:90}),meshopt({encoder:MeshoptEncoder,level:'high'}));
+const bytes=await io.writeBinary(doc);const report=await validateBytes(bytes,{maxIssues:100});
+if(report.issues.numErrors)throw Error(JSON.stringify(report.issues));
+const decoded=await io.readBinary(bytes);let triangles=0;
+for(const m of decoded.getRoot().listMeshes())for(const p of m.listPrimitives()){if(!p.getAttribute('POSITION').getArray().every(Number.isFinite))throw Error('Invalid positions');triangles+=(p.getIndices()?.getCount()??p.getAttribute('POSITION').getCount())/3;}
+if(bytes.length>4_000_000||triangles>120_000)throw Error('Character budget exceeded');
+const manifest={name:'Male chainmaker study',bytes:bytes.length,triangles,sha256:createHash('sha256').update(bytes).digest('hex'),validationErrors:0,compression:'EXT_meshopt_compression',reference:'User-selected Victorian Cradley Heath chainmakers photograph, Alamy 2RWSFPH. Visual reference only; no source pixels.',provenance:'Original procedural geometry and texture pixels, Python and Blender. Interpreted worker, not an identified resident.'};
+await writeFile('public/chainmaker/chainmaker.glb.tmp',bytes);await rename('public/chainmaker/chainmaker.glb.tmp','public/chainmaker/chainmaker.glb');
+await writeFile('public/chainmaker/asset-manifest.json',JSON.stringify(manifest,null,2)+'\n');await writeFile('artifacts/chainmaker/gltf-validation.json',JSON.stringify(report,null,2));console.log(manifest);

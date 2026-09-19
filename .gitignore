@@ -53,3 +53,9 @@ __pycache__/
 # Unvalidated Blender exports never enter the served public directory
 artifacts/forge/raw/
 artifacts/village/raw/
+
+# Chainmaker study: staging, disposable logs, private reference capture and Blender backups
+artifacts/chainmaker/raw/
+artifacts/chainmaker/*.log
+artifacts/chainmaker/reference-browser.png
+assets/chainmaker/*.blend1

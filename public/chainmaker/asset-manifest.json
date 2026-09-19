@@ -1,0 +1,10 @@
+{
+  "name": "Male chainmaker study",
+  "bytes": 1407608,
+  "triangles": 40100,
+  "sha256": "5889bcee1dec8c9abea5efc5315752cc13af0a208f6282338f0355421925eaa6",
+  "validationErrors": 0,
+  "compression": "EXT_meshopt_compression",
+  "reference": "User-selected Victorian Cradley Heath chainmakers photograph, Alamy 2RWSFPH. Visual reference only; no source pixels.",
+  "provenance": "Original procedural geometry and texture pixels, Python and Blender. Interpreted worker, not an identified resident."
+}
