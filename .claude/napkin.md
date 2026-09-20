@@ -149,3 +149,5 @@ Quick-reference notes Claude should internalize on every session start. Update w
 
 - Authored atlas residency: 64 MiB shared budget, two concurrent loads, 30-second idle eviction and stable shader uniform slots. Track actual material draws via onBeforeRender; touch ready slots without pumping the queue per draw. Only bind samplers the material branch uses. Release decoded image references as well as GPU textures. This budget excludes GLB textures and render targets.
 - ChatGPT Deep Research references can expose only the start message through read_thread. Do not infer or fabricate the completed report. Ask for its finished link/export and proceed with independent engineering.
+
+- Techartist coastal-simulation is an MIT r185 WebGPURenderer/TSL demo with a worker shallow-water solver, not a drop-in WebGLRenderer water material. Its WebGL fallback still uses WebGPURenderer. Preserve its license when adapting source; replace ocean boundaries for the brook. Quote URLs containing ? in zsh. WebMCP fetchTools returns the callable tool collection.

@@ -20,3 +20,15 @@ Vendor archive sizes (Water 37 MB, Sky 21 MB) are download package sizes, not me
 The linked conversation `6aafa0e1-8848-83ed-94e8-c9d47eeb87b9` currently exposes the user's research brief and a message that Deep Research has started. The finished report and citations are absent. The browser link reaches a logged-out ChatGPT page. A request for the completed report link is pending.
 
 Do not claim a research-led village pass is complete. Once the report is accessible, extract evidence with dates and places, separate domestic rooms from workshops, compare existing fittings and materials, and apply supported changes across the household plans. Keep uncertain details explicitly interpreted.
+
+## Open-source coastal simulation
+
+Tom supplied [Techartist's source post](https://x.com/techartist_/status/2101379678917521621). Inspected [iamtechartist/coastal-simulation](https://github.com/iamtechartist/coastal-simulation) at commit `2e95e1a3e757ca1268247417dee01606e5e3d55c` on 20 September 2026.
+
+- MIT license, copyright Techartist 2026. Preserve the copyright and permission notice in any copied or substantially derived source.
+- This is a complete coastal demonstration, rather than a packaged drop-in river component. The renderer explicitly requires Three.js r185 and uses WebGPURenderer and TSL node materials. It offers a WebGL2 backend through that renderer; this is not our existing WebGLRenderer/GLSL pipeline.
+- The shallow-water solver runs in a module worker, with optional WASM arithmetic kernels and a JavaScript fallback. The default grid is 241 × 401 at 0.3 m spacing. The renderer holds six RGBA float field textures, about 8.85 MiB before other textures and render targets; CPU solver arrays and reflection/refraction passes add costs.
+- The useful parts are flow-carried foam and material coordinates, depth-sensitive refraction, wet/dry edges, and rock interaction. Ocean swells, tide boundaries and the coastal terrain definition need replacement for a downhill freshwater brook. Our changing stream elevation also makes the demo's flat reflection plane unsuitable as a wholesale replacement.
+- The live demo loaded in the in-app browser on WebGPU, balanced quality, with no reported errors. One steady-state diagnostic sample reported 60 fps, p95 frame time 18.5 ms, and startup 2.57 seconds. This is a single-device observation of the demo, not a village integration benchmark.
+
+Recommendation: investigate an adapted small reach of Black Brook before purchasing Water Pro. Keep the village renderer, port the useful shading techniques to GLSL, and either adapt the worker solver to local stream boundaries or bake its flow into a compact map. Test dry-cell stability, downstream direction, continuity at reach boundaries, reflection cost and frame time in the full village. Use the existing inexpensive water at distant views. No source was vendored and no village water behavior changed during this assessment.
