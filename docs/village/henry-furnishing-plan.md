@@ -51,3 +51,7 @@ Twelve additional models bring the catalogue to **112**: two armchairs, preparat
 - Checks verify actual support contact, stable selections and full catalogue usage.
 - Henry-specific checks protect the separate sewing table, clear preparation area, wall bench, seating for two, and sleeping capacity.
 - The portable GLB is regenerated and validated. Browser inspection covered Henry’s cutaway and embedded room, the new armchair, and a smaller cottage. Saved screenshots show Henry’s kitchen, the armchair, and house 35 in `artifacts/village/domestic-layout/`.
+
+### Washing equipment
+
+A 43 cm bowl and handled pitcher now share the left end of the kitchen workbench. The centre stays clear for food preparation. A portable oval tin bath is stored on end against the rear wall beside the partition, below the portrait. See the [object reference notes](interior-objects.md#washing-equipment--20-september-2026) for the source and limits.

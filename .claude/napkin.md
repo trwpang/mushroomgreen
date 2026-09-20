@@ -132,3 +132,5 @@ Quick-reference notes Claude should internalize on every session start. Update w
 - GTAO renders transparent lamp chimneys as opaque silhouettes in its override pass. Put chimney meshes on layer 1, like smoke; the main camera sees layer 1 and the AO camera uses only layer 0.
 
 - User wants worn internal floors, not grime. Avoid high-contrast random tile palettes (reads as new decorative patchwork). Use restrained kiln colour, small rounded shoulders, clay relief and foot-polished paths. ExtrudeGeometry rotated -PI/2 makes positive depth become positive Y; tile datum .025 keeps bounds .024–.030. Floor-only cloned materials protect ceilings and furniture.
+
+- Washing equipment: large basin/pitcher pairs sit on 23 prep benches; all 58 homes store a tin bath on end. Test real transformed bounds, window bays, curtains and person routes. Rivets and handles must follow the oval shell, not a rectangular approximation. The reference shows a metal carrying vessel; the requested ceramic pitcher is an interpretation.

@@ -1,13 +1,13 @@
 {
-  "models": 112,
-  "bytes": 1142596,
-  "triangles": 150876,
-  "sha256": "492f0b7104c24ed7a8e6d50766858d007623d0f519857ab426a819e01bf3f892",
+  "models": 115,
+  "bytes": 1212636,
+  "triangles": 164028,
+  "sha256": "21a0878e4f821924f189c8be72c94d2b8556d65cd5a30a525040156d39eb8fc7",
   "compression": "EXT_meshopt_compression",
   "validationErrors": 0,
   "sourceHashes": {
-    "src/scripts/village/interior-catalogue.ts": "4f7c72cbdb382dfa722be6ff38063f67973236b58cc7d7775ecb06a0333b7597",
-    "src/scripts/village/interior-objects.ts": "3e17a57245460f7daf777db38a9753dc4492f2552f7c030a9bab36c164635599"
+    "src/scripts/village/interior-catalogue.ts": "cd412b2b9707061caf6760d5e96b03744a7ed3dcbc6b26088a38589a2a8fbb22",
+    "src/scripts/village/interior-objects.ts": "7dd5be90ec20bd53f1353d97b01ac1f747e2dd37dc9774a4911d4e84221f8039"
   },
   "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
   "usage": "Same terms as this repository; no new third-party asset licence.",
@@ -1132,6 +1132,36 @@
         0.37700000405311584,
         0.19249999895691872,
         0.25999999046325684
+      ]
+    },
+    {
+      "id": "wash-basin",
+      "name": "Large cream washing basin",
+      "support": "surface",
+      "dimensions": [
+        0.4300000071525574,
+        0.14499999582767487,
+        0.4300000071525574
+      ]
+    },
+    {
+      "id": "water-pitcher",
+      "name": "Handled cream water pitcher",
+      "support": "surface",
+      "dimensions": [
+        0.20399999618530273,
+        0.32199999690055847,
+        0.2673516124486923
+      ]
+    },
+    {
+      "id": "tin-bath",
+      "name": "Oval tin bath stored on end",
+      "support": "floor",
+      "dimensions": [
+        0.5799999833106995,
+        1.212552547454834,
+        0.2680000066757202
       ]
     }
   ]

@@ -60,7 +60,37 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
   rod([.24,b+.19,0],[.27,b+.12,.06],.008);cyl(.09,b+.318,0,.021,.021,.055,'cream');rod([.09,b+.345,0],[-.15,b+.273,0],.0015,'cream');for(let i=0;i<5;i++)ring(-.08+i*.044,b+.26,.038,.009,.002,'copper');
   if(treadle){rod([.31,.31,.15],[.24,b+.19,.09],.0025,'darkwood');rod([.31,.31,-.15],[.24,b+.19,-.09],.0025,'darkwood');}
  };
- if(id==='windsor-armchair'||id==='rush-armchair'){
+ if(id==='wash-basin'){
+  // Thick earthenware foot, generous hollow bowl and a rolled lip; 43 cm across.
+  const profile=[[0,0],[.105,0],[.11,.012],[.133,.028],[.173,.067],[.207,.123],[.215,.135],[.213,.143],[.203,.145],[.196,.132],[.164,.072],[.123,.033],[.10,.023],[0,.023]];
+  put(new T.LatheGeometry(profile.map(([r,y])=>new T.Vector2(r,y)),48),'cream');
+  ring(0,.140,0,.208,.003,'blue',Math.PI/2);ring(0,.018,0,.112,.003,'cream',Math.PI/2);
+ }else if(id==='water-pitcher'){
+  // The lip is pulled forward to form a pouring beak, with an open neck and real inner wall.
+  const profile=[[0,0],[.061,0],[.066,.013],[.085,.037],[.102,.10],[.10,.153],[.081,.203],[.064,.25],[.066,.298],[.071,.31],[.064,.313],[.059,.30],[.056,.25],[.073,.199],[.091,.15],[.093,.10],[.076,.042],[.057,.017],[0,.017]];
+  const g=new T.LatheGeometry(profile.map(([r,y])=>new T.Vector2(r,y)),48),v=g.getAttribute('position');
+  for(let i=0;i<v.count;i++){const y=v.getY(i),z=v.getZ(i),x=v.getX(i),front=Math.pow(Math.max(0,z/Math.max(.001,Math.hypot(x,z))),8),lip=Math.max(0,(y-.25)/.063);v.setXYZ(i,x,y+front*lip*.009,z+front*lip*.029);}
+  g.computeVertexNormals();put(g,'cream');
+  const curve=new T.CatmullRomCurve3([new T.Vector3(0,.264,-.063),new T.Vector3(0,.276,-.119),new T.Vector3(0,.226,-.151),new T.Vector3(0,.149,-.139),new T.Vector3(0,.098,-.101)]);
+  put(new T.TubeGeometry(curve,32,.013,8,false),'cream');
+  ring(0,.017,0,.068,.0025,'blue',Math.PI/2);ring(0,.24,0,.065,.002,'blue',Math.PI/2);
+ }else if(id==='tin-bath'){
+  // The reference bath is stored vertically. Its closed back rests toward the wall (-Z).
+  const profile=[[0,0],[.72,0],[.76,.014],[.85,.09],[.96,.225],[1,.25],[1,.261],[.975,.268],[.945,.256],[.82,.091],[.725,.023],[0,.023]];
+  const bath=(g:T.BufferGeometry,m:ObjectMaterial)=>{g.scale(.29,1,.57);g.rotateX(Math.PI/2);put(g,m);};
+  const shell=new T.LatheGeometry(profile.map(([r,y])=>new T.Vector2(r,y)),64);
+  const pos=shell.getAttribute('position'),col=new Float32Array(pos.count*3);
+  for(let i=0;i<pos.count;i++){const tone=.88+.10*Math.sin(pos.getX(i)*39+pos.getZ(i)*17)*Math.cos(pos.getY(i)*63);col.set([tone,tone,tone],i*3);}
+  shell.setAttribute('color',new T.Float32BufferAttribute(col,3));bath(shell,'steel');
+  // Folded rim and side reinforcement, with small rivets along the folded seams.
+  for(const y of [.033,.205]){const g=new T.TorusGeometry(y<.1?.79:.95,.008,6,64);g.rotateX(Math.PI/2);g.translate(0,y,0);bath(g,'steel');}
+  for(const end of [-1,1]){
+   const curve=new T.CatmullRomCurve3([new T.Vector3(-.095,end*.535,.255),new T.Vector3(-.075,end*.586,.25),new T.Vector3(.075,end*.586,.25),new T.Vector3(.095,end*.535,.255)]);
+   put(new T.TubeGeometry(curve,16,.008,6,false),'iron');
+   for(const x of [-.095,.095])ball(x,end*.535,.258,.013,.013,.005,'iron');
+  }
+  for(const side of [-1,1])for(let i=0;i<7;i++){const y=(i-3)*.12,r=.85+(.14-.09)/(.225-.09)*.11,x=.29*r*Math.sqrt(1-Math.pow(y/(.57*r),2));ball(side*(x+.001),y,.14,.004,.005,.005,'iron');}
+ }else if(id==='windsor-armchair'||id==='rush-armchair'){
   const rush=id==='rush-armchair';board(0,.43,0,.52,.47,'darkwood');
   for(const x of [-.21,.21])for(const z of [-.18,.18]){rod([x,.43,z],[x*1.18,.025,z*1.17],.026,'oak');}
   for(const z of [-.16,.16])rod([-.235,.19,z],[.235,.19,z],.019,'darkwood');rod([0,.19,-.16],[0,.19,.16],.020,'oak');

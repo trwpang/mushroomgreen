@@ -42,12 +42,16 @@ export function planDressing(home:Home,plan:InteriorPlan,floor:number,sy:number)
   }else if(a.kind==='prep'){
    const p=fit('prep-table',a),top=.8125;
    // The middle stays clear for kneading, cutting, and setting a hot pan down.
-   surface('mixing-bowl',p,top,a.w,a.d,-a.w*.30,0,.9);
-   surface('rolling-pin',p,top,a.w,a.d,-a.w*.29,.21,.80);
-   surface('dish-rack',p,top,a.w,a.d,a.w*.31,0,.86);
+   if(n===22){
+    surface('wash-basin',p,top,a.w,a.d,-.70,.035,1);
+    surface('water-pitcher',p,top,a.w,a.d,-.325,-.145,.90,Math.PI/2);
+    surface('dish-rack',p,top,a.w,a.d,a.w*.31,0,.86);
+   }else{
+    surface('wash-basin',p,top,a.w,a.d,-a.w*.28,0,.84);
+    surface('water-pitcher',p,top,a.w,a.d,a.w*.27,-.025,.88,Math.PI/2);
+   }
    for(const [i,id]of (['vegetable-basket','storage-crock','flour-sack'] as InteriorObjectId[]).entries())surface(id,p,.2425,a.w,a.d,(i-1)*a.w*.29,0,.85);
    surface('spice-jar',p,top,a.w,a.d,0,-.20,.9);
-   surface('trivet',p,top,a.w,a.d,-a.w*.168,0,.80);
   }else if(a.kind==='sewingtable'){
    const p=fit('sewing-table',a);surface('hand-machine',p,.8125,a.w,a.d,-a.w*.13,0,.88);
    surface('thread-spools',p,.8125,a.w,a.d,a.w*.33,-.10,.85);surface('scissors',p,.8125,a.w,a.d,a.w*.33,.15,.8);
@@ -122,13 +126,33 @@ export function planDressing(home:Home,plan:InteriorPlan,floor:number,sy:number)
    add(id,-w*.14,1.36,-d/2+.185-b.min.z*.78,'rear-wall-hanging','wall',0,.78,.78,.78);
   }
  }
+ // The bath is put away on its end against a wall, never left across the cooking route.
+ if(!floor){
+  const size=interiorObject('tin-bath').bounds.getSize(new T.Vector3());
+  const candidates:{x:number;z:number;angle:number}[]=[];
+  if(n===22)candidates.push({x:.89,z:-d/2+.185,angle:0});
+  const wash=items.find(a=>a.kind==='washstand');
+  if(wash)for(const side of [-1,1])candidates.push({x:wash.x+side*(wash.w/2+size.x/2+.08),z:Math.sign(wash.z)*(d/2-.185),angle:wash.z>0?Math.PI:0});
+  for(const end of [-1,1])for(const fraction of [.15,-.15,.37,-.37])candidates.push({x:w*fraction,z:end*(d/2-.185),angle:end>0?Math.PI:0});
+  for(const side of [1,-1])for(const fraction of [.32,-.32,0,.12,-.12])candidates.push({x:side*(w/2-.185),z:d*fraction,angle:side>0?-Math.PI/2:Math.PI/2});
+  for(const c of candidates){
+   if(Math.abs(Math.sin(c.angle))<.5&&[-w*.32,w*.32].some(x=>Math.abs(c.x-x)<.55*home.sx+size.x/2))continue;
+   const p:Dressing={id:'tin-bath',...c,y:0,sx:1,sy:1,sz:1,anchor:'washing-bath-storage',role:'floor'},b=objectBounds(p),center=b.getCenter(new T.Vector3());
+   if(out.some(q=>objectBounds(q).clone().expandByScalar(.015).intersectsBox(b)))continue;
+   const a:Furnishing={id:p.anchor,kind:'basket',x:center.x,z:center.z,w:b.max.x-b.min.x,d:b.max.z-b.min.z,variant:0};
+   const trial={...plan,floors:plan.floors.map((f,i)=>i===floor?{...f,items:[...f.items,a]}:f)};
+   if(validateInterior(trial).length)continue;
+   out.push(p);break;
+  }
+ }
  // Extra floor items only enter if the same person-sized route test still passes.
  const floorExtras:InteriorObjectId[]=[];if(!floor&&n%9===0)floorExtras.push('cradle');if(!floor&&n%5===0)floorExtras.push('flour-sack');
  for(const id of floorExtras){const size=interiorObject(id).bounds.getSize(new T.Vector3());let found=false;
   for(const side of [1,-1])for(const end of [-1,1])for(const offset of [.22,.52,.82]){
    if(found)break;const x=side*(w/2-.22-size.x/2),z=end*(d/2-.22-size.z/2-offset),a:Furnishing={id:`object-${id}`,kind:'basket',x,z,w:size.x,d:size.z,variant:0};
    const trial={...plan,floors:plan.floors.map((f,i)=>i===floor?{...f,items:[...f.items,a]}:f)};
-   if(!validateInterior(trial).length){add(id,x,0,z,a.id,'floor');found=true;}
+   const candidate=objectBounds({id,x,y:0,z,anchor:a.id,role:'floor',angle:0,sx:1,sy:1,sz:1});
+   if(!validateInterior(trial).length&&!out.some(p=>p.id==='tin-bath'&&objectBounds(p).intersectsBox(candidate))){add(id,x,0,z,a.id,'floor');found=true;}
   }
  }
  return out;

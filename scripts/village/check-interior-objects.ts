@@ -8,7 +8,7 @@ import {planDressing,objectBounds} from '../../src/scripts/village/interior-dres
 import {makeHomes} from '../../src/scripts/village/layout';
 import {planInterior,seeded} from '../../src/scripts/village/interior-plans';
 const stats:Record<string,unknown>={},hashes=new Set<string>(),counts=Object.fromEntries(interiorCatalogue.map(([id])=>[id,0])) as Record<InteriorObjectId,number>;
-assert.equal(interiorCatalogue.length,112);assert.equal(new Set(interiorCatalogue.map(a=>a[0])).size,112);
+assert.equal(interiorCatalogue.length,115);assert.equal(new Set(interiorCatalogue.map(a=>a[0])).size,115);
 for(const [id]of interiorCatalogue){const asset=interiorObject(id),size=asset.bounds.getSize(new T.Vector3());let triangles=0;const hash=createHash('sha256');
  assert(asset.parts.length>0);assert(Math.abs(asset.bounds.min.y)<1e-6);assert(Math.min(size.x,size.y,size.z)>0);assert(Math.max(size.x,size.y,size.z)<2.1);
  for(const p of asset.parts){for(const key of ['position','normal','uv']){const a=p.geometry.getAttribute(key);assert(a&&[...a.array].every(Number.isFinite),`${id}: invalid ${key}`);}triangles+=p.geometry.getAttribute('position').count/3;hash.update(new Uint8Array(p.geometry.getAttribute('position').array.buffer));}
@@ -19,6 +19,11 @@ for(const home of homes){const plan=planInterior(home),rng=seeded(home.number*97
  for(let floor=0;floor<plan.floors.length;floor++){const placements=planDressing(home,plan,floor,sy);assert.deepEqual(placements,planDressing(home,plan,floor,sy));
   const finish=!floor&&(home.number%3!==0||home.number===22)?(home.number%7===0?'flagstones':'quarry-tiles'):'board-ceiling';counts[finish]++;counts['board-ceiling']++;if(plan.floors[floor].items.some(a=>a.kind==='table')&&home.number%3!==0)counts['rag-rug']++;
   for(const p of placements){counts[p.id]++;instances++;const b=objectBounds(p);assert(b.min.y>=-1e-5);if(p.role==='floor'||p.role==='core')assert(Math.abs(b.min.y)<1e-5,`${home.number}/${p.id}: floor object must touch the room floor`);assert(b.min.x>=-plan.width/2-.001&&b.max.x<=plan.width/2+.001,`${home.number}/${p.id}: outside side wall`);assert(b.min.z>=-plan.depth/2-.001&&b.max.z<=plan.depth/2+.001,`${home.number}/${p.id}: outside end wall`);assert(p.anchor,'Every object needs a support or use anchor');}
+  for(const bath of placements.filter(p=>p.id==='tin-bath')){
+   const b=objectBounds(bath);assert(!placements.some(p=>p!==bath&&objectBounds(p).intersectsBox(b)),`${home.number}: bath must not overlap furniture or window curtains`);
+   const back=new T.Vector3(bath.x,0,bath.z);
+   assert(Math.min(plan.width/2-Math.abs(back.x),plan.depth/2-Math.abs(back.z))<.19,'Stored bath must stand against a wall');
+  }
   if(!floor){assert(placements.some(p=>p.id.endsWith('range')||p.id==='hob-stove'));assert(placements.some(p=>p.id.endsWith('table')));assert(placements.some(p=>['dresser','drawers','food-cupboard'].includes(p.id)));}
   for(const p of placements.filter(p=>p.role==='surface')){
    const support=placements.find(q=>q.anchor===p.anchor&&(q.role==='core'||q.id==='plate-rack'));
@@ -48,6 +53,8 @@ assert(!hp.some(p=>p.anchor===dining.id&&p.id.includes('machine')),'Keep meals c
 assert(hp.some(p=>p.anchor===sewing.id&&p.id==='hand-machine'),'Machine must stand on its own table');
 assert(henry.depth/2-(Math.abs(bench.z)+bench.d/2)<.25,'Bench belongs against the wall');
 assert(prep.w>=2&&hp.some(p=>p.anchor===prep.id&&p.id==='vegetable-basket'),'Cooking needs preparation and ingredient storage');
+for(const id of ['wash-basin','water-pitcher'] as const)assert(hp.some(p=>p.anchor===prep.id&&p.id===id),`${id} must stand on Henry’s kitchen worktop`);
+assert(hp.some(p=>p.id==='tin-bath'),'Henry needs a stored bath');
 const workArea=new T.Box3(new T.Vector3(prep.x-.21,.75,prep.z-.12),new T.Vector3(prep.x+.21,1.4,prep.z+.18));
 assert(!hp.some(p=>p.anchor===prep.id&&p.role==='surface'&&objectBounds(p).intersectsBox(workArea)),'Leave a clear section of preparation surface');
 const missing=Object.entries(counts).filter(([,count])=>!count).map(([id])=>id);

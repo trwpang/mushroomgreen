@@ -1,7 +1,7 @@
 {
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-20T07:49:17.210Z",
+  "validatedAt": "2026-09-20T08:16:07.000Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
@@ -39,7 +39,7 @@
         "pointer": "/buffers/0",
         "mimeType": "application/gltf-buffer",
         "storage": "glb",
-        "byteLength": 856992
+        "byteLength": 919724
       },
       {
         "pointer": "/buffers/1",
@@ -52,9 +52,9 @@
     "hasSkins": false,
     "hasTextures": false,
     "hasDefaultScene": false,
-    "drawCallCount": 270,
-    "totalVertexCount": 119336,
-    "totalTriangleCount": 150876,
+    "drawCallCount": 276,
+    "totalVertexCount": 127208,
+    "totalTriangleCount": 164028,
     "maxUVs": 0,
     "maxInfluences": 0,
     "maxAttributes": 3

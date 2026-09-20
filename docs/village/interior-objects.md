@@ -2,12 +2,12 @@
 
 ## Result and scope
 
-112 distinct catalogue entries: 109 objects and three floor/ceiling fitting kits. See [Henry’s furnishing plan](henry-furnishing-plan.md) for the latest arrangement and references. They furnish the 58 visible cottages across 74 floors. Historical household No. 5 retains its record, but its visible site is the main forge, not an additional cottage.
+115 distinct catalogue entries: 112 objects and three floor/ceiling fitting kits. See [Henry’s furnishing plan](henry-furnishing-plan.md) for the latest arrangement and references. They furnish the 58 visible cottages across 74 floors. Historical household No. 5 retains its record, but its visible site is the main forge, not an additional cottage.
 
 These are original procedural meshes. No museum photograph pixels, purchased models, external textures, or generated-image bytes are included. The photographs guide shapes and room arrangements. This is an interpretation of 1865, not a claim that a named family owned any particular item.
 
 - `/interior-objects` lets you inspect each model, turn it, and see its dimensions.
-- `/interior-objects/catalogue.glb` contains 112 named models on a 2.5 m inspection grid for Blender. Portable PBR colours are included. The live village adds its shared texture maps, household colours, and procedural surface finishes.
+- `/interior-objects/catalogue.glb` contains 115 named models on a 2.5 m inspection grid for Blender. Portable PBR colours are included. The live village adds its shared texture maps, household colours, and procedural surface finishes.
 - `src/scripts/village/interior-catalogue.ts` is the stable inventory.
 - `src/scripts/village/interior-objects.ts` builds the meshes and records their actual support surfaces.
 - `src/scripts/village/interior-dressing.ts` chooses and places household selections.
@@ -47,7 +47,7 @@ Every home retains a cooking source, dining table with seats, storage, and a bed
 
 Run `npm run village:objects`, `npm run village:layouts`, `npm run village:inhabited`, `npm run village:check`, and `npm run build`.
 
-The catalogue check requires 112 unique IDs and distinct geometry hashes, finite positions/normals/UVs, grounded origins, model budgets, deterministic household selection, complete catalogue usage, and core furniture in each home. Ray tests check actual mesh contact between small objects and their supporting furniture. The inhabited-room check retains glazing, door, window-border and streaming regressions, and now checks the ceiling stair opening.
+The catalogue check requires 115 unique IDs and distinct geometry hashes, finite positions/normals/UVs, grounded origins, model budgets, deterministic household selection, complete catalogue usage, and core furniture in each home. Ray tests check actual mesh contact between small objects and their supporting furniture. The inhabited-room check retains glazing, door, window-border and streaming regressions, and now checks the ceiling stair opening.
 
 `npm run village:objects:export` regenerates the portable collection. It validates the compressed GLB, decodes it again, checks indices and positions, and records the source and output hashes. The build checks the asset receipt before serving it.
 
@@ -171,3 +171,17 @@ Visual corrections during this pass: remove the strong repeated floor pattern; w
 | 110 | Plain wooden mantel clock (mantel-clock) | surface | Interpretive; see Henry furnishing references | 0.34 × 0.39 × 0.15 | 1 |
 | 111 | Basket of potatoes and onions (vegetable-basket) | shelf | Interpretive; see Henry furnishing references | 0.36 × 0.18 × 0.36 | 19 |
 | 112 | Wooden drainer with plates (dish-rack) | surface | Interpretive; see Henry furnishing references | 0.38 × 0.19 × 0.26 | 22 |
+
+## Washing equipment — 20 September 2026
+
+The user's expanded [BCLM visit image](https://www.instagram.com/reel/DU8VZ_TgsYc/) shows a deep pale basin, a carried metal water vessel, and an oval metal bath stored vertically. The new basin and bath follow those broad forms. The cream pitcher is an original interpretation of the handled pitcher requested by the user, rather than a copy of the metal vessel in the photograph. The image does not establish an 1865 date or household ownership.
+
+Henry's 43 cm basin and handled pitcher stand together at the left end of the kitchen bench. The middle remains clear for food preparation. The bath stands on end against the rear wall, beneath the small portrait and beside the partition. Its hollow shell has a rolled rim, carrying handles, reinforcement and attached rivets. Metal and ceramic finishes use the existing surface treatment.
+
+The bowl and pitcher appear on all 23 preparation benches. Existing smaller washstands remain in the other homes. All 58 homes have a stored bath. Placement checks exclude furniture, curtains, windows and blocked routes. The models also appear in the shared village interiors and in the portable Blender collection.
+
+| Added object | Dimensions (m) | Uses |
+| --- | --- | --- |
+| wash-basin | 0.43 × 0.14 × 0.43 | 23 |
+| water-pitcher | 0.20 × 0.32 × 0.27 | 23 |
+| tin-bath | 0.58 × 1.21 × 0.27 | 58 |

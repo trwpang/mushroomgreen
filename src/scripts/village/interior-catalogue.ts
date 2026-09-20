@@ -28,6 +28,8 @@ export const interiorCatalogue = [
  ['pan-rack','Peg rack with copper and iron pans','wall'],['wall-sampler','Framed stitched household sampler','wall'],
  ['oval-portrait','Small oval framed silhouette','wall'],['mantel-clock','Plain wooden mantel clock','surface'],
  ['vegetable-basket','Basket of potatoes and onions','shelf'],['dish-rack','Wooden drainer with plates','surface'],
+ ['wash-basin','Large cream washing basin','surface'],['water-pitcher','Handled cream water pitcher','surface'],
+ ['tin-bath','Oval tin bath stored on end','floor'],
 ] as const;
 export type InteriorObjectId=typeof interiorCatalogue[number][0];
 export type ObjectSupport=typeof interiorCatalogue[number][2];
