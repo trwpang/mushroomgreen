@@ -16,9 +16,9 @@ export function serviceStore(number:number, width:number, depth:number, height:n
   });
   const parts:T.BufferGeometry[][]=materials.map(()=>[]);
   const matrix=new T.Matrix4();
-  function box(x:number,y:number,z:number,w:number,h:number,d:number,kind:number,color:string,tilt=0,variation=.16){
+  function box(x:number,y:number,z:number,w:number,h:number,d:number,kind:number,color:string,tilt=0,variation=.16,roll=0){
     const g=new T.BoxGeometry(w,h,d).toNonIndexed();
-    matrix.makeRotationX(tilt).setPosition(x,y,z);g.applyMatrix4(matrix);
+    matrix.makeRotationFromEuler(new T.Euler(tilt,0,roll)).setPosition(x,y,z);g.applyMatrix4(matrix);
     const c=new T.Color(materials[kind].map?(kind===1?'#c6bba8':'#c3b9a5'):color).multiplyScalar(1+(random()-.5)*variation);
     if(materials[kind].map){
       const piece=Math.floor(random()*16),uv=g.attributes.uv;
@@ -89,6 +89,18 @@ export function serviceStore(number:number, width:number, depth:number, height:n
   }
   box(right-.09,.95,front-.10,.14,.028,.027,3,'#38372c');
   box(right-.07,.91,front-.11,.018,.095,.018,3,'#38372c');
+  // A diagonal ledge stiffens the reused plank door. Two rivets hold each old strap.
+  const braceLength=Math.hypot(.52,1.02);
+  box(doorX,.89,front-.079,.055,braceLength,.026,1,'#544733',0,.12,-Math.atan2(.52,1.02));
+  // Short matching repair pieces at the exposed board feet; high wall boards remain intact.
+  if(isTimber){
+    const repairSide=number%3===0?-1:1;
+    for(let i=0;i<2;i++){
+      const rz=front+(1.5+i)*depth/Math.ceil(depth/.16),rh=.24+(number%4)*.045;
+      box(repairSide*(width/2+.043),rh/2+.06,rz,.026,rh,depth/Math.ceil(depth/.16)-.013,1,'#8c7758',0,.1);
+      for(const y of [.10,rh+.025])box(repairSide*(width/2+.063),y,rz,.012,.014,.018,3,'#44392d',0,0);
+    }
+  }
   // Vent slot under the eave, with slats rather than a painted rectangle.
   const ventX=doorX>0?-width*.34:width*.34;
   box(ventX,eave-.24,front-.041,.28,.15,.018,3,'#22251f');

@@ -35,7 +35,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
    const wear=seeded(plan.seed+floor*313+{wood:7,plaster:31,cloth:53,brick:79}[kind]);
    for(let i=0;i<35;i++){const x=wear()*256,y=wear()*256,r=12+wear()*48;
     const wash=ctx.createRadialGradient(x,y,0,x,y,r);wash.addColorStop(0,kind==='plaster'?'#655c4316':kind==='wood'?'#352b1b14':'#eee4cb12');wash.addColorStop(1,'#73694e00');ctx.fillStyle=wash;ctx.fillRect(x-r,y-r,r*2,r*2);}
-   if(kind==='plaster'){const damp=ctx.createLinearGradient(0,180,0,256);damp.addColorStop(0,'#504c3e00');damp.addColorStop(1,'#504c3e30');ctx.fillStyle=damp;ctx.fillRect(0,180,256,76);
+   if(kind==='plaster'){const damp=ctx.createLinearGradient(0,180,0,256);damp.addColorStop(0,'#504c3e00');damp.addColorStop(1,'#504c3e13');ctx.fillStyle=damp;ctx.fillRect(0,180,256,76);
     for(let i=0;i<5;i++){const x=wear()*256,y=wear()*220;ctx.strokeStyle='#665e481e';ctx.lineWidth=.45;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+3,y+12);ctx.lineTo(x-1,y+20);ctx.lineTo(x+4,y+34);ctx.stroke();}}
    if(kind==='wood'){for(let i=0;i<28;i++){ctx.strokeStyle='#21170f24';ctx.lineWidth=.4;ctx.beginPath();const x=rand()*256;ctx.moveTo(x,0);ctx.bezierCurveTo(x+8,85,x-6,160,x+2,256);ctx.stroke();}}
    if(kind==='cloth')for(let i=0;i<256;i+=3){ctx.fillStyle='#b3a78a26';ctx.fillRect(i,0,1,256);ctx.fillRect(0,i,256,1);}

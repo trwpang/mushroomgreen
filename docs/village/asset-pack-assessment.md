@@ -17,9 +17,7 @@ Vendor archive sizes (Water 37 MB, Sky 21 MB) are download package sizes, not me
 
 ## Research report intake
 
-The linked conversation `6aafa0e1-8848-83ed-94e8-c9d47eeb87b9` currently exposes the user's research brief and a message that Deep Research has started. The finished report and citations are absent. The browser link reaches a logged-out ChatGPT page. A request for the completed report link is pending.
-
-Do not claim a research-led village pass is complete. Once the report is accessible, extract evidence with dates and places, separate domestic rooms from workshops, compare existing fittings and materials, and apply supported changes across the household plans. Keep uncertain details explicitly interpreted.
+The linked conversation exposed only the research brief and starting message. Tom subsequently supplied the completed Markdown report. It is preserved in [research/chainmaker-dwellings-report.md](research/chainmaker-dwellings-report.md). The applied building/yard refinement is recorded in [research-building-pass.md](research-building-pass.md).
 
 ## Open-source coastal simulation
 

@@ -32,3 +32,26 @@ assert.equal(classifySurface('Live embers'),'ember');
 assert.equal(classifySurface('Small dark glass'),'glass');
 assert.equal(classifySurface('Smoke worn apron'),'leather');
 console.log('Surface checks passed: composed shaders, independent forge datums, cutaway clones, protected emissive/skin/water materials.');
+
+// Building repairs must follow translated/rotated/scaled instances without touching shared assets.
+const {ageBuilding}=await import('../../src/scripts/village/building-age');
+const inherited=new T.MeshStandardMaterial();inherited.name='Hand-fired brick';
+inherited.onBeforeCompile=s=>{s.uniforms.retained={value:11};};
+const buildings=[new T.Group(),new T.Group()];
+for(let i=0;i<buildings.length;i++){
+ const root=buildings[i];root.position.set(i*15,7+i,-30);root.rotation.y=.73*i;root.scale.set(1+i*.2,1.1,1.3);
+ const mesh=new T.Mesh(new T.BoxGeometry(),inherited);mesh.position.set(1,.5,-.3);root.add(mesh);
+ const glazing=new T.MeshStandardMaterial({transparent:true});glazing.name='Small dark glass';root.add(new T.Mesh(g,glazing));
+ ageBuilding(root,22+i);
+ assert.strictEqual((root.children[1] as T.Mesh).material,glazing,'Keep windows out of building repairs');
+ const mat=mesh.material,shader=compile(mat);
+ assert.equal(shader.uniforms.retained.value,11,'Retain existing authored surface detail');
+ const p=new T.Vector3(.1,.2,.3).applyMatrix4(mesh.matrixWorld).applyMatrix4(shader.uniforms.ageInverse.value);
+ assert(p.distanceTo(new T.Vector3(1.1,.7,0))<1e-6,'Repair coordinates must remain building-local');
+ assert.equal(shader.uniforms.ageProfile.value.x,(22+i)*.731);
+ assert.notStrictEqual(mat,inherited);
+}
+assert.equal(inherited.userData.buildingAge,undefined,'Do not mutate the shared source material');
+const workRoot=new T.Group(),workFloor=new T.Mesh(g,inherited);workFloor.name='Interior_brick_floor';workRoot.add(workFloor);ageBuilding(workRoot,5,true);
+assert.strictEqual(workFloor.material,inherited,'Industrial floors must keep their dedicated scale and ash finish');
+console.log('Building-age checks passed: instance coordinates, inherited shaders, shared-source isolation and protected workshop floors/glass.');

@@ -6,19 +6,24 @@ import type {InteriorPlan} from './interior-plans';
 export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floor:number,kind:'clay'|'stone'|'wood'){
  const previous=material.onBeforeCompile,previousKey=material.customProgramCacheKey();
  const destinations=plan.floors[floor].items.filter(a=>['prep','hearth','table','washstand','bed','sewingtable'].includes(a.kind)).slice(0,6);
- const routes=destinations.map(a=>new T.Vector4(0,plan.depth/2-.4,a.x,a.z+(a.z<0?a.d/2+.35:-a.d/2-.35)));
+ const stairs=plan.floors[floor].items.find(a=>a.kind==='stairs');
+ const entry=new T.Vector2(floor&&stairs?stairs.x:0,floor&&stairs?stairs.z-stairs.d/2-.34:plan.depth/2-.4);
+ const routes=destinations.map(a=>new T.Vector4(entry.x,entry.y,a.x,a.z+(a.z<0?a.d/2+.35:-a.d/2-.35)));
  while(routes.length<6)routes.push(new T.Vector4(0,0,0,0));
- material.userData.floorWear={kind,routes:destinations.length,finish:'scrubbed wear, old cracks, edge deposits and hearth dust'};
+ material.userData.floorWear={kind,routes:destinations.length,finish:'worn clay, swept routes, hearth ash and entrance transfer; protected sleeping zone'};
  material.onBeforeCompile=function(shader,renderer){
   previous.call(this,shader,renderer);
   shader.uniforms.floorRoutes={value:routes};
+  shader.uniforms.floorEntry={value:entry};
+  const bed=plan.floors[floor].items.find(a=>a.kind==='bed');
+  shader.uniforms.floorBed={value:new T.Vector2(bed?.x??100,bed?.z??100)};
   if(kind==='clay')bindMaterialAtlas(this,shader,'fwAtlas','fwAtlasReady',domesticAtlas());
   const hearth=plan.floors[floor].items.find(a=>a.kind==='hearth');
   shader.uniforms.floorHearth={value:new T.Vector2(hearth?.x??-100,hearth?.z??-100)};
   shader.uniforms.floorOrigin={value:new T.Vector2(plan.width/2-.10,plan.depth/2-.10)};
   shader.vertexShader='varying vec3 wornFloorPoint;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nwornFloorPoint=position;');
-  shader.fragmentShader=`varying vec3 wornFloorPoint;uniform vec4 floorRoutes[6];uniform vec2 floorOrigin;uniform vec2 floorHearth;uniform sampler2D fwAtlas;uniform float fwAtlasReady;
+  shader.fragmentShader=`varying vec3 wornFloorPoint;uniform vec4 floorRoutes[6];uniform vec2 floorOrigin;uniform vec2 floorHearth;uniform vec2 floorEntry;uniform vec2 floorBed;uniform sampler2D fwAtlas;uniform float fwAtlasReady;
    float fwHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
    float fwNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(fwHash(i),fwHash(i+vec2(1,0)),f.x),mix(fwHash(i+vec2(0,1)),fwHash(i+vec2(1,1)),f.x),f.y);}
    float fwSegment(vec2 p,vec4 route){vec2 v=route.zw-route.xy;float t=clamp(dot(p-route.xy,v)/max(dot(v,v),.001),0.,1.);return length(p-route.xy-v*t);}
@@ -39,7 +44,11 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
    float fwDeposit=(1.-smoothstep(.035,.32+fwBroad*.18,fwWall))*(.5+fwMottle);
    float fwSoot=exp(-length(fwP-floorHearth)*1.6)*(.6+fwBroad);
    float fwScuff=smoothstep(.08,.32,fwBroad+fwMottle*.3)*fwPolish;
-   diffuseColor.rgb*=1.-fwDeposit*.28-fwSoot*.28-fwScuff*.12;
+   // Tracked dirt fades inward; sweeping leaves deposits in joints and against walls.
+   float fwKept=exp(-length(fwP-floorBed)*1.3);
+   float fwTransfer=exp(-length((fwP-floorEntry)*vec2(1.35,.92))*1.8)*(.55+fwMottle);
+   float fwSwept=1.-fwPolish*.60;
+   diffuseColor.rgb*=1.-fwDeposit*.23-fwSoot*.29-fwScuff*.08-fwTransfer*${floor?'.04':'.24'}*(1.-fwKept*.8)*fwSwept;
    vec2 fwIndex=floor((fwP+floorOrigin)/.2286);
    float fwRelief=0.;
    ${kind==='clay'?`// Random inset crops keep the two atlas panels and their mip borders separate.
@@ -73,6 +82,6 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
    normal=normalize(max(abs(fwDet),1e-9)*normal-fwGrad);
   `);
  };
- material.customProgramCacheKey=()=>previousKey+'|worked-floor-wear-v3-'+kind+'-'+plan.number;
+ material.customProgramCacheKey=()=>previousKey+'|worked-floor-wear-v4-'+kind+'-'+plan.number;
  material.needsUpdate=true;return material;
 }

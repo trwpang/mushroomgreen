@@ -44,6 +44,10 @@ export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Ob
   function box(x:number,y:number,z:number,a:number,b:number,c:number,m:T.Material,tilt=0){
     matrix.compose(new T.Vector3(x,y,z),new T.Quaternion().setFromEuler(new T.Euler(tilt,0,0)),new T.Vector3(a,b,c));
     const g=new T.BoxGeometry(1,1,1).toNonIndexed().applyMatrix4(matrix);
+    if(m.userData.boardAtlas){
+      const piece=Math.abs(Math.floor(x*31+y*17+z*7))%16,uv=g.attributes.uv;
+      for(let i=0;i<uv.count;i++)uv.setXY(i,((piece%4)+.015+uv.getX(i)*.97)/4,(Math.floor(piece/4)+.015+uv.getY(i)*.97)/4);
+    }
     const list=buckets.get(m)||[];list.push(g);buckets.set(m,list);
   }
   const atlases:Partial<Record<'wood'|'slate',T.MeshStandardMaterial>>={};
@@ -63,7 +67,7 @@ export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Ob
     store.position.set(storeX,0,z);root.add(store);
   }
   // The Blender shed had detailed doors but plain dark side boxes. Clad both exposed sides.
-  const shedWood=new T.MeshStandardMaterial({color:'#62503b',roughness:.96});
+  const shedWood=new T.MeshStandardMaterial({color:'#62503b',roughness:.96});shedWood.name='Shed timber';
   refineSurface(shedWood,'wood');
   const shedX=w/2-.8,shedZ=-d/2-.76;
   for(const side of [-1,1]){
@@ -76,11 +80,12 @@ export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Ob
     for(const end of [-1,1])box(shedX+side*.8,.87,shedZ+end*.73,.075,1.75,.075,shedWood);
   }
   if(home.number%3===0){const x=w/2-.55;for(const side of [-1,1]){box(x+side*.19,e+1.9,-.25,.10,1.2,.51,masonry);box(x,e+1.9,-.25+side*.205,.28,1.2,.10,masonry);}box(x,e+2.08,-.25,.28,.03,.31,new T.MeshStandardMaterial({color:'#141310',roughness:1}));}
-  // Uneven lime repairs and damp staining retain the exposed brick between patches.
+  // Preserve the appearance RNG sequence. Repairs now live in the masonry shader,
+  // so they follow real wall faces rather than floating rectangular soot decals.
   for(let i=0;i<5+home.number%7;i++){
     const x=(random()-.5)*w;
     if(Math.abs(x)<.65)continue;
-    box(x,.12+random()*.45,d/2+.075,.18+random()*.65,.1+random()*.22,.018,home.number%3?soot:lime);
+    random();random();random();
   }
   if(home.number%4===1){ // A repaired shutter beside one window.
     for(let i=0;i<4;i++)box(-w*.32-.76+i*.10,1.3,d/2+.10,.09,1,.055,wood);
@@ -92,8 +97,20 @@ export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Ob
   if(home.number%3===1){
     for(let i=0;i<7;i++)box(side*w*.37,.10+Math.floor(i/3)*.17,d/2+.4+(i%3)*.17,.65+random()*.3,.13,.14,wood);
   }else if(home.number%3===2){
-    box(side*w*.39,.3,d/2+.5,.8,.6,.65,wood);
-    box(side*w*.39,.62,d/2+.5,.84,.07,.69,soot);
+    // Boarded household storage, not a pale solid box with a slab lid.
+    const chestWood=new T.MeshStandardMaterial({color:atlases.wood?'#e4d6bc':'#776048',roughness:.94,map:atlases.wood?.map??null});
+    chestWood.name='Shed timber storage';chestWood.userData.boardAtlas=!!atlases.wood;refineSurface(chestWood,'wood');
+    const cx=side*w*.39,cz=d/2+.5;
+    box(cx,.06,cz,.80,.10,.65,soot);
+    for(let row=0;row<4;row++){
+      const y=.15+row*.115;
+      for(const end of [-1,1])box(cx,y,cz+end*.303,.79,.109,.044,chestWood);
+      for(const end of [-1,1])box(cx+end*.375,y,cz,.044,.109,.57,chestWood);
+    }
+    for(const end of [-1,1])box(cx+end*.29,.31,cz+.334,.044,.51,.036,chestWood);
+    for(let i=0;i<5;i++)box(cx+(i-2)*.16,.615,cz,.154,.055,.69,chestWood);
+    for(const dx of [-.25,.25]){box(cx+dx,.647,cz-.18,.033,.014,.21,soot);box(cx+dx,.606,cz-.347,.033,.08,.013,soot);}
+    box(cx,.58,cz+.353,.033,.12,.018,soot);
   }
   for(const [material,parts] of buckets){
     const geometry=mergeGeometries(parts);parts.forEach(g=>g.dispose());

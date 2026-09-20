@@ -1,3 +1,5 @@
+import {ageBuilding} from './building-age';
+import {paintWorkingYards} from './working-yards';
 import {addWorkingProps} from './prop-placement';
 import {addForgeCart} from './cart';
 import {panDestination,zoomDestination,turnDestination,containRoom} from './navigation';
@@ -66,6 +68,7 @@ for(const h of homes.filter(h=>h.number!==chainshopReplacesHouse)){const w=[6.4,
 for(const other of homes){if(other===h)continue;const q=nearestSegment([other.x,other.z],front,road);if(Math.hypot(q[0]-other.x,q[1]-other.z)<Math.max(other.width,other.depth)*.45){points=[front,[other.x-Math.max(other.width,other.depth)*.7,other.z],road];break;}}
 paths.push(points);const q=pixel([h.x,h.z]);ctx.save();ctx.translate(...q);ctx.rotate(-h.angle);ctx.fillStyle='#857858';ctx.beginPath();ctx.ellipse(0,0,(w/2+2.2)/460*4096,(d/2+2.8)/520*4096,0,0,Math.PI*2);ctx.fill();ctx.restore();}
 paintLanes(ctx,pixel,rand,paths);
+paintWorkingYards(ctx,pixel,homes);
 for(let i=0;i<65000;i++){const x=rand()*4096,y=rand()*4096;ctx.fillStyle=i%2?'#3f42310c':'#e0ce9f0d';ctx.fillRect(x,y,rand()*6+1,rand()*3+1);}
 const groundTexture=new T.CanvasTexture(terrainCanvas);groundTexture.colorSpace=T.SRGBColorSpace;groundTexture.anisotropy=8;
 const groundGeo=new T.PlaneGeometry(460,520,460,520);groundGeo.rotateX(-Math.PI/2);groundGeo.translate(0,0,-60);const pos=groundGeo.attributes.position;const index:number[]=[];const source=groundGeo.index!;for(let i=0;i<pos.count;i++)pos.setY(i,ground(pos.getX(i),pos.getZ(i)));for(let i=0;i<source.count;i+=3){const ids=[source.getX(i),source.getX(i+1),source.getX(i+2)];if(ids.every(v=>within(pos.getX(v),pos.getZ(v))))index.push(...ids);}groundGeo.setIndex(index);
@@ -215,7 +218,9 @@ let landscapeSeed=9321865;const landscapeRandom=()=>{landscapeSeed=(Math.imul(la
 const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)]);mount.dataset.shrubs=String(landscape.counts.shrubs);mount.dataset.forgePosition=forgePos.join(',');
 weatherArchitecture(forgeRoot,forgeRoot.position.y);weatherArchitecture(weaverShop,weaverShop.position.y);
 refineSurface(timber,'wood');refineSurface(iron,'iron');refineSurface(stone,'stone');refineSurface(brick,'brick');refineSurface(lime,'plaster');refineSurface(glass,'glass');
-refineSurface(meadow.material,'leaf');refineSurface(treeTrunks.material as T.MeshStandardMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);wearWorkshop(forgeRoot);wearWorkshop(weaverShop);detailArchitecture(scene);textureDetail(treeTrunks.material as T.MeshStandardMaterial,'broadleaf-bark');
+refineSurface(meadow.material,'leaf');refineSurface(treeTrunks.material as T.MeshStandardMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);wearWorkshop(forgeRoot);wearWorkshop(weaverShop);detailArchitecture(scene);
+let agedBuildings=0;for(let i=0;i<homes.length;i++)if(homes[i].number!==chainshopReplacesHouse){ageBuilding(houseRoots[i],homes[i].number);agedBuildings++;}ageBuilding(forgeRoot,5,true);ageBuilding(weaverShop,22,true);mount.dataset.researchBuildingPass=String(agedBuildings+2);
+textureDetail(treeTrunks.material as T.MeshStandardMaterial,'broadleaf-bark');
 // A static local environment supplies reflected sky and foliage; flow normals animate it.
 const capture=new T.WebGLCubeRenderTarget(128,{type:T.HalfFloatType});const reflectionCamera=new T.CubeCamera(.1,600,capture);reflectionCamera.position.set(-75,ground(-75,55)+3,55);[...landscape.waterMeshes,...showcase.puddles].forEach(o=>o.visible=false);scene.updateMatrixWorld(true);reflectionCamera.update(renderer,scene);[...landscape.waterMeshes,...showcase.puddles].forEach(o=>o.visible=true);const pmrem=new T.PMREMGenerator(renderer);const reflection=pmrem.fromCubemap(capture.texture);landscape.waterMaterial.envMap=reflection.texture;landscape.waterMaterial.envMapIntensity=.3;showcase.wet.envMap=reflection.texture;showcase.wet.envMapIntensity=.35;for(const m of windowMaterials){m.envMap=reflection.texture;m.envMapIntensity=.7;m.roughness=.16;m.needsUpdate=true;}capture.dispose();pmrem.dispose();
 // Map overlay: exact source footprints, boundary, mapped routes, and household numbers.
