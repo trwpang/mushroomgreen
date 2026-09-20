@@ -32,12 +32,16 @@ export function planDressing(home:Home,plan:InteriorPlan,floor:number,sy:number)
    const mantel=add('tinderbox',a.x+a.w/2-.065,1.435,a.z+a.d*.32,a.id+'-mantel','surface',Math.PI/2,.7,.7,.7);
    if(n%2===0)add('candlestick',a.x+a.w/2-.06,1.435,a.z-a.d*.32,a.id+'-mantel','surface',0,.8,.8,.8);
   }else if(a.kind==='table'){
-   const p=fit(tables[(Math.floor(n/3)+n)%3],a),top=.783;
+   const p=fit(n===21?'scrubbed-table':tables[(Math.floor(n/3)+n)%3],a),top=.783;
    // Meals own the dining table. Sewing never occupies the cooking/eating surface.
    const meals:InteriorObjectId[][]=[['dinner-plate','bread','tankard'],['soup-bowl','jug','wooden-spoon'],['bread-board','cheese','knife'],['teapot','teacup','saucer'],['mixing-bowl','rolling-pin','egg-cup'],['side-plate','butter-dish','fork']];
    if(n===22){
     for(const side of [-1,1]){surface('dinner-plate',p,top,a.w,a.d,side*.40,0,.9);surface('tankard',p,top,a.w,a.d,side*.62,-.23,.85);surface('knife',p,top,a.w,a.d,side*.23,.04,.82);}
     surface('oil-lamp',p,top,a.w,a.d,0,-.17,1);surface('bread',p,top,a.w,a.d,0,.20,.8);
+   }else if(n===21){
+    // Shared food and vessels leave most of the table available for meals and work.
+    surface('bread-board',p,top,a.w,a.d,-.42,0,.85);surface('bread',p,top,a.w,a.d,0,.17,.85);
+    surface('jug',p,top,a.w,a.d,.50,-.15,.85);surface('soup-bowl',p,top,a.w,a.d,.18,-.15,.80);
    }else{const meal=meals[n%6];surface(meal[0],p,top,a.w,a.d,-a.w*.29,0,.9);surface(meal[1],p,top,a.w,a.d,a.w*.27,-.05,.9);surface(meal[2],p,top,a.w,a.d,0,.14,.9,Math.PI/2);}
   }else if(a.kind==='prep'){
    const p=fit('prep-table',a),top=.8125;
@@ -94,7 +98,8 @@ export function planDressing(home:Home,plan:InteriorPlan,floor:number,sy:number)
    if(n===22){surface('yarn-reel',p,.538,a.w,a.d,-.30,0,.85);surface('folded-linen',p,.538,a.w,a.d,0,0,.70);surface('yarn-scales',p,.538,a.w,a.d,.30,0,.82);}
    else surface(n%4===0?'cap':'folded-linen',p,.538,a.w,a.d,0,0,.85);
   }else if(a.kind==='linenbench'){
-   if(n%7===0){const p=fit('treadle-machine',a);surface('thread-spools',p,.777,a.w,a.d,-a.w*.37,.05,.75);}
+   if(a.zone?.startsWith('eating')){fit('bench',a);}
+   else if(n%7===0){const p=fit('treadle-machine',a);surface('thread-spools',p,.777,a.w,a.d,-a.w*.37,.05,.75);}
    else{const p=fit('bench',a);surface(n===22?'book':'folded-linen',p,.463,a.w,a.d,-a.w*.34,0,.8);if(n!==22)surface('sewing-basket',p,.463,a.w,a.d,a.w*.28,0,.9);}
   }
  }

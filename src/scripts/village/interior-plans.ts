@@ -4,6 +4,13 @@ export interface Furnishing {id:string;kind:FurnitureKind;x:number;z:number;w:nu
 export interface InteriorFloor {name:string;items:Furnishing[];curtain:boolean;}
 export interface InteriorPlan {number:number;width:number;depth:number;wallHeight:number;chimneyX:number;occupants:number;seed:number;floors:InteriorFloor[];palette:number;}
 export function seeded(seed:number){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
+/** Shared height datum for room geometry and the inside camera. Storeys are interpreted. */
+export function roomDimensions(h:Home,floor=0){
+ const rand=seeded(h.number*971+1865);rand();rand();rand();
+ const sy=h.number===22?1:.9+rand()*.21,levelHeight=2.225*sy;
+ const level=h.style===1&&floor===1?1:0;
+ return {sy,level,levelHeight,base:.12+level*levelHeight,height:(h.style===1?levelHeight:[2.65,4.45,2.85][h.style]*sy)-.12};
+}
 export function overlaps(a:Furnishing,b:Furnishing,gap=.06){return Math.abs(a.x-b.x)<(a.w+b.w)/2+gap&&Math.abs(a.z-b.z)<(a.d+b.d)/2+gap;}
 // Furniture is in actual metres. Geometry is not stretched with the cottage asset.
 // The 1861 count informs crowding, never a claim about specific 1865 possessions.
@@ -91,6 +98,29 @@ export function validateInterior(plan:InteriorPlan):string[]{
 
 /** Furnishing is arranged by use, with wall storage and working room in front. */
 function furnishLivingPlan(plan:InteriorPlan):InteriorPlan {
+ if(plan.number===21){
+  // Seven recorded occupants; furniture and two-storey form remain an interpretation.
+  // Keep the existing stair footprint and all sleeping-room positions.
+  const stairs=plan.floors[0].items.find(a=>a.kind==='stairs')!;
+  const item=(kind:FurnitureKind,x:number,z:number,w:number,d:number,zone:string,angle=0):Furnishing=>({id:`21-0-${kind}-${zone}`,kind,x,z,w,d,zone,angle,variant:0});
+  plan.floors[0].items=[
+   item('hearth',-3.456954836409901,0,1.15,1.15,'cooking'),stairs,
+   item('table',-1.93,.30,1.72,.83,'eating'),
+   item('linenbench',-1.93,1.10,1.64,.38,'eating-front',Math.PI),
+   item('linenbench',-1.93,-.50,1.64,.38,'eating-back'),
+   item('stool',-.68,.30,.34,.34,'eating-end',-Math.PI/2),
+   item('prep',-2.65,-2.82,1.70,.62,'cooking'),
+   item('cupboard',-1.17,-2.89,.95,.48,'cooking'),
+   item('fuelbucket',-2.97,-1.02,.34,.34,'cooking'),
+   item('waterstation',-3.63,-1.75,.40,.40,'cooking'),
+   item('armchair',-3.62,1.75,.60,.64,'rest',Math.PI/2),
+   item('chest',-1.95,2.88,1.14,.46,'household-storage'),
+   item('pantry',1.30,-2.89,.70,.46,'storage'),
+   item('washstand',2.58,-2.89,.68,.46,'washing'),
+   item('clothesrail',1.62,2.88,.86,.40,'clothes',Math.PI),
+  ];
+  return plan;
+ }
  if(plan.number===22){
   const item=(kind:FurnitureKind,x:number,z:number,w:number,d:number,zone:string,angle=0,variant=0):Furnishing=>({id:`22-0-${kind}-${zone}`,kind,x,z,w,d,zone,angle,variant});
   plan.floors[0].items=[

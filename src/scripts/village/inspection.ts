@@ -30,8 +30,8 @@ export function createInspection(scene:T.Scene,renderer:T.WebGLRenderer,camera:T
  function enter(home:Home|null,workshop:'main'|'small'|null=null){
   if(active)close();returnCamera.copy(camera.position);returnTarget.copy(controls.target);oldFov=camera.fov;oldLocalClipping=renderer.localClippingEnabled;house=home;workshopActive=Boolean(workshop||home?.number===5);
   rememberPlace({house:home?.number??5,inside:workshop??'home',floor:null,worker:null});mainWorkshop=workshop==='main'||home?.number===5;watchButton.hidden=!mainWorkshop;watchButton.textContent='Watch chainmaker';active=true;toolbar.hidden=false;document.getElementById('village-app')!.dataset.interior='true';document.getElementById('house-panel')!.hidden=true;
-  if(home&&!workshop&&home.number!==5){const v=interiors.show(home);isolate(v.group);aim(v.camera,v.target);label.textContent=home.household_name+' · No. '+home.number;floorSelect.replaceChildren(...v.plan.floors.map((f,i)=>new Option(f.name,String(i))));floorSelect.hidden=v.floors===1;}
-  else{const root=workshop==='small'?smallForge:forge;isolate(root);root.traverse(o=>{
+  if(home&&!workshop&&home.number!==5){const v=interiors.show(home);isolate(v.group);aim(v.camera,v.target);label.textContent=home.household_name+' · No. '+home.number;floorSelect.replaceChildren(...v.plan.floors.map((f,i)=>new Option((i?'Upstairs · ':'Downstairs · ')+f.name,String(i))));floorSelect.hidden=v.floors===1;document.getElementById('interior-evidence')!.textContent=v.floors===2?'The upper floor and room layout are interpretations, not confirmed for this household.':'Single-level model. The original room layout is unverified.';}
+  else{document.getElementById('interior-evidence')!.textContent='';const root=workshop==='small'?smallForge:forge;isolate(root);root.traverse(o=>{
    if(/^(Roof|Ridge|Gutters|Chimney|Flue|Lead)/.test(o.name)){hiddenParts.push(o);o.visible=false;}
    if(o instanceof T.Mesh&&/^(Masonry|Brickwork|Interior_lime|Wood_grain|Ironmongery|Window|Shutter|Door)/.test(o.name)){
     forgeMaterials.set(o,o.material);const plane=new T.Plane(new T.Vector3(0,-1,0),root.position.y+1.25);

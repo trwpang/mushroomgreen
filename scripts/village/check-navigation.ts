@@ -1,3 +1,6 @@
+import {readFileSync} from 'node:fs';
+import {makeHomes} from '../../src/scripts/village/layout';
+import {roomDimensions} from '../../src/scripts/village/interior-plans';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {panDestination,zoomDestination,turnDestination,containRoom} from '../../src/scripts/village/navigation';
@@ -37,3 +40,16 @@ for(const angle of [0,.8,2.5]){
  }
 }
 console.log('Indoor turning fixes the eye; 16 cm steps and rotated room bounds preserve heading under repeated input.');
+
+// Floor buttons must place the camera within the same scaled floor as the room mesh.
+for(const home of makeHomes(JSON.parse(readFileSync('dist/households.json','utf8')))){
+ const lower=roomDimensions(home),upper=roomDimensions(home,1);
+ if(home.style===1){
+  assert(Math.abs(upper.base-lower.base-lower.levelHeight)<1e-9);
+  assert(upper.base>lower.base+lower.height,'Upstairs camera must clear the downstairs ceiling');
+ }else assert.equal(upper.level,0,'Single-level homes must not expose an invented camera floor');
+ const room={x:home.x,z:home.z,angle:home.angle,width:5,depth:4,floor:home.height+upper.base,ceiling:home.height+upper.base+upper.height};
+ const eye=new T.Vector3(home.x,room.floor+1.53,home.z),target=eye.clone().add(new T.Vector3(1,-.4,-1));
+ assert(containRoom(eye,target,room).position.distanceTo(eye)<1e-9,'Floor entry must not be clamped to another level');
+}
+console.log('Floor navigation matches the scaled room geometry for every home.');

@@ -6,7 +6,7 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {Home} from './layout';
 import {localPoint} from './layout';
-import {planInterior,seeded,type InteriorPlan,type Furnishing} from './interior-plans';
+import {planInterior,roomDimensions,seeded,type InteriorPlan,type Furnishing} from './interior-plans';
 import {interiorObject,type ObjectMaterial} from './interior-objects';
 import {planDressing} from './interior-dressing';
 import type {InteriorObjectId} from './interior-catalogue';
@@ -24,7 +24,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   const rand=seeded(plan.seed+floor*473),root=new T.Group();root.name=`House ${home.number} — interpreted interior — ${plan.floors[floor].name}`;
   root.position.set(home.x,home.height,home.z);root.rotation.y=home.angle;scene.add(root);
   const w=plan.width,d=plan.depth;
-  const appearance=seeded(home.number*971+1865);appearance();appearance();appearance();const sy=home.number===22?1:.9+appearance()*.21;
+  const {sy}=roomDimensions(home,floor);
   const levelHeight=2.225*sy,base=floor*levelHeight+.12,wallH=(home.style===1?levelHeight:[2.65,4.45,2.85][home.style]*sy)-(embedded?.12:0);
   function texture(kind:'wood'|'plaster'|'cloth'|'brick',baseColour:string){
    const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d')!;

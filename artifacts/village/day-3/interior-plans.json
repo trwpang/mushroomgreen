@@ -3709,13 +3709,15 @@
           "name": "Living room",
           "items": [
             {
-              "id": "21-0-hearth-0",
+              "id": "21-0-hearth-cooking",
               "kind": "hearth",
               "x": -3.456954836409901,
               "z": 0,
               "w": 1.15,
               "d": 1.15,
-              "variant": 1
+              "zone": "cooking",
+              "angle": 0,
+              "variant": 0
             },
             {
               "id": "21-0-stairs-1",
@@ -3727,114 +3729,147 @@
               "variant": 5
             },
             {
-              "id": "21-0-table-2",
+              "id": "21-0-table-eating",
               "kind": "table",
-              "x": -1.7061398044048122,
-              "z": 0.56,
-              "w": 1.291630064010178,
-              "d": 0.68,
+              "x": -1.93,
+              "z": 0.3,
+              "w": 1.72,
+              "d": 0.83,
+              "zone": "eating",
+              "angle": 0,
               "variant": 0
             },
             {
-              "id": "21-0-stool-3",
-              "kind": "stool",
-              "x": -1.7061398044048122,
-              "z": 1.2400000000000002,
-              "w": 0.34,
-              "d": 0.34,
+              "id": "21-0-linenbench-eating-front",
+              "kind": "linenbench",
+              "x": -1.93,
+              "z": 1.1,
+              "w": 1.64,
+              "d": 0.38,
+              "zone": "eating-front",
+              "angle": 3.141592653589793,
               "variant": 0
             },
             {
-              "id": "21-0-stool-4",
+              "id": "21-0-linenbench-eating-back",
+              "kind": "linenbench",
+              "x": -1.93,
+              "z": -0.5,
+              "w": 1.64,
+              "d": 0.38,
+              "zone": "eating-back",
+              "angle": 0,
+              "variant": 0
+            },
+            {
+              "id": "21-0-stool-eating-end",
               "kind": "stool",
-              "x": -1.7061398044048122,
-              "z": -0.12,
+              "x": -0.68,
+              "z": 0.3,
               "w": 0.34,
               "d": 0.34,
-              "variant": 5
-            },
-            {
-              "id": "21-0-cupboard-5",
-              "kind": "cupboard",
-              "x": -3.571954836409901,
-              "z": -2.965,
-              "w": 0.92,
-              "d": 0.43,
-              "variant": 3
-            },
-            {
-              "id": "21-0-fuelbucket-6",
-              "kind": "fuelbucket",
-              "x": -2.891954836409901,
-              "z": -1.1999999999999997,
-              "w": 0.36,
-              "d": 0.36,
-              "variant": 4
-            },
-            {
-              "id": "21-0-washstand-7",
-              "kind": "washstand",
-              "x": 2.2519548364099,
-              "z": -2.9699999999999998,
-              "w": 0.58,
-              "d": 0.36,
-              "variant": 0,
-              "angle": 0
-            },
-            {
-              "id": "21-0-prep-zone",
-              "kind": "prep",
-              "x": -2.432281159312514,
-              "z": -2.9,
-              "w": 1.1793473541947723,
-              "d": 0.5,
-              "variant": 0,
-              "zone": "cooking",
-              "angle": 0
-            },
-            {
-              "id": "21-0-armchair-zone",
-              "kind": "armchair",
-              "x": -3.681954836409901,
-              "z": 2.85,
-              "w": 0.6,
-              "d": 0.6,
-              "variant": 0,
-              "zone": "rest",
-              "angle": 3.141592653589793
-            },
-            {
-              "id": "21-0-pantry-zone",
-              "kind": "pantry",
-              "x": 1.4969548364099,
-              "z": -2.935,
-              "w": 0.65,
-              "d": 0.43,
-              "variant": 0,
-              "zone": "storage",
-              "angle": 0
-            },
-            {
-              "id": "21-0-waterstation-zone",
-              "kind": "waterstation",
-              "x": -1.3869548364098996,
-              "z": -2.955,
-              "w": 0.39,
-              "d": 0.39,
-              "variant": 0,
-              "zone": "cooking",
-              "angle": 0
-            },
-            {
-              "id": "21-extra-seat-1.005815032005089-0",
-              "kind": "stool",
-              "x": -0.7003247723997232,
-              "z": 0.56,
-              "w": 0.34,
-              "d": 0.34,
+              "zone": "eating-end",
               "angle": -1.5707963267948966,
-              "variant": 0,
-              "zone": "eating"
+              "variant": 0
+            },
+            {
+              "id": "21-0-prep-cooking",
+              "kind": "prep",
+              "x": -2.65,
+              "z": -2.82,
+              "w": 1.7,
+              "d": 0.62,
+              "zone": "cooking",
+              "angle": 0,
+              "variant": 0
+            },
+            {
+              "id": "21-0-cupboard-cooking",
+              "kind": "cupboard",
+              "x": -1.17,
+              "z": -2.89,
+              "w": 0.95,
+              "d": 0.48,
+              "zone": "cooking",
+              "angle": 0,
+              "variant": 0
+            },
+            {
+              "id": "21-0-fuelbucket-cooking",
+              "kind": "fuelbucket",
+              "x": -2.97,
+              "z": -1.02,
+              "w": 0.34,
+              "d": 0.34,
+              "zone": "cooking",
+              "angle": 0,
+              "variant": 0
+            },
+            {
+              "id": "21-0-waterstation-cooking",
+              "kind": "waterstation",
+              "x": -3.63,
+              "z": -1.75,
+              "w": 0.4,
+              "d": 0.4,
+              "zone": "cooking",
+              "angle": 0,
+              "variant": 0
+            },
+            {
+              "id": "21-0-armchair-rest",
+              "kind": "armchair",
+              "x": -3.62,
+              "z": 1.75,
+              "w": 0.6,
+              "d": 0.64,
+              "zone": "rest",
+              "angle": 1.5707963267948966,
+              "variant": 0
+            },
+            {
+              "id": "21-0-chest-household-storage",
+              "kind": "chest",
+              "x": -1.95,
+              "z": 2.88,
+              "w": 1.14,
+              "d": 0.46,
+              "zone": "household-storage",
+              "angle": 0,
+              "variant": 0
+            },
+            {
+              "id": "21-0-pantry-storage",
+              "kind": "pantry",
+              "x": 1.3,
+              "z": -2.89,
+              "w": 0.7,
+              "d": 0.46,
+              "zone": "storage",
+              "angle": 0,
+              "variant": 0
+            },
+            {
+              "id": "21-0-washstand-washing",
+              "kind": "washstand",
+              "x": 2.58,
+              "z": -2.89,
+              "w": 0.68,
+              "d": 0.46,
+              "zone": "washing",
+              "angle": 0,
+              "variant": 0
+            },
+            {
+              "id": "21-0-clothesrail-clothes",
+              "kind": "clothesrail",
+              "x": 1.62,
+              "z": 2.88,
+              "w": 0.86,
+              "d": 0.4,
+              "zone": "clothes",
+              "angle": 3.141592653589793,
+              "variant": 0
             }
           ],
           "curtain": false
@@ -3888,6 +3923,33 @@
               "variant": 2
             },
             {
+              "id": "21-1-washstand-5",
+              "kind": "washstand",
+              "x": 1.8219548364099012,
+              "z": -1.9200000000000004,
+              "w": 0.58,
+              "d": 0.36,
+              "variant": 2
+            },
+            {
+              "id": "21-1-linenbench-6",
+              "kind": "linenbench",
+              "x": -1.7219548364099015,
+              "z": 0.5799999999999996,
+              "w": 1.02,
+              "d": 0.4,
+              "variant": 2
+            },
+            {
+              "id": "21-1-clothesrail-7",
+              "kind": "clothesrail",
+              "x": -1.7719548364099014,
+              "z": -0.8500000000000001,
+              "w": 0.92,
+              "d": 0.38,
+              "variant": 5
+            },
+            {
               "id": "21-1-basket-8",
               "kind": "basket",
               "x": -1.646954836409901,
@@ -3895,36 +3957,6 @@
               "w": 0.45,
               "d": 0.45,
               "variant": 5
-            },
-            {
-              "id": "21-1-washstand-5",
-              "kind": "washstand",
-              "x": 1.7719548364098998,
-              "z": -2.9699999999999998,
-              "w": 0.58,
-              "d": 0.36,
-              "variant": 2,
-              "angle": 0
-            },
-            {
-              "id": "21-1-linenbench-6",
-              "kind": "linenbench",
-              "x": -1.7919548364098994,
-              "z": 2.9499999999999997,
-              "w": 1.02,
-              "d": 0.4,
-              "variant": 2,
-              "angle": 3.141592653589793
-            },
-            {
-              "id": "21-1-clothesrail-7",
-              "kind": "clothesrail",
-              "x": -1.8419548364099,
-              "z": -2.96,
-              "w": 0.92,
-              "d": 0.38,
-              "variant": 5,
-              "angle": 0
             }
           ],
           "curtain": false

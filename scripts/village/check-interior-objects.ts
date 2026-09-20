@@ -39,6 +39,17 @@ for(const home of homes){const plan=planInterior(home),rng=seeded(home.number*97
  }
  assert(plans.filter(p=>p.home===home.number).some(p=>p.placements.some(a=>a.id.endsWith('-bed'))),'Every house needs a bed');
 }
+// A seven-person household needs usable shared seats, not three isolated stools.
+const ambrose=planInterior(homes.find(h=>h.number===21)!);
+assert.equal(ambrose.occupants,7);
+const diningBenches=ambrose.floors[0].items.filter(a=>a.zone?.startsWith('eating')&&a.kind==='linenbench');
+assert.equal(diningBenches.length,2);assert(diningBenches.every(a=>a.w>=1.6));
+const ambroseObjects=plans.find(p=>p.home===21&&p.floor===0)!.placements;
+for(const bench of diningBenches){
+ assert(ambroseObjects.some(p=>p.anchor===bench.id&&p.id==='bench'));
+ assert(!ambroseObjects.some(p=>p.anchor===bench.id&&p.role==='surface'),'Dining seats must remain clear');
+}
+assert(ambroseObjects.some(p=>p.id==='wash-basin')&&ambroseObjects.some(p=>p.id==='water-pitcher'));
 // Protect the household arrangement, not just the number of props.
 const henryHome=homes.find(h=>h.number===22)!,henry=planInterior(henryHome),hf=henry.floors[0].items;
 assert.equal(henry.occupants,2,'Use the recorded 1861 household count');
