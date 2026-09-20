@@ -140,7 +140,7 @@ def box(name, pos, size, material, rot=None):
     if rot is not None: vs=[rot@Vector(v) for v in vs]
     mesh(name,[tuple(Vector(pos)+Vector(v)) for v in vs],faces,material,uvs)
 
-def worn_tile(pos,material,rot):
+def worn_tile(pos,material,rot,name='Roof tiles'):
     # Chipped corners and a subtly bowed, individually tilted slate.
     w=random.uniform(.130,.140);h=.16
     outline=[(-w,-h+random.uniform(0,.022)),(-w+random.uniform(.004,.023),-h),(w-random.uniform(.003,.018),-h),(w,-h+.018),(w,h),(-w,h)]
@@ -148,7 +148,7 @@ def worn_tile(pos,material,rot):
     faces=[tuple(range(5,-1,-1)),tuple(range(6,12))]+[(i,(i+1)%6,(i+1)%6+6,i+6) for i in range(6)]
     uvs=piece_uv(vs,faces,material)
     tilt=rot@Matrix.Rotation(random.uniform(-.022,.022),3,'Y')
-    mesh('Roof tiles',[tuple(Vector(pos)+tilt@Vector(v)) for v in vs],faces,material,uvs)
+    mesh(name,[tuple(Vector(pos)+tilt@Vector(v)) for v in vs],faces,material,uvs)
 
 def rod(name, a,b,r,material,r2=None,sides=8):
     a,b=Vector(a),Vector(b);d=(b-a).normalized()
@@ -462,6 +462,10 @@ for x in [-5,-2.7,-.4,1.9,4.2,6.5]:
 for a,b in [(-5,-2.7),(-2.7,-.4),(-.4,1.9),(1.9,4.2),(4.2,6.5)]:
     for z in [.36,.84]:rod('Fence rails',(a,4.83,z),(b,4.83,z+random.uniform(-.08,.08)),.055,wood[2],sides=5)
 
+from annex import build_annex
+build_annex(box, rod, lambda p,m,r: worn_tile(p,m,r,'Annex roof tiles'), mat,
+            brick, sootbrick, mortar, wood, slate, stone, iron, dark)
+
 print('Building batched meshes',flush=True)
 for (name,material_name),(verts,faces,material) in batches.items():
     data=bpy.data.meshes.new(name);data.from_pydata(verts,[],faces);data.materials.append(material);data.update()
@@ -506,7 +510,9 @@ scene.render.image_settings.file_format='PNG'
 scene.render.film_transparent=True
 bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE/'mushroom-green-forge.blend'))
 RAW=ROOT/'artifacts/forge/raw';RAW.mkdir(parents=True,exist_ok=True)
-bpy.ops.export_scene.gltf(filepath=str(RAW/'mushroom-green-forge.glb'),export_format='GLB',export_apply=True,export_tangents=True,export_cameras=False,export_lights=False,export_yup=True)
+# Three.js derives the tangent frame from UV derivatives for these rigid meshes.
+# Omit redundant per-vertex tangents to keep the enlarged building in budget.
+bpy.ops.export_scene.gltf(filepath=str(RAW/'mushroom-green-forge.glb'),export_format='GLB',export_apply=True,export_tangents=False,export_cameras=False,export_lights=False,export_yup=True)
 model=RAW/'mushroom-green-forge.glb'
 receipt={'asset':'mushroom-green-forge','seed':1865,'units':'metres','source':'scripts/forge/build_forge.py','blender':bpy.app.version_string,'sha256':hashlib.sha256(model.read_bytes()).hexdigest(),'bytes':model.stat().st_size,'mesh_batches':len(batches),'source_vertices':sum(len(v[0]) for v in batches.values()),'reference_photos':['photos/IMG_7256.HEIC','photos/IMG_7257.HEIC','photos/IMG_7258.HEIC','photos/IMG_4259.HEIC'],'historical_status':'Interpretive study from present-day photographs; not a surveyed reconstruction of 1865.','provenance':'Original scripted geometry; no third-party meshes or textures.'}
 (RAW/'asset-manifest.json').write_text(json.dumps(receipt,indent=2)+'\n')

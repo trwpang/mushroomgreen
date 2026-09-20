@@ -44,7 +44,7 @@ let platforms:Platform[]=[];
 export function weaverWorkshop(h:Home){const p=localPoint(h,-(6.4*h.sx/2+2.65),0);return {p,angle:h.angle+Math.PI,width:5.06,depth:3.57};}
 export function prepareGround(homes:Home[]){
  platforms=homes.filter(h=>h.number!==chainshopReplacesHouse).map(h=>({x:h.x,z:h.z,angle:h.angle,w:[6.4,7.2,9.2][h.style]*h.sx/2+.45,d:[4.6,4.8,4.5][h.style]*h.sz/2+.45,y:baseGround(h.x,h.z)}));
- platforms.push({x:chainshopPosition[0],z:chainshopPosition[1],angle:1.03,w:7,d:5,y:baseGround(...chainshopPosition)});
+ platforms.push({x:chainshopPosition[0],z:chainshopPosition[1],angle:1.03,w:7,d:6,y:baseGround(...chainshopPosition)});
  const founder=homes.find(h=>h.number===22)!;const workshop=weaverWorkshop(founder);
  platforms.push({x:workshop.p[0],z:workshop.p[1],angle:workshop.angle,w:workshop.width/2+.25,d:workshop.depth/2+.25,y:baseGround(founder.x,founder.z)});
  const px=chainshopPosition[0]+8.5*Math.cos(1.03)+3.5*Math.sin(1.03),pz=chainshopPosition[1]-8.5*Math.sin(1.03)+3.5*Math.cos(1.03);

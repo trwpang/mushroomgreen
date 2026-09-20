@@ -1,6 +1,16 @@
 # Chainshop annex and settlement character
 
-20 September 2026. Research and modelling brief; no scene changes in this pass.
+20 September 2026. Research and implemented modelling brief.
+
+## Implemented pass
+
+The forge now includes a compact attached two-storey block, with transverse roof, individual bricks and tiles, an upper casement, plank door, threshold, upper timber floor and joists. Blender footprint is X 1.3–4.45, Y 2.12–5.3 metres; ridge is 5.12 metres. These proportions interpret the supplied photograph, not a survey. Existing palettes supply the surfaces; two small untextured window materials add no image sheets.
+
+The village includes the annex only on the main forge, with an enlarged ground platform and its own selection bounds. The workshop cutaway hides it to keep the work area visible. Henry's smaller chainshop remains separate. Building surface shaders now add coherent masonry repair campaigns and runs of reused roof tiles across the existing village.
+
+Tom confirmed that the dataset uses historic house numbering, not modern addresses. Preserve that numbering and household assignments as the project authority. Modern listing numbers require a cross-reference; they do not override the dataset.
+
+Validation: compressed GLB has 432,924 triangles, 11,482,248 bytes and zero validation errors. The previous file was 11,897,220 bytes. Removed redundant tangent attributes; Three.js derives surface tangent frames from UV derivatives. Type checks, workshop extraction check and the 77-page production build passed. Browser inspection confirmed the annex exterior, a clear forge entrance and working enter/exit cutaway controls. No new paid assets or texture sheets.
 
 ## Sources inspected
 

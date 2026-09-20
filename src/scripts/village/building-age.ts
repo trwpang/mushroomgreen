@@ -46,6 +46,17 @@ export function ageBuilding(root:T.Object3D,number:number,workshop=false){
       float agJoint=1.-smoothstep(.055,.105,abs(fract(agP.y/.085)-.5));
       float agRepoint=agJoint*agRepair*.32;
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.30,.263,.202),agRepoint);
+      // Different rebuilding campaigns occupy coherent sections of each wall.
+      // Courses stay intact; a toothed boundary follows the masonry bond.
+      float agCourse=floor(agP.y/.085);
+      float agSeam=(ageProfile.w-.5)*3.+(mod(agCourse,2.)-.5)*.13;
+      float agPhase=smoothstep(agSeam-.04,agSeam+.04,agPlane.x);
+      float agOldPatch=smoothstep(.47,.69,agNoise(agPlane*.48+agSeed*.37));
+      vec3 agReused=mix(vec3(.88,.85,.80),vec3(1.13,1.07,.96),ageProfile.w);
+      diffuseColor.rgb*=mix(vec3(1.),agReused,agPhase*agOldPatch*.72);
+      // Pale repairs gather around older lower fabric without a uniform white band.
+      float agLimeLoss=(1.-smoothstep(.24,1.22,agP.y))*smoothstep(.56,.76,agBroad);
+      diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.17,1.15,1.10),agLimeLoss*.23);
       float agSplash=(1.-smoothstep(.04,.42,agP.y))*(.4+.6*agBroad);
       float agRain=smoothstep(.60,.82,agNoise(vec2(agPlane.x*8.,agP.y*.28)+agSeed))*(.05+ageProfile.z*.06);
       agWear=agSplash*.12+agRain;
@@ -58,6 +69,9 @@ export function ageBuilding(root:T.Object3D,number:number,workshop=false){
       diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.16,1.18,1.17),agRepair*.48);
       float agRun=smoothstep(.55,.80,agNoise(vec2(agP.x*9.,agP.z*.45)+agSeed));
       agWear=agRun*.12+ageProfile.y*.07;
+      // Larger coherent runs of reused tiles distinguish roof repairs from noise.
+      float agCampaign=smoothstep(.54,.73,agNoise(agPlane*.57+agSeed));
+      diffuseColor.rgb*=mix(vec3(1.),vec3(1.10,1.055,.97),agCampaign*.6);
       diffuseColor.rgb*=1.-agWear;
      `:`
       // Weathered grain, exposed ends and rubbed fixings; no arbitrary holes in the shell.
@@ -79,7 +93,7 @@ export function ageBuilding(root:T.Object3D,number:number,workshop=false){
      normal=normalize(max(abs(agDet),1e-9)*normal-agGrad);
     `);
    };
-   m.customProgramCacheKey=()=>key+'|building-age-v1-'+kind;
+   m.customProgramCacheKey=()=>key+'|building-age-v2-'+kind;
    cache.set(source,m);treated++;return m;
   };
   o.material=Array.isArray(o.material)?o.material.map(apply):apply(o.material);
