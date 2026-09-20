@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {type InteriorObjectId} from './interior-catalogue';
-export type ObjectMaterial='oak'|'darkwood'|'iron'|'steel'|'copper'|'cream'|'blue'|'clay'|'cloth'|'green'|'coal'|'glass'|'paper'|'linen'|'tile'|'stone';
+export type ObjectMaterial='oak'|'darkwood'|'iron'|'steel'|'copper'|'cream'|'blue'|'clay'|'cloth'|'green'|'coal'|'glass'|'paper'|'linen'|'tile'|'stone'|'lampglass';
 export interface ObjectPart {geometry:T.BufferGeometry;material:ObjectMaterial;}
 export interface ObjectSurface {x:number;y:number;z:number;width:number;depth:number;}
 export interface InteriorObject {parts:ObjectPart[];bounds:T.Box3;surfaces:ObjectSurface[];}
@@ -171,7 +171,18 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
  }else if(id==='candlestick'){
   vessel(0,0,0,.09,.024,'copper');cyl(0,.085,0,.022,.038,.12,'copper');cyl(0,.19,0,.018,.018,.11,'cream');rod([0,.24,0],[0,.256,0],.0018,'coal');handle(.085,.045,0,.025,'copper');
  }else if(id==='oil-lamp'){
-  cyl(0,.022,0,.09,.085,.04,'iron');ball(0,.11,0,.075,.07,.075,'copper');cyl(0,.185,0,.043,.043,.035,'iron');vessel(0,.20,0,.045,.23,'glass','bottle');cyl(0,.23,0,.008,.008,.05,'cream');
+  // Portable brass reservoir, wick adjuster and open glass chimney. About 35 cm tall.
+  cyl(0,.009,0,.083,.080,.018,'copper',32);ring(0,.018,0,.077,.004,'copper',Math.PI/2);
+  ball(0,.052,0,.074,.039,.074,'copper');cyl(0,.091,0,.039,.048,.026,'copper',24);
+  ring(0,.105,0,.035,.003,'iron',Math.PI/2);cyl(0,.113,0,.027,.030,.014,'copper',24);
+  cyl(.049,.079,0,.012,.012,.009,'copper');ring(.049,.084,0,.010,.002,'darkwood',Math.PI/2);
+  handle(-.085,.047,0,.032,'copper');rod([.024,.112,0],[.060,.112,0],.003,'steel');
+  ring(.062,.112,0,.014,.003,'copper',0,Math.PI/2);for(let i=0;i<12;i++){const a=i*Math.PI/6;ball(.062,.112+Math.sin(a)*.014,Math.cos(a)*.014,.003,.003,.003,'copper');}
+  for(let i=0;i<12;i++){const a=i*Math.PI/6;rod([Math.cos(a)*.029,.109,Math.sin(a)*.029],[Math.cos(a)*.032,.137,Math.sin(a)*.032],.002,'copper');}
+  cyl(0,.127,0,.011,.011,.025,'coal');ring(0,.140,0,.009,.003,'cream',Math.PI/2);
+  const profile=[[.031,.120],[.042,.149],[.044,.180],[.036,.215],[.025,.250],[.022,.346],[.0205,.346],[.0235,.250],[.0345,.215],[.0425,.180],[.0405,.149],[.0295,.120],[.031,.120]];
+  put(new T.LatheGeometry(profile.map(([r,y])=>new T.Vector2(r,y)),40),'lampglass');
+  ring(0,.346,0,.0212,.0012,'lampglass',Math.PI/2);
  }else if(id==='tinderbox'){cyl(0,.024,0,.065,.065,.046,'steel');lid(0,.05,0,.067,'steel');
  }else if(id==='dinner-plate'||id==='side-plate'||id==='saucer'){plate(0,0,0,id==='dinner-plate'?.13:id==='side-plate'?.10:.075);if(id==='side-plate')for(let i=0;i<16;i++){const a=i*Math.PI/8;ball(Math.cos(a)*.096,.025,Math.sin(a)*.096,.008,.004,.008,'cream');}
  }else if(['soup-bowl','mixing-bowl','teacup','tankard','egg-cup','salt-cellar','mortar'].includes(id)){

@@ -42,6 +42,8 @@ assert.equal(hf.filter(a=>a.kind==='stool').length,2);
 assert.equal(hf.filter(a=>a.kind==='armchair').length,2);
 const hp=plans.find(p=>p.home===22&&p.floor===0)!.placements;
 const dining=hf.find(a=>a.kind==='table')!,prep=hf.find(a=>a.kind==='prep')!,sewing=hf.find(a=>a.kind==='sewingtable')!,bench=hf.find(a=>a.kind==='linenbench')!;
+assert(hp.some(p=>p.anchor===dining.id&&p.id==='oil-lamp'),'Henry’s lamp needs a supported place on the dining table');
+assert(interiorObject('oil-lamp').parts.some(p=>p.material==='lampglass'),'Lamp requires a separate clear chimney');
 assert(!hp.some(p=>p.anchor===dining.id&&p.id.includes('machine')),'Keep meals clear of sewing equipment');
 assert(hp.some(p=>p.anchor===sewing.id&&p.id==='hand-machine'),'Machine must stand on its own table');
 assert(henry.depth/2-(Math.abs(bench.z)+bench.d/2)<.25,'Bench belongs against the wall');

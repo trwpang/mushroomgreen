@@ -1,13 +1,13 @@
 {
   "models": 112,
-  "bytes": 1108400,
-  "triangles": 144252,
-  "sha256": "1bda908867c229d01a7ba891aae3881bb0852561e2e5ea062c12885eb1eae8bc",
+  "bytes": 1142596,
+  "triangles": 150876,
+  "sha256": "492f0b7104c24ed7a8e6d50766858d007623d0f519857ab426a819e01bf3f892",
   "compression": "EXT_meshopt_compression",
   "validationErrors": 0,
   "sourceHashes": {
     "src/scripts/village/interior-catalogue.ts": "4f7c72cbdb382dfa722be6ff38063f67973236b58cc7d7775ecb06a0333b7597",
-    "src/scripts/village/interior-objects.ts": "ab90af058a79c631f4f14200c1b493ff06a33fc0d466104de92f2bedb2da9151"
+    "src/scripts/village/interior-objects.ts": "3e17a57245460f7daf777db38a9753dc4492f2552f7c030a9bab36c164635599"
   },
   "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
   "usage": "Same terms as this repository; no new third-party asset licence.",
@@ -399,9 +399,9 @@
       "name": "Glass-chimney oil lamp",
       "support": "surface",
       "dimensions": [
-        0.18000000715255737,
-        0.4280000065919012,
-        0.18000000715255737
+        0.20899999886751175,
+        0.34703922232985496,
+        0.16599999368190765
       ]
     },
     {

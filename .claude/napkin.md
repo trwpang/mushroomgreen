@@ -127,3 +127,6 @@ Quick-reference notes Claude should internalize on every session start. Update w
 
 - Furnishing must follow domestic tasks, not catalogue coverage. Henry #22 records two occupants in 1861. His custom plan in interior-plans.ts separates cooking/prep, meals, sewing, wall seating and sleeping. Wooden armchairs and 12 new domestic models bring the catalogue to 112. Bench and washstand wall placement uses the same route checks; the water stand must not trap access to the food cupboard.
 - Quarry floors use a room-wide 228.6 mm grid with 3 mm joints and one wear map. Avoid repeating/stretched floor modules, large bevels, and nearly coincident grout. Tiles receive shadows but do not cast shadows onto themselves. Camera captures showed speckles with the earlier self-shadowing slabs.
+
+- Indoor controls must turn about the eye, not orbit a distant target. Disable OrbitControls rotation indoors and use turnDestination; containRoom clamps eye and translates target equally. Restore outdoor pan/zoom/polar/near settings on exit. Lamp glass has its own transparent material; do not change bottle/mirror glass globally.
+- GTAO renders transparent lamp chimneys as opaque silhouettes in its override pass. Put chimney meshes on layer 1, like smoke; the main camera sees layer 1 and the AO camera uses only layer 0.

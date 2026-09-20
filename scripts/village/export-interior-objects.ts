@@ -9,9 +9,9 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import {interiorCatalogue} from '../../src/scripts/village/interior-catalogue';
 import {interiorObject,type ObjectMaterial} from '../../src/scripts/village/interior-objects';
-const colours:Record<ObjectMaterial,string>={oak:'#826449',darkwood:'#4e3926',iron:'#292b28',steel:'#93978e',copper:'#b3844a',cream:'#dfd5b9',blue:'#344d73',clay:'#865033',cloth:'#69785f',green:'#535d3d',coal:'#24241d',glass:'#789186',paper:'#d1c7ab',linen:'#d0c7ae',tile:'#755038',stone:'#807b69'};
+const colours:Record<ObjectMaterial,string>={oak:'#826449',darkwood:'#4e3926',iron:'#292b28',steel:'#93978e',copper:'#b3844a',cream:'#dfd5b9',blue:'#344d73',clay:'#865033',cloth:'#69785f',green:'#535d3d',coal:'#24241d',glass:'#789186',lampglass:'#d9e0d3',paper:'#d1c7ab',linen:'#d0c7ae',tile:'#755038',stone:'#807b69'};
 const doc=new Document(),buffer=doc.createBuffer(),scene=doc.createScene('Objects of home');
-const materials=Object.fromEntries(Object.entries(colours).map(([key,colour])=>{const c=new T.Color(colour);return [key,doc.createMaterial(key).setBaseColorFactor([c.r,c.g,c.b,1]).setRoughnessFactor(['steel','copper','cream','blue','glass'].includes(key)?.40:.95).setMetallicFactor(['iron','steel','copper'].includes(key)?.55:0).setDoubleSided(key==='cloth')];}));
+const materials=Object.fromEntries(Object.entries(colours).map(([key,colour])=>{const c=new T.Color(colour);return [key,doc.createMaterial(key).setBaseColorFactor([c.r,c.g,c.b,1]).setRoughnessFactor(['steel','copper','cream','blue','glass'].includes(key)?.40:.95).setMetallicFactor(['iron','steel','copper'].includes(key)?.55:0).setDoubleSided(key==='cloth'||key==='lampglass').setAlphaMode(key==='lampglass'?'BLEND':'OPAQUE').setBaseColorFactor([c.r,c.g,c.b,key==='lampglass'?.20:1])];}));
 for(const [index,[id,name]]of interiorCatalogue.entries()){
  const model=interiorObject(id),node=doc.createNode(id).setTranslation([(index%10-4.5)*2.5,0,(Math.floor(index/10)-4.5)*2.5]).setExtras({title:name,id,units:'metres',origin:'bottom centre',supportSurfaces:model.surfaces});
  const mesh=doc.createMesh(name);

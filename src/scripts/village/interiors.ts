@@ -12,10 +12,10 @@ export interface InteriorView {group:T.Group;plan:InteriorPlan;floor:number;floo
 /** Shared room builder for isolated cutaways and furnished village shells. */
 export function createInteriors(scene:T.Object3D,embedded=false){
  let active:InteriorView|null=null,clock=0;
- let flame:T.Mesh|null=null,glow:T.PointLight|null=null;
+ let flame:T.Mesh|null=null,glow:T.PointLight|null=null;let lampFlame:T.Mesh|null=null,lampGlow:T.PointLight|null=null;
  const resources=new Set<T.Material|T.Texture|T.BufferGeometry>();
  const own=<A extends T.Material|T.Texture|T.BufferGeometry>(r:A)=>{resources.add(r);return r;};
- function hide(){if(active)scene.remove(active.group);for(const r of resources)r.dispose();resources.clear();active=null;flame=null;glow=null;}
+ function hide(){if(active)scene.remove(active.group);for(const r of resources)r.dispose();resources.clear();active=null;flame=null;glow=null;lampFlame=null;lampGlow=null;}
  function show(home:Home,floor=0):InteriorView{
   hide();const plan=planInterior(home);floor=Math.max(0,Math.min(plan.floors.length-1,floor));
   const rand=seeded(plan.seed+floor*473),root=new T.Group();root.name=`House ${home.number} — interpreted interior — ${plan.floors[floor].name}`;
@@ -52,7 +52,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   const stair=plan.floors[floor].items.find(a=>a.kind==='stairs');
   // Ground-floor finishes vary by household. These are material interpretations, not recorded fittings.
   const finish:InteriorObjectId=!floor&&(home.number%3!==0||home.number===22)?(home.number%7===0?'flagstones':'quarry-tiles'):'board-ceiling';
-  const objectMats:Record<ObjectMaterial,T.Material>={oak:woods[0],darkwood:woods[2],iron,steel:mat('#8f9389',undefined,.44,'iron'),copper:mat('#a17b43',undefined,.48,'iron'),cream:ceramic,blue:mat('#394e69',undefined,.4,'ceramic'),clay:earthenware,cloth:blanket,green:mat('#636e54',clothMap,.92,'cloth'),coal:dark,glass:mat('#71867c',undefined,.18,'glass'),paper:mat('#c3b79c',plasterMap,.95,'cloth'),linen:mat('#d0c7ae',clothMap,.97,'cloth'),tile:own(new T.MeshStandardMaterial({color:'#955b43',roughness:.83})),stone:mat('#807b69',plasterMap,.97,'stone')};
+  const objectMats:Record<ObjectMaterial,T.Material>={oak:woods[0],darkwood:woods[2],iron,steel:mat('#8f9389',undefined,.44,'iron'),copper:mat('#a17b43',undefined,.48,'iron'),cream:ceramic,blue:mat('#394e69',undefined,.4,'ceramic'),clay:earthenware,cloth:blanket,green:mat('#636e54',clothMap,.92,'cloth'),coal:dark,glass:mat('#71867c',undefined,.18,'glass'),lampglass:own(new T.MeshBasicMaterial({color:'#a6bab2',transparent:true,opacity:.035,depthWrite:false,side:T.DoubleSide})),paper:mat('#c3b79c',plasterMap,.95,'cloth'),linen:mat('#d0c7ae',clothMap,.97,'cloth'),tile:own(new T.MeshStandardMaterial({color:'#955b43',roughness:.83})),stone:mat('#807b69',plasterMap,.97,'stone')};
   const fabric=own(new T.MeshStandardMaterial({color:blanket.color,map:clothMap,roughness:.98,side:T.DoubleSide}));refineSurface(fabric,'cloth');objectMats.cloth=fabric;for(const key of ['tile','stone'] as const)(objectMats[key] as T.MeshStandardMaterial).vertexColors=true;for(const key of ['steel','copper'] as const)(objectMats[key] as T.MeshStandardMaterial).metalness=.55;
   function object(id:InteriorObjectId,x:number,y:number,z:number,sx=1,scaleY=1,sz=1,angle=0,tilt=0){
    for(const part of interiorObject(id).parts){const g=part.geometry.clone();g.scale(sx,scaleY,sz);g.rotateX(tilt);add(g,objectMats[part.material],x,y,z,0,angle);}
@@ -246,6 +246,13 @@ export function createInteriors(scene:T.Object3D,embedded=false){
    if(!embedded&&p.id==='curtains'&&p.z>0)continue; // Front wall is removed in the cutaway.
    const curtainOffset=!embedded&&p.id==='curtains'?.12:0;
    object(p.id,p.x,p.y+.03+curtainOffset,p.z,p.sx,p.sy,p.sz,p.angle,p.tilt??0);
+   if(home.number===22&&floor===0&&p.id==='oil-lamp'&&p.anchor.includes('-table-')){
+    lampFlame=new T.Mesh(own(new T.SphereGeometry(1,12,8)),own(new T.MeshBasicMaterial({color:'#ffe2a3'})));
+    lampFlame.position.set(p.x,base+p.y+.03+.162*p.sy,p.z);lampFlame.scale.set(.008,.023,.008);root.add(lampFlame);
+    lampGlow=new T.PointLight('#ffbd70',.55,3.5,2);lampGlow.position.copy(lampFlame.position);root.add(lampGlow);
+    root.userData.litOilLamp={anchor:p.anchor,position:lampFlame.position.toArray()};
+   }
+
    if(p.role==='wall'&&['rear-wall-hanging','hearth-tools'].includes(p.anchor)){
     const top=p.y+.03+interiorObject(p.id).bounds.max.y*p.sy;
     const start=p.anchor==='hearth-tools'?new T.Vector3(-w/2+.18,top,p.z):new T.Vector3(p.x,top,-d/2+.18);
@@ -282,11 +289,11 @@ export function createInteriors(scene:T.Object3D,embedded=false){
    for(let i=0;i<p.count;i++)p.setZ(i,.038*Math.sin(p.getX(i)*48));g.computeVertexNormals();
    add(g,cream,cx,1.00,startZ+.31,0,Math.PI/2);
   }
-  for(const [material,parts]of batches){const g=own(mergeGeometries(parts));parts.forEach(p=>p.dispose());const m=new T.Mesh(g,material);m.castShadow=material!==objectMats.tile;m.receiveShadow=true;if(material===objectMats.tile)m.userData.quarryFloor={pitch:.2286,gap:.003};root.add(m);}
+  for(const [material,parts]of batches){const g=own(mergeGeometries(parts));parts.forEach(p=>p.dispose());const m=new T.Mesh(g,material);m.castShadow=material!==objectMats.tile&&material!==objectMats.lampglass;m.receiveShadow=true;if(material===objectMats.lampglass){m.layers.set(1);m.userData.lampChimney=true;}if(material===objectMats.tile)m.userData.quarryFloor={pitch:.2286,gap:.003};root.add(m);}
   if(!embedded){const ambient=new T.HemisphereLight('#e7dec7','#726049',1.15);root.add(ambient);}
   const targetPoint=localPoint(home,0,0),cameraPoint=localPoint(home,w*.924,d*1.152);
   active={group:root,plan,floor,floors:plan.floors.length,target:new T.Vector3(targetPoint[0],home.height+base+.8,targetPoint[1]),camera:new T.Vector3(cameraPoint[0],home.height+base+Math.max(w,d)*1.02+2.88,cameraPoint[1])};
   root.userData.interiorPlan=plan;root.userData.home=home;return active;
  }
- return {show,hide,setFloor(floor:number){return active?show(active.group.userData.home as Home,floor):null;},get active(){return active;},update(time:number){clock=time;if(glow)glow.intensity=.85+.12*Math.sin(clock*4.7)+.06*Math.sin(clock*9.1);if(flame)flame.scale.y=.45+.10*Math.sin(clock*5.7);}};
+ return {show,hide,setFloor(floor:number){return active?show(active.group.userData.home as Home,floor):null;},get active(){return active;},update(time:number){clock=time;if(lampGlow)lampGlow.intensity=.55+.015*Math.sin(clock*3.7)+.008*Math.sin(clock*8.1);if(lampFlame)lampFlame.scale.y=.023+.001*Math.sin(clock*4.3);if(glow)glow.intensity=.85+.12*Math.sin(clock*4.7)+.06*Math.sin(clock*9.1);if(flame)flame.scale.y=.45+.10*Math.sin(clock*5.7);}};
 }

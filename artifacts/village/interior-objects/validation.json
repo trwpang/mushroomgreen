@@ -42,7 +42,7 @@
     "flat-iron": 2,
     "trivet": 4,
     "candlestick": 29,
-    "oil-lamp": 38,
+    "oil-lamp": 39,
     "tinderbox": 60,
     "dinner-plate": 107,
     "side-plate": 105,
@@ -61,7 +61,7 @@
     "ladle": 11,
     "knife": 12,
     "fork": 9,
-    "salt-cellar": 26,
+    "salt-cellar": 25,
     "spice-jar": 45,
     "storage-crock": 86,
     "stone-bottle": 80,
@@ -500,14 +500,14 @@
       "sha256": "6b70ed3cf660d5a92582b6c2e84cf046edf700dc0f50356a4e0773c03097c43e"
     },
     "oil-lamp": {
-      "triangles": 960,
+      "triangles": 7584,
       "dimensions": [
-        0.18000000715255737,
-        0.4280000065919012,
-        0.18000000715255737
+        0.20899999886751175,
+        0.34703922232985496,
+        0.16599999368190765
       ],
-      "materials": 4,
-      "sha256": "bb614b4c3768226d4ad103c4d16562c7c0042ec3df39b81b37f4b0b189b3f8d0"
+      "materials": 7,
+      "sha256": "7eaf30c859ccbe621521963eecd109b6f22f3dbd084867d451663239ade836f3"
     },
     "tinderbox": {
       "triangles": 416,
@@ -17015,15 +17015,15 @@
           "role": "surface"
         },
         {
-          "id": "salt-cellar",
+          "id": "oil-lamp",
           "x": -2.3,
           "y": 0.7334999992549419,
-          "z": 0.30000000000000004,
+          "z": 0.38,
           "angle": 0,
           "tilt": 0,
-          "sx": 0.85,
-          "sy": 0.85,
-          "sz": 0.85,
+          "sx": 1,
+          "sy": 1,
+          "sz": 1,
           "anchor": "22-0-table-eating",
           "role": "surface"
         },

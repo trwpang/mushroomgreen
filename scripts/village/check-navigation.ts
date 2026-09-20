@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {panDestination,zoomDestination} from '../../src/scripts/village/navigation';
+import {panDestination,zoomDestination,turnDestination,containRoom} from '../../src/scripts/village/navigation';
 for(const azimuth of [0,.8,Math.PI,4.2])for(const height of [2,30,650]){
  const camera=new T.PerspectiveCamera(42,1.6,.1,1800),target=new T.Vector3(3,0,-5);
  camera.position.set(Math.sin(azimuth)*30,height,Math.cos(azimuth)*30);camera.lookAt(target);camera.updateMatrixWorld();
@@ -16,3 +16,24 @@ for(const azimuth of [0,.8,Math.PI,4.2])for(const height of [2,30,650]){
  assert(Math.abs(zoomDestination(camera.position,target,.00001,9,1800).distanceTo(target)-9)<1e-8);
 }
 console.log('Camera-relative pan preserves angle and distance; zoom preserves heading and clamps to limits.');
+
+for(const angle of [0,.8,2.5]){
+ const room={x:7,z:-3,angle,width:5,depth:4,floor:2,ceiling:4.3};
+ let position=new T.Vector3(7,3.65,-3),target=new T.Vector3(8,3.65,-4);
+ const camera=new T.PerspectiveCamera(68,1,.04,1800);camera.position.copy(position);camera.lookAt(target);
+ const pan=panDestination(camera,position,target,1,0,true);
+ assert(Math.abs(pan.position.distanceTo(position)-.16)<1e-8,'Indoor step must be 16 cm');
+ for(let i=0;i<100;i++){
+  const turned=turnDestination(position,target,.2,.3,true);
+  assert(turned.position.distanceTo(position)<1e-9,'Indoor turning must never orbit the eye out of the room');
+  assert(Math.abs(turned.position.distanceTo(turned.target)-position.distanceTo(target))<1e-8);
+  target=turned.target;
+  const far=position.clone().add(new T.Vector3(1,.3,1));const bounded=containRoom(far,target.clone().add(new T.Vector3(1,.3,1)),room);
+  assert(bounded.target.clone().sub(bounded.position).distanceTo(target.clone().sub(position))<1e-8,'Wall limit must preserve heading');
+  position=bounded.position;target=bounded.target;
+  const dx=position.x-room.x,dz=position.z-room.z,c=Math.cos(angle),s=Math.sin(angle);
+  assert(Math.abs(dx*c-dz*s)<=room.width/2-.32+1e-8&&Math.abs(dx*s+dz*c)<=room.depth/2-.32+1e-8);
+  assert(position.y>=room.floor+.65&&position.y<=room.ceiling-.28);
+ }
+}
+console.log('Indoor turning fixes the eye; 16 cm steps and rotated room bounds preserve heading under repeated input.');

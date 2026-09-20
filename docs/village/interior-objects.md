@@ -97,7 +97,7 @@ Visual corrections during this pass: remove the strong repeated floor pattern; w
 | 36 | Solid flat iron (flat-iron) | shelf | R1–R4, reference-led | 0.15 × 0.12 × 0.21 | 2 |
 | 37 | Three-foot iron trivet (trivet) | hearth | Interpretive; related to R1–R4/R7 | 0.21 × 0.08 × 0.21 | 4 |
 | 38 | Brass chamber candlestick (candlestick) | surface | R1–R4, reference-led | 0.21 × 0.26 × 0.18 | 29 |
-| 39 | Glass-chimney oil lamp (oil-lamp) | surface | Interpretive; related to R1–R4/R7 | 0.18 × 0.43 × 0.18 | 38 |
+| 39 | Glass-chimney oil lamp (oil-lamp) | surface | [1860s reference and lamp notes](oil-lamp-navigation.md) | 0.21 × 0.35 × 0.17 | 39 |
 | 40 | Tin tinderbox (tinderbox) | shelf | Interpretive; related to R1–R4/R7 | 0.13 × 0.09 × 0.13 | 60 |
 | 41 | Blue-banded dinner plate (dinner-plate) | surface | R1–R4, reference-led | 0.26 × 0.03 × 0.26 | 107 |
 | 42 | Scalloped side plate (side-plate) | surface | R1–R4, reference-led | 0.21 × 0.03 × 0.21 | 105 |

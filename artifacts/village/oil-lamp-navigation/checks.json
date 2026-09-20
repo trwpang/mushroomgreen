@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "navigation": "passed: indoor fixed-eye turning, 16 cm steps, rotated room containment; outdoor pan and zoom",
+    "interiorObjects": "passed: 112 models; Henry table lamp supported",
+    "inhabitedInteriors": "passed: 58 homes, 74 floors; lamp light and transparent AO layer",
+    "typescript": "passed",
+    "productionBuild": "passed: 77 pages",
+    "gltf": "passed: zero validation errors"
+  },
+  "browser": [
+    "Turn and Move buttons visible and operated inside Henry\u2019s home",
+    "Indoor drag stays in the room",
+    "Back outside restores orbit navigation",
+    "Oil lamp study viewed"
+  ],
+  "scope": "Wall containment only; furniture is not a collision mesh."
+}

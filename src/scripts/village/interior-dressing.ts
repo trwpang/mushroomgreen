@@ -37,7 +37,7 @@ export function planDressing(home:Home,plan:InteriorPlan,floor:number,sy:number)
    const meals:InteriorObjectId[][]=[['dinner-plate','bread','tankard'],['soup-bowl','jug','wooden-spoon'],['bread-board','cheese','knife'],['teapot','teacup','saucer'],['mixing-bowl','rolling-pin','egg-cup'],['side-plate','butter-dish','fork']];
    if(n===22){
     for(const side of [-1,1]){surface('dinner-plate',p,top,a.w,a.d,side*.40,0,.9);surface('tankard',p,top,a.w,a.d,side*.62,-.23,.85);surface('knife',p,top,a.w,a.d,side*.23,.04,.82);}
-    surface('salt-cellar',p,top,a.w,a.d,0,-.25,.85);surface('bread',p,top,a.w,a.d,0,.20,.8);
+    surface('oil-lamp',p,top,a.w,a.d,0,-.17,1);surface('bread',p,top,a.w,a.d,0,.20,.8);
    }else{const meal=meals[n%6];surface(meal[0],p,top,a.w,a.d,-a.w*.29,0,.9);surface(meal[1],p,top,a.w,a.d,a.w*.27,-.05,.9);surface(meal[2],p,top,a.w,a.d,0,.14,.9,Math.PI/2);}
   }else if(a.kind==='prep'){
    const p=fit('prep-table',a),top=.8125;
