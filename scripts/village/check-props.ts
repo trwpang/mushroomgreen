@@ -9,6 +9,13 @@ const paths=homes.filter(h=>h.number!==chainshopReplacesHouse).map(h=>{const d=[
 const kit=createPropKit(),stats:Record<string,unknown>={};
 for(const [kind,obj] of Object.entries(kit.models)){let triangles=0;obj.traverse(o=>{if(o instanceof T.Mesh){const g=o.geometry;triangles+=(g.index?.count??g.attributes.position.count)/3;for(const attribute of ['position','normal','uv','color'])assert(Array.from(g.attributes[attribute].array).every(Number.isFinite),kind+' invalid '+attribute);}});const b=new T.Box3().setFromObject(obj),size=b.getSize(new T.Vector3());assert(size.x>.1&&size.y>.2&&size.z>.025);assert(b.min.y>-.10,kind+' below ground');assert(triangles<15000,kind+' exceeds mesh budget');stats[kind]={triangles,size:size.toArray(),draws:obj.children.length};}
 assert.equal(Object.keys(stats).length,20);
+// Cut faces retain their own UVs through merging; wicker and pale fibres must not gain growth rings.
+for(const [kind,obj] of Object.entries(kit.models))obj.traverse(o=>{
+ if(!(o instanceof T.Mesh)||(o.material as T.Material).userData.textureDetail!=='end-grain')return;
+ assert(['woodpile','block','handcart'].includes(kind),'End grain leaked onto '+kind);
+ const uv=o.geometry.getAttribute('uv');for(let i=0;i<uv.count;i++)assert(uv.getX(i)>=-1e-6&&uv.getX(i)<=1.000001&&uv.getY(i)>=-1e-6&&uv.getY(i)<=1.000001,'Cut-face UV outside its atlas panel');
+});
+for(const kind of ['woodpile','block','handcart'] as const)assert(kit.models[kind].children.some(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.textureDetail==='end-grain'));
 const textured=createPropKit(new T.MeshStandardMaterial({map:new T.Texture()}));
 for(const kind of Object.keys(propNames) as (keyof typeof propNames)[]){assert.deepEqual(new T.Box3().setFromObject(kit.models[kind]),new T.Box3().setFromObject(textured.models[kind]),kind+' changes shape with atlas');}
 const planned=planWorkingProps(homes,kit.models,paths);assert.deepEqual(planned,planWorkingProps(homes,kit.models,paths));
@@ -50,5 +57,6 @@ for(const p of planned.filter(p=>p.kind==='broom')){
  assert(wallGap>=0&&wallGap<.01,'Broom does not rest against its wall: '+p.home+' '+wallGap);
 }
 assert(planned.length>=100,'Insufficient yard distribution');assert(new Set(planned.map(p=>p.home)).size>=35,'Insufficient household coverage');
-const scene=new T.Scene(),live=addWorkingProps(scene,homes,undefined,paths);let tris=0;live.root.traverse(o=>{if(o instanceof T.Mesh)tris+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});assert(live.root.children.length<=6);assert(tris<1000000);
+const scene=new T.Scene(),live=addWorkingProps(scene,homes,undefined,paths);let tris=0;live.root.traverse(o=>{if(o instanceof T.Mesh)tris+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});assert(live.root.children.length<=7); // Six shared surfaces plus correctly mapped cut timber.
+assert(tris<1000000);
 const report={models:stats,placements:live.placements,counts:live.counts,triangles:tris,draws:live.root.children.length};mkdirSync('artifacts/village/props-logic',{recursive:true});writeFileSync('artifacts/village/props-logic/validation.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({models:stats,counts:live.counts,triangles:tris,draws:live.root.children.length},null,2));

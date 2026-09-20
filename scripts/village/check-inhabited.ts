@@ -20,6 +20,9 @@ for(const h of homes){
   const lime=v.group.children.filter(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.surfaceKind==='plaster');
   const timber=v.group.children.filter(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.surfaceKind==='wood');
   const base=.12+f*2.225*sy;
+  const details=new Set(v.group.children.filter(o=>o instanceof T.Mesh).map(o=>(o as T.Mesh).material).flat().map(m=>m.userData.textureDetail));
+  if(f===0)assert(details.has('dull-tin'),'Every ground-floor bath needs its own tin finish');
+  if(h.number===22&&f===0)for(const finish of ['cast-iron','salt-glaze','fired-brick'])assert(details.has(finish),'Henry missing '+finish);
   const wornFloor=v.group.children.filter(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.floorWear) as T.Mesh[];
   assert(wornFloor.length>0,'Every internal floor needs its own wear finish');
   for(const mesh of wornFloor){mesh.geometry.computeBoundingBox();assert(mesh.geometry.boundingBox!.max.y<base+.06,'Floor wear must not affect walls, furniture or ceiling boards');}

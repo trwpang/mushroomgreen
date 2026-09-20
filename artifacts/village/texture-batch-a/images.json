@@ -1,0 +1,86 @@
+[
+  {
+    "name": "brick-mortar",
+    "format": "webp",
+    "width": 1774,
+    "height": 887,
+    "channels": 3,
+    "premultiplied": false,
+    "size": 798428,
+    "means": [
+      [
+        0.2352,
+        0.0906,
+        0.0501
+      ],
+      [
+        0.4086,
+        0.3194,
+        0.2231
+      ]
+    ]
+  },
+  {
+    "name": "slate-bark",
+    "format": "webp",
+    "width": 1774,
+    "height": 887,
+    "channels": 3,
+    "premultiplied": false,
+    "size": 666994,
+    "means": [
+      [
+        0.1094,
+        0.1155,
+        0.1219
+      ],
+      [
+        0.1307,
+        0.1119,
+        0.0911
+      ]
+    ]
+  },
+  {
+    "name": "iron-tin",
+    "format": "webp",
+    "width": 1774,
+    "height": 887,
+    "channels": 3,
+    "premultiplied": false,
+    "size": 707466,
+    "means": [
+      [
+        0.0554,
+        0.0518,
+        0.0489
+      ],
+      [
+        0.2404,
+        0.2488,
+        0.245
+      ]
+    ]
+  },
+  {
+    "name": "pottery-endgrain",
+    "format": "webp",
+    "width": 1774,
+    "height": 887,
+    "channels": 3,
+    "premultiplied": false,
+    "size": 692500,
+    "means": [
+      [
+        0.1701,
+        0.0754,
+        0.0276
+      ],
+      [
+        0.2354,
+        0.1572,
+        0.0947
+      ]
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+import {textureDetail,type TextureDetail} from './texture-detail';
 import {domesticWear} from './domestic-wear';
 import {wearFloor} from './floor-wear';
 import {refineSurface,cloneSurface,type Surface} from '../rendering/surfaces';
@@ -58,10 +59,21 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   const fabric=own(new T.MeshStandardMaterial({color:blanket.color,map:clothMap,roughness:.98,side:T.DoubleSide}));refineSurface(fabric,'cloth');objectMats.cloth=fabric;for(const key of ['tile','stone','steel'] as const)(objectMats[key] as T.MeshStandardMaterial).vertexColors=true;for(const key of ['steel','copper'] as const)(objectMats[key] as T.MeshStandardMaterial).metalness=.55;
   for(const m of woods)domesticWear(m,plan,floor,base,'wood');
   domesticWear(lime,plan,floor,base,'plaster');domesticWear(brick,plan,floor,base,'brick');
+  textureDetail(brick,'fired-brick');
   for(const key of ['iron','steel','copper','cream','blue','clay','cloth','linen','green'] as const){const m=objectMats[key];if(m instanceof T.MeshStandardMaterial)domesticWear(m,plan,floor,base,['iron','steel','copper'].includes(key)?'metal':['cloth','linen','green'].includes(key)?'cloth':'ceramic');}
   const floorMaterials=new Map<T.Material,T.Material>();
+  const detailedMaterials=new Map<string,T.MeshStandardMaterial>();
+  function objectFinish(id:InteriorObjectId,part:ObjectMaterial,m:T.Material){
+   const detail:TextureDetail|undefined=id==='tin-bath'&&part==='steel'?'dull-tin':
+    ['open-range','oven-range','hob-stove'].includes(id)&&part==='iron'?'cast-iron':
+    ['storage-crock','bread-crock','jug','mixing-bowl','water-crock-stand'].includes(id)&&part==='clay'?'salt-glaze':undefined;
+   if(!detail||!(m instanceof T.MeshStandardMaterial))return m;
+   const key=detail+'-'+part;
+   if(!detailedMaterials.has(key))detailedMaterials.set(key,textureDetail(own(cloneSurface(m)),detail));
+   return detailedMaterials.get(key)!;
+  }
   function object(id:InteriorObjectId,x:number,y:number,z:number,sx=1,scaleY=1,sz=1,angle=0,tilt=0,floorSurface=false){
-   for(const part of interiorObject(id).parts){const g=part.geometry.clone();g.scale(sx,scaleY,sz);g.rotateX(tilt);let m=objectMats[part.material];if(floorSurface&&m instanceof T.MeshStandardMaterial){if(!floorMaterials.has(m))floorMaterials.set(m,wearFloor(own(cloneSurface(m)),plan,floor,id==='flagstones'?'stone':'wood'));m=floorMaterials.get(m)!;}add(g,m,x,y,z,0,angle);}
+   for(const part of interiorObject(id).parts){const g=part.geometry.clone();g.scale(sx,scaleY,sz);g.rotateX(tilt);let m=objectFinish(id,part.material,objectMats[part.material]);if(floorSurface&&m instanceof T.MeshStandardMaterial){if(!floorMaterials.has(m))floorMaterials.set(m,wearFloor(own(cloneSurface(m)),plan,floor,id==='flagstones'?'stone':'wood'));m=floorMaterials.get(m)!;}add(g,m,x,y,z,0,angle);}
   }
   // Quarry tiles use one room-wide 9-inch grid. No stretched edge modules or repeated dark diagonal pattern.
   if(finish==='quarry-tiles'){

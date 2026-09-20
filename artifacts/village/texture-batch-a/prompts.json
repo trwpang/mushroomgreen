@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-20",
+  "source": "OpenAI image generation; original colour artwork, not measured or scanned PBR",
+  "prompts": [
+    {
+      "name": "brick-mortar",
+      "prompt": "Original 2:1 landscape GAME MATERIAL ATLAS. Exactly two equal square panels touching at centre. Flat orthographic BASE COLOUR only, even diffuse light, no cast shadows, labels, text, borders or objects. LEFT: uninterrupted surface of old hand-made, coal-fired red brick. Deep muted brown-red body with clinker inclusions, small open pits, sand grains, subtle hand-moulded ripples and irregular firing variation. No bricks, grid, mortar joints or perspective: this square is the surface of ONE brick to map onto existing individual brick meshes. Not quarry floor tile or smooth ceramic. RIGHT: uninterrupted old lime mortar, muted grey buff, fine gritty sand aggregate, small pale grains, friable recessed areas and a few tiny pores. Dry matt, no brick pattern, no large cracks or mould. Historic working Black Country buildings, cared-for but heavily used. Keep material colour variation restrained and natural, with rich fine detail. Both halves should tile visually, no dark edges."
+    },
+    {
+      "name": "slate-bark",
+      "prompt": "Original 2:1 landscape GAME MATERIAL ATLAS. Exactly TWO equal square panels touching at centre. Flat orthographic BASE COLOUR, soft perfectly even diffuse light. No objects, writing, borders, cast shadows, perspective or tile grid. LEFT: continuous natural split roofing slate surface. Weathered dull blue-grey charcoal mineral lamination, fine parallel cleaved layers, tiny flakes and occasional rusty iron inclusions, subtle pale mineral bloom. Not roof shingles: one uninterrupted stone face to map onto existing slate meshes. Dry and matt, moderate contrast, detailed fine striations. RIGHT: mature broadleaf tree bark, oak/ash-like, dark grey-brown with irregular vertical ridges, worn fissures, small muted pale lichen flecks and fine flaky cork. Ridged texture runs vertically. No branch, trunk silhouette, background or foliage; just bark material. Restrained colour, authentic rough tactile detail for an old English wooded hamlet. Edge-to-edge panels, designed to tile visually."
+    },
+    {
+      "name": "iron-tin",
+      "prompt": "Original 2:1 landscape GAME MATERIAL ATLAS. Exactly TWO equal square panels edge-to-edge touching at centre. Flat orthographic BASE COLOUR with absolutely uniform diffuse illumination, no highlights, shadows, object silhouettes, labels or margins. LEFT: old black cast iron cooking range skin, dark charcoal grey, fine sandy casting pits, black-leaded surface rubbed by decades of use, faint smooth rubbed patches, restrained brown oxide deep in isolated pits, tiny abrasions. Not rusty sheet metal, not shiny or heavily corroded. Continuous metal face with no plates, bolts or seams. RIGHT: dull old tin-coated sheet iron from a domestic washing bath. Medium grey pewter tone, fine overlapping scuffs and wiping scratches, quiet mottled oxidation, a few very small worn dark spots, slight pale mineral marks. No large rust stains or holes. No rivets, seams, object edges or perspective. Both materials have rich subtle tactile detail suited to a poor 1865 English cottage, still functional and maintained. Visually tileable, no dark outer edges."
+    },
+    {
+      "name": "pottery-endgrain",
+      "prompt": "Original 2:1 landscape GAME MATERIAL ATLAS with exactly TWO equal square panels touching at centre. Orthographic flat BASE COLOUR only. Uniform diffuse light, no perspective, directional highlights, cast shadows, labels, borders or objects. LEFT: an uninterrupted surface of old brown salt-glazed stoneware used for a storage crock. Warm muted tobacco brown, irregular fine orange-peel glaze pitting, tiny speckles, quiet firing mottles, gentle uneven glaze thickness and sparse fine hairline crazing. No painted pattern, no vessel silhouette, no reflective shine baked into image, no large cracks. Not red terracotta, not wood. RIGHT: weathered exposed timber end grain on an old chopped oak log. Full square fills with close fine organic growth rings and radial checks, muted honey grey-brown worn wood, pale open fibres, several dark radial drying splits. No bark ring or circular object boundary; growth-ring centre offset near the lower left so rings continue beyond all four edges. The material is a flat cut timber face, not planks or lengthwise wood grain. Rich tactile fine details for an 1865 English village game."
+    }
+  ]
+}

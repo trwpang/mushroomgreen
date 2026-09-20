@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 import {refineSurface} from '../rendering/surfaces';
+import {textureDetail} from './texture-detail';
 
 export const propNames={wheelbarrow:'Wooden wheelbarrow',handcart:'Low timber handcart',pump:'Village hand pump',tub:'Staved washing tub',washboard:'Wooden washboard',scuttle:'Coal scuttle',woodpile:'Split firewood stack',block:'Chopping block and axe',grindstone:'Hand-cranked grindstone',tools:'Garden tool rack',basket:'Wicker carrying basket',bucket:'Oak water bucket',churn:'Conical milk churn',ladder:'Wooden step ladder',broom:'Birch besom broom',trough:'Carved feeding trough',barrel:'Rain barrel and tap',hayfork:'Three-tine hay fork',sacks:'Tied grain sacks',trestles:'Saw trestles and hand saw'} as const;
 export type PropKind=keyof typeof propNames;
@@ -11,6 +12,9 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
  const mats=[new T.MeshStandardMaterial({vertexColors:true,roughness:.96,map:oak?.map??null,normalMap:oak?.normalMap??null,roughnessMap:oak?.roughnessMap??null}),new T.MeshStandardMaterial({vertexColors:true,roughness:.78,metalness:.55}),new T.MeshStandardMaterial({vertexColors:true,roughness:1}),new T.MeshStandardMaterial({vertexColors:true,roughness:.96}),new T.MeshStandardMaterial({vertexColors:true,roughness:.25,metalness:.22}),new T.MeshStandardMaterial({vertexColors:true,roughness:1,side:T.DoubleSide})];
  mats.forEach((m,i)=>{m.name=['Prop oak','Prop iron','Prop stone','Prop end grain','Prop still water','Prop sack cloth'][i];if(i<4)refineSurface(m,['wood','iron','stone','wood'][i] as 'wood'|'iron'|'stone');});
  refineSurface(mats[5],'cloth');
+ const cutFace=new T.MeshStandardMaterial({name:'Prop cut face',vertexColors:true,roughness:.96});
+ // The lengthwise procedural wood shader would cross the radial cut-face pattern.
+ textureDetail(cutFace,'end-grain');mats.push(cutFace);
  // Original woven hemp texture: crossing yarns and fine fibres, with mipmaps for distant views.
  const clothPixels=new Uint8Array(256*256*4);
  for(let y=0;y<256;y++)for(let x=0;x<256;x++){const cellX=Math.floor(x/8),cellY=Math.floor(y/8),over=(cellX+cellY)%2===0;
@@ -20,14 +24,14 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
  const hemp=new T.DataTexture(clothPixels,256,256);hemp.wrapS=hemp.wrapT=T.RepeatWrapping;hemp.repeat.set(10,8);hemp.generateMipmaps=true;hemp.minFilter=T.LinearMipmapLinearFilter;hemp.magFilter=T.LinearFilter;hemp.colorSpace=T.SRGBColorSpace;hemp.needsUpdate=true;
  mats[5].map=hemp;mats[5].bumpMap=hemp;mats[5].bumpScale=.0025;
 
- const W=0,I=1,S=2,E=3,A=4,C=5;
+ const W=0,I=1,S=2,E=3,A=4,C=5,F=6;
  const brown='#837057',dark='#33342e',cut='#b49b72',rust='#77553c';
  const make=(kind:PropKind)=>{
  let seed=Object.keys(propNames).indexOf(kind)*1931+1865;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
  const parts:T.BufferGeometry[][]=mats.map(()=>[]);const root=new T.Group();root.name=propNames[kind];root.userData.kind=kind;
- const add=(geo:T.BufferGeometry,k:number,c:string,p:V=[0,0,0],rot:V=[0,0,0])=>{
+ const add=(geo:T.BufferGeometry,k:number,c:string,p:V=[0,0,0],rot:V=[0,0,0],shade?:number)=>{
   const g=geo.index?geo.toNonIndexed():geo.clone();geo.dispose();g.applyQuaternion(new T.Quaternion().setFromEuler(new T.Euler(...rot,'YXZ')));g.translate(...p);
-  const color=new T.Color(k===W&&oak?.map?'#cbbda5':c).multiplyScalar(.84+rand()*.27),data=new Float32Array(g.attributes.position.count*3);for(let i=0;i<data.length;i+=3)color.toArray(data,i);g.setAttribute('color',new T.BufferAttribute(data,3));
+  const color=new T.Color(k===W&&oak?.map?'#cbbda5':c).multiplyScalar(shade??(.84+rand()*.27)),data=new Float32Array(g.attributes.position.count*3);for(let i=0;i<data.length;i+=3)color.toArray(data,i);g.setAttribute('color',new T.BufferAttribute(data,3));
   if(!g.attributes.uv)g.setAttribute('uv',new T.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));
   if(k===W&&oak?.map){const t=(parts[k].length*7+g.attributes.position.count)%16,uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,(t%4+.015+uv.getX(i)*.97)/4,(Math.floor(t/4)+.015+uv.getY(i)*.97)/4);}
   parts[k].push(g);
@@ -49,7 +53,15 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
  const log=(p:V,r:number,length:number,angle=0)=>{
   // A split billet: bark on the curved back, pale split plane and visible end grain.
   const shape=new T.Shape();shape.moveTo(-r,0);for(let i=0;i<=8;i++){const a=Math.PI-i*Math.PI/8;shape.lineTo(Math.cos(a)*r,Math.sin(a)*r);}shape.closePath();
-  const g=new T.ExtrudeGeometry(shape,{depth:length,bevelEnabled:false});g.translate(0,0,-length/2);add(g,E,cut,p,[0,0,angle]);
+  const g=new T.ExtrudeGeometry(shape,{depth:length,bevelEnabled:false});g.translate(0,0,-length/2);
+  // Preserve the original one colour draw: material splitting must not change the seeded pile.
+  const shade=.84+rand()*.27;
+  for(const group of g.groups){const piece=new T.BufferGeometry();
+   for(const name of ['position','normal','uv']){const a=g.getAttribute(name);piece.setAttribute(name,new T.Float32BufferAttribute(Array.from(a.array).slice(group.start*a.itemSize,(group.start+group.count)*a.itemSize),a.itemSize));}
+   const cap=group.materialIndex===0;
+   if(cap){const p=piece.getAttribute('position'),uv=piece.getAttribute('uv');for(let i=0;i<p.count;i++)uv.setXY(i,(p.getX(i)+r)/(2*r),.5+p.getY(i)/(2*r));}
+   add(piece,cap?F:E,cut,p,[0,0,angle],shade);
+  }g.dispose();
   const bark=new T.CylinderGeometry(r+.003,r+.003,length,12,1,true,0,Math.PI);bark.rotateX(Math.PI/2);bark.rotateZ(Math.PI/2);add(bark,W,'#514534',p,[0,0,angle]);
   // Dark radial checks on both end faces; deliberately irregular lengths.
   for(const end of [-1,1])for(let i=0;i<3;i++){const a=.25+i*.78,len=r*(.28+rand()*.36);rod([p[0]+Math.cos(a+angle)*r*.18,p[1]+Math.sin(a+angle)*r*.18,p[2]+end*(length/2+.001)],[p[0]+Math.cos(a+angle)*len,p[1]+Math.sin(a+angle)*len,p[2]+end*(length/2+.001)],.002,E,'#65513c',.001,4);}
@@ -119,8 +131,10 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
  }
  if(kind==='block'){
   add(new T.CylinderGeometry(.24,.28,.45,17),W,'#534534',[0,.225,0]);
-  add(new T.CylinderGeometry(.233,.233,.012,32),E,cut,[0,.452,0]);
-  for(let i=0;i<7;i++)torus([.016,.459,-.007],.025+i*.028,.0018,E,'#82704e',[Math.PI/2,0,0],tau-.18);
+  const capSource=new T.CylinderGeometry(.233,.233,.012,32),capGeo=capSource.toNonIndexed();capSource.dispose();const capShade=.84+rand()*.27;
+  for(const group of capGeo.groups){const piece=new T.BufferGeometry();for(const name of ['position','normal','uv']){const a=capGeo.getAttribute(name);piece.setAttribute(name,new T.Float32BufferAttribute(Array.from(a.array).slice(group.start*a.itemSize,(group.start+group.count)*a.itemSize),a.itemSize));}add(piece,group.materialIndex===1?F:E,cut,[0,.452,0],[0,0,0],capShade);}capGeo.dispose();
+  // Growth rings now come from the cut-face map; keep later seeded chips unchanged.
+  for(let i=0;i<7;i++)rand();
   for(let i=0;i<12;i++){const a=i*tau/12;rod([Math.sin(a)*.257,.02,Math.cos(a)*.257],[Math.sin(a)*.236,.41,Math.cos(a)*.236],.007,W,'#433b2d',.004,4);}
   for(let i=0;i<5;i++){const a=i*.78;rod([0,.461,0],[Math.cos(a)*.17,.461,Math.sin(a)*.17],.002,E,'#4c3c2c',.001,4);}
   blade([[-.08,0],[.10,0],[.08,.10],[.035,.19],[-.055,.19],[-.08,.10]],.048,[-.055,.43,0],[0,0,-.15]);

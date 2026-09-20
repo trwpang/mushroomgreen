@@ -7,6 +7,7 @@ import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfa
 import {addWorkingChainmaker} from '../chainmaker/worker';
 import {centralWorkstation} from './workshop';
 import {wearWorkshop} from './workshop-wear';
+import {detailArchitecture,textureDetail} from './texture-detail';
 import {rememberPlace} from './location';
 import {createInspection} from './inspection';
 import {addVillageLife} from './village-life';
@@ -155,6 +156,7 @@ function trunkPart(a:T.Vector3,b:T.Vector3,r:number){const d=b.clone().sub(a),g=
 trunkPart(new T.Vector3(),new T.Vector3(.12,5.2,0),.19);for(let i=0;i<4;i++){const a=i*Math.PI/2;trunkPart(new T.Vector3(0,2.2,0),new T.Vector3(Math.cos(a)*1.8,4.4,Math.sin(a)*1.8),.08);}
 const trunkGeometry=mergeGeometries(trunkParts);trunkParts.forEach(g=>g.dispose());const treeTrunks=new T.InstancedMesh(trunkGeometry,timber.clone(),treePositions.length);treeTrunks.castShadow=treeTrunks.receiveShadow=true;scene.add(treeTrunks);
 const crownRecords:{trunk:number;kind:number;slot:number;matrix:T.Matrix4;center:T.Vector3;radius:number;hidden:boolean}[]=[];
+trunkGeometry.setAttribute('barkCoverage',new T.InstancedBufferAttribute(new Float32Array(species.map(s=>s===0?1:0)),1));
 const crownIndex=[0,0,0];mount.dataset.treeSpecies=JSON.stringify({broadleaf:species.filter(s=>s===0).length,pine:species.filter(s=>s===1).length,fir:species.filter(s=>s===2).length});
 treePositions.forEach((p,i)=>{
  const wooded=streamDistance(...p)<55||greenDistance(p)<32;
@@ -211,7 +213,7 @@ let landscapeSeed=9321865;const landscapeRandom=()=>{landscapeSeed=(Math.imul(la
 const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)]);mount.dataset.shrubs=String(landscape.counts.shrubs);mount.dataset.forgePosition=forgePos.join(',');
 weatherArchitecture(forgeRoot,forgeRoot.position.y);weatherArchitecture(weaverShop,weaverShop.position.y);
 refineSurface(timber,'wood');refineSurface(iron,'iron');refineSurface(stone,'stone');refineSurface(brick,'brick');refineSurface(lime,'plaster');refineSurface(glass,'glass');
-refineSurface(meadow.material,'leaf');refineSurface(treeTrunks.material as T.MeshStandardMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);wearWorkshop(forgeRoot);wearWorkshop(weaverShop);
+refineSurface(meadow.material,'leaf');refineSurface(treeTrunks.material as T.MeshStandardMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);wearWorkshop(forgeRoot);wearWorkshop(weaverShop);detailArchitecture(scene);textureDetail(treeTrunks.material as T.MeshStandardMaterial,'broadleaf-bark');
 // A static local environment supplies reflected sky and foliage; flow normals animate it.
 const capture=new T.WebGLCubeRenderTarget(128,{type:T.HalfFloatType});const reflectionCamera=new T.CubeCamera(.1,600,capture);reflectionCamera.position.set(-75,ground(-75,55)+3,55);[...landscape.waterMeshes,...showcase.puddles].forEach(o=>o.visible=false);scene.updateMatrixWorld(true);reflectionCamera.update(renderer,scene);[...landscape.waterMeshes,...showcase.puddles].forEach(o=>o.visible=true);const pmrem=new T.PMREMGenerator(renderer);const reflection=pmrem.fromCubemap(capture.texture);landscape.waterMaterial.envMap=reflection.texture;landscape.waterMaterial.envMapIntensity=.3;showcase.wet.envMap=reflection.texture;showcase.wet.envMapIntensity=.35;for(const m of windowMaterials){m.envMap=reflection.texture;m.envMapIntensity=.7;m.roughness=.16;m.needsUpdate=true;}capture.dispose();pmrem.dispose();
 // Map overlay: exact source footprints, boundary, mapped routes, and household numbers.
