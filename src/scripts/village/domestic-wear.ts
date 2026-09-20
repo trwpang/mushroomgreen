@@ -3,20 +3,22 @@ import {workedMaterials} from './worked-materials';
 import type {InteriorPlan} from './interior-plans';
 
 /** Room-local signs of use. Kept separate from the exterior weather finish. */
-export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,floor:number,base:number,kind:'wood'|'plaster'|'metal'|'cloth'|'ceramic'){
+export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,floor:number,base:number,kind:'wood'|'plaster'|'brick'|'metal'|'cloth'|'ceramic'){
  const previous=material.onBeforeCompile,key=material.customProgramCacheKey(),hearth=plan.floors[floor].items.find(p=>p.kind==='hearth');
  material.userData.domesticWear=kind;
  material.onBeforeCompile=function(shader,renderer){
   previous.call(this,shader,renderer);
   shader.uniforms.dwHearth={value:new T.Vector2(hearth?.x??-100,hearth?.z??-100)};
   shader.uniforms.dwBase={value:base};
+  const fabricAtlas=workedMaterials('lime-linen');shader.uniforms.dwSoftAtlas={value:fabricAtlas.texture};shader.uniforms.dwSoftReady=fabricAtlas.ready;
   const atlas=workedMaterials();shader.uniforms.dwAtlas={value:atlas.texture};shader.uniforms.dwAtlasReady=atlas.ready;
   const table=plan.floors[floor].items.find(p=>p.kind==='table');
   shader.uniforms.dwTable={value:new T.Vector4(table?.x??-100,table?.z??-100,table?.w??1,table?.d??1)};
   shader.uniforms.dwTableAngle={value:table?.angle??0};
-  shader.vertexShader='varying vec3 domesticPoint;\n'+shader.vertexShader;
-  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ndomesticPoint=position;');
-  shader.fragmentShader=`varying vec3 domesticPoint;uniform vec2 dwHearth;uniform float dwBase;uniform vec4 dwTable;uniform float dwTableAngle;uniform sampler2D dwAtlas;uniform float dwAtlasReady;
+  shader.vertexShader='varying vec3 domesticNormal;varying vec2 domesticUV;varying vec3 domesticPoint;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ndomesticPoint=position;domesticNormal=normal;domesticUV=uv;');
+  shader.fragmentShader=`varying vec3 domesticNormal;varying vec2 domesticUV;varying vec3 domesticPoint;uniform sampler2D dwSoftAtlas;uniform float dwSoftReady;uniform vec2 dwHearth;uniform float dwBase;uniform vec4 dwTable;uniform float dwTableAngle;uniform sampler2D dwAtlas;uniform float dwAtlasReady;
+   vec2 dwMirror(vec2 p){return 1.-abs(mod(p,2.)-1.);}
    float dwHash(vec2 p){return fract(sin(dot(p,vec2(73.13,219.7)))*43758.5453);}
    float dwNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(dwHash(i),dwHash(i+vec2(1,0)),f.x),mix(dwHash(i+vec2(0,1)),dwHash(i+vec2(1,1)),f.x),f.y);}
   `+shader.fragmentShader;
@@ -26,7 +28,17 @@ export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,f
    float dwSmoke=exp(-length(dwP.xz-dwHearth)*.85)*smoothstep(.6,2.3,dwY);
    float dwFoot=(1.-smoothstep(.05,.42,dwY))*(.4+.6*dwPatch);
    float dwUse=0.;float dwRelief=0.;
-   ${kind==='plaster'?`dwUse=dwSmoke*.38+dwFoot*.20;diffuseColor.rgb*=1.-dwUse;diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.89,.86,.78),smoothstep(.38,.73,dwPatch)*.17);`:''}
+   ${kind==='plaster'?`vec3 dwN=abs(domesticNormal);
+    vec2 dwPlane=dwN.x>dwN.z?dwP.zy:dwP.xy;
+    vec2 dwWallUV=vec2(.009,.018)+dwMirror(dwPlane*.57+${(plan.number*.137).toFixed(3)})*vec2(.482,.964);
+    vec3 dwLime=texture2D(dwSoftAtlas,dwWallUV).rgb;
+    float dwLimeValue=dot(dwLime,vec3(.2126,.7152,.0722));
+    diffuseColor.rgb=mix(diffuseColor.rgb,diffuse*dwLime*.98,dwSoftReady*.88);
+    dwRelief=(dwLimeValue-.55)*.0025*dwSoftReady;
+    dwUse=dwSmoke*.46+dwFoot*.23;
+    diffuseColor.rgb*=1.-dwUse;
+    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.87,.84,.77),smoothstep(.38,.73,dwPatch)*.12);`:''}
+   ${kind==='brick'?`dwUse=dwSmoke*.46+dwFoot*.23;diffuseColor.rgb*=1.-dwUse;`:''}
    ${kind==='wood'?`float dwGrain=dwNoise(vec2(dwP.x*89.,dwP.z*3.2+dwP.y));
     float dwScratch=smoothstep(.78,.9,dwGrain)*(1.-smoothstep(.35,1.2,length(fwidth(dwP.xz*vec2(89.,3.2)))));
     dwUse=dwPatch*.12+dwFoot*.2+dwSmoke*.13;
@@ -56,16 +68,21 @@ export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,f
     float dwScrub=(1.-smoothstep(.15,.6,length(dwLocal*vec2(.9,1.4))))*dwTop;
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.13,1.10,1.06),dwScrub*.65);`:''}
    ${kind==='metal'?`dwUse=.10+dwPatch*.17+dwSmoke*.12;diffuseColor.rgb*=1.-dwUse;`:''}
-   ${kind==='cloth'?`dwUse=dwPatch*.13+dwFoot*.12+dwSmoke*.08;diffuseColor.rgb*=1.-dwUse;`:''}
+   ${kind==='cloth'?`vec2 dwClothUV=vec2(.51,.02)+dwMirror(domesticUV*2.7)*vec2(.48,.96);
+    vec3 dwThread=texture2D(dwSoftAtlas,dwClothUV).rgb;
+    float dwThreadValue=dot(dwThread,vec3(.2126,.7152,.0722));
+    diffuseColor.rgb*=mix(vec3(1.),clamp(dwThread/vec3(.38,.35,.30),vec3(.55),vec3(1.65)),dwSoftReady*.72);
+    dwRelief=(dwThreadValue-.35)*.0012*dwSoftReady;
+    dwUse=dwPatch*.15+dwFoot*.16+dwSmoke*.12;diffuseColor.rgb*=1.-dwUse;`:''}
    ${kind==='ceramic'?`dwUse=dwPatch*.055+dwFoot*.04;diffuseColor.rgb*=1.-dwUse;`:''}
   `);
-  if(kind==='wood')shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+  if(['wood','plaster','cloth'].includes(kind))shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
    vec3 dwDx=dFdx(-vViewPosition),dwDy=dFdy(-vViewPosition),dwR1=cross(dwDy,normal),dwR2=cross(normal,dwDx);
    float dwDet=dot(dwDx,dwR1);vec3 dwGrad=sign(dwDet)*(dFdx(dwRelief)*dwR1+dFdy(dwRelief)*dwR2);
    normal=normalize(max(abs(dwDet),1e-9)*normal-dwGrad);
   `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor+dwUse*.2,.28,1.);`);
  };
- material.customProgramCacheKey=()=>key+'|domestic-wear-v2-'+kind+'-'+plan.number+'-'+floor;
+ material.customProgramCacheKey=()=>key+'|domestic-wear-v3-'+kind+'-'+plan.number+'-'+floor;
  material.needsUpdate=true;return material;
 }

@@ -6,6 +6,7 @@ import {addSpringFlowers} from './spring-flowers';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
 import {addWorkingChainmaker} from '../chainmaker/worker';
 import {centralWorkstation} from './workshop';
+import {wearWorkshop} from './workshop-wear';
 import {rememberPlace} from './location';
 import {createInspection} from './inspection';
 import {addVillageLife} from './village-life';
@@ -210,7 +211,7 @@ let landscapeSeed=9321865;const landscapeRandom=()=>{landscapeSeed=(Math.imul(la
 const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)]);mount.dataset.shrubs=String(landscape.counts.shrubs);mount.dataset.forgePosition=forgePos.join(',');
 weatherArchitecture(forgeRoot,forgeRoot.position.y);weatherArchitecture(weaverShop,weaverShop.position.y);
 refineSurface(timber,'wood');refineSurface(iron,'iron');refineSurface(stone,'stone');refineSurface(brick,'brick');refineSurface(lime,'plaster');refineSurface(glass,'glass');
-refineSurface(meadow.material,'leaf');refineSurface(treeTrunks.material as T.MeshStandardMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);
+refineSurface(meadow.material,'leaf');refineSurface(treeTrunks.material as T.MeshStandardMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);wearWorkshop(forgeRoot);wearWorkshop(weaverShop);
 // A static local environment supplies reflected sky and foliage; flow normals animate it.
 const capture=new T.WebGLCubeRenderTarget(128,{type:T.HalfFloatType});const reflectionCamera=new T.CubeCamera(.1,600,capture);reflectionCamera.position.set(-75,ground(-75,55)+3,55);[...landscape.waterMeshes,...showcase.puddles].forEach(o=>o.visible=false);scene.updateMatrixWorld(true);reflectionCamera.update(renderer,scene);[...landscape.waterMeshes,...showcase.puddles].forEach(o=>o.visible=true);const pmrem=new T.PMREMGenerator(renderer);const reflection=pmrem.fromCubemap(capture.texture);landscape.waterMaterial.envMap=reflection.texture;landscape.waterMaterial.envMapIntensity=.3;showcase.wet.envMap=reflection.texture;showcase.wet.envMapIntensity=.35;for(const m of windowMaterials){m.envMap=reflection.texture;m.envMapIntensity=.7;m.roughness=.16;m.needsUpdate=true;}capture.dispose();pmrem.dispose();
 // Map overlay: exact source footprints, boundary, mapped routes, and household numbers.

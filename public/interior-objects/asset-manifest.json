@@ -1,13 +1,13 @@
 {
   "models": 121,
-  "bytes": 1342796,
-  "triangles": 177711,
-  "sha256": "a9601ee1fe6515b163eba592ef9b13ba5646f4e0caac5830515323d69a90c98f",
+  "bytes": 1385000,
+  "triangles": 179391,
+  "sha256": "f58dfc0ddfcf502bbb746fb30eeb261f26f6075730fa197219657b30cfb7c675",
   "compression": "EXT_meshopt_compression",
   "validationErrors": 0,
   "sourceHashes": {
     "src/scripts/village/interior-catalogue.ts": "f314bec32ba2f3b40fe001601a93cdad352bf9ef0f13bac4c705cecb05a9c30d",
-    "src/scripts/village/interior-objects.ts": "3cafd063bd0b79a1319a66373609bfe843d4aa5e2345720b0c9a081f54a93279"
+    "src/scripts/village/interior-objects.ts": "850cafec96a5a36020a854b71399914a3de6b63ff8f4b9d63341ce9b6cb302cd"
   },
   "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
   "usage": "Same terms as this repository; no new third-party asset licence.",
@@ -799,9 +799,9 @@
       "name": "Stack of folded linen",
       "support": "shelf",
       "dimensions": [
-        0.3114999979734421,
-        0.1055000014603138,
-        0.23000000417232513
+        0.3151048421859741,
+        0.10769035597331822,
+        0.23238350450992584
       ]
     },
     {
@@ -810,7 +810,7 @@
       "support": "bed",
       "dimensions": [
         1.2000000476837158,
-        0.046104324981570244,
+        0.051251355558633804,
         1.2999999523162842
       ]
     },
@@ -880,8 +880,8 @@
       "support": "wall",
       "dimensions": [
         0.3700000047683716,
-        0.8410000018775463,
-        0.04944462515413761
+        0.8469939935021102,
+        0.049803588539361954
       ]
     },
     {
@@ -890,8 +890,8 @@
       "support": "wall",
       "dimensions": [
         0.28999999165534973,
-        0.5599999940022826,
-        0.03969239443540573
+        0.5659811114892364,
+        0.04698955453932285
       ]
     },
     {
@@ -900,8 +900,8 @@
       "support": "wall",
       "dimensions": [
         1.3700000047683716,
-        1.099999994970858,
-        0.07450242713093758
+        1.1089956476353109,
+        0.08991079777479172
       ]
     },
     {
@@ -910,7 +910,7 @@
       "support": "floor",
       "dimensions": [
         0.8999999761581421,
-        0.04040965207241243,
+        0.04845157405361533,
         1.3600000143051147
       ]
     },
@@ -1130,7 +1130,7 @@
       "support": "surface",
       "dimensions": [
         0.37700000405311584,
-        0.19249999895691872,
+        0.19249999802559614,
         0.25999999046325684
       ]
     },

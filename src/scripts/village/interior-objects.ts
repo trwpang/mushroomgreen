@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {type InteriorObjectId} from './interior-catalogue';
 export type ObjectMaterial='oak'|'darkwood'|'iron'|'steel'|'copper'|'cream'|'blue'|'clay'|'cloth'|'green'|'coal'|'glass'|'paper'|'linen'|'tile'|'stone'|'lampglass';
@@ -36,7 +37,14 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
  };
  const board=(x:number,y:number,z:number,w:number,d:number,m:ObjectMaterial='oak')=>{
   surfaces.push({x,y:y+.0225,z,width:w,depth:d});
-  for(let i=0;i<5;i++)box(x-w/2+w*(i+.5)/5,y,z,w/5-.003,.045,d,i%3===0?'darkwood':m);
+  for(let i=0;i<5;i++){
+   const ww=w/5-.003,r=Math.min(.0025,ww*.06,d*.025),shape=new T.Shape();
+   shape.moveTo(-ww/2+r,-d/2+r);shape.lineTo(ww/2-r,-d/2+r);shape.lineTo(ww/2-r,d/2-r);shape.lineTo(-ww/2+r,d/2-r);shape.closePath();
+   const g=new T.ExtrudeGeometry(shape,{depth:.045-2*r,bevelEnabled:true,bevelSize:r,bevelThickness:r,bevelSegments:1,steps:1});
+   g.rotateX(-Math.PI/2);
+   // A level face retains the measured support height; only the exposed shoulders soften.
+   put(g,i%3===0?'darkwood':m,x-w/2+w*(i+.5)/5,y-.0225+r,z);
+  }
  };
  const wornTableTop=(y:number,w:number,d:number)=>{
   surfaces.push({x:0,y:y+.0225,z:0,width:w,depth:d});
@@ -54,10 +62,13 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
  };
  const panel=(x:number,y:number,z:number,w:number,h:number,m:ObjectMaterial='oak')=>{
   const trim=m==='iron'?'iron':'darkwood';box(x,y,z,w,h,.025,m);for(const dx of [-1,1])box(x+dx*(w/2-.016),y,z+.020,.027,h,.019,trim);for(const dy of [-1,1])box(x,y+dy*(h/2-.018),z+.020,w-.04,.028,.019,trim);
+  if(m!=='iron'&&['dresser','drawers','food-cupboard','blanket-box'].includes(id))for(const side of [-1,1])for(const end of [-1,1])put(new T.CylinderGeometry(.0035,.0035,.001,6),'oak',x+side*(w/2-.016),y+end*(h/2-.024),z+.030,Math.PI/2);
  };
  const cloth=(x:number,y:number,z:number,w:number,h:number,m:ObjectMaterial='cloth',horizontal=false)=>{
-  const g=new T.PlaneGeometry(w,h,20,20),p=g.attributes.position;
-  for(let i=0;i<p.count;i++){const xx=p.getX(i),yy=p.getY(i);p.setZ(i,.014*Math.sin(xx*59)+.006*Math.sin(yy*31+xx*4));}
+  const g=new T.PlaneGeometry(w,h,14,16),p=g.attributes.position;
+  for(let i=0;i<p.count;i++){const xx=p.getX(i),yy=p.getY(i);const drop=(h/2-yy)/h;
+   p.setZ(i,(.010+.012*drop)*Math.sin(xx*39+.28*Math.sin(yy*8))+.004*Math.sin(xx*83+yy*13));
+   if(!horizontal)p.setY(i,yy+.006*Math.sin(xx*36)*drop*drop);}
   g.computeVertexNormals();put(g,m,x,y,z,horizontal?-Math.PI/2:0);
  };
  const plate=(x:number,y:number,z:number,r:number,m:ObjectMaterial='cream')=>{
@@ -305,7 +316,18 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
  }else if(id==='pincushion'){ball(0,.025,0,.043,.025,.033,'cloth');for(let i=0;i<7;i++){const x=Math.sin(i*2.4)*.028,z=Math.cos(i*2.4)*.02;rod([x,.024,z],[x,.065,z],.001,'steel');ball(x,.067,z,.003,.003,.003,'cream');}
  }else if(id==='darning-mushroom'){cyl(0,.066,0,.012,.018,.13,'darkwood');ball(0,.145,0,.055,.021,.055,'oak');
  }else if(id==='needle-case'){box(0,.012,0,.035,.023,.12,'darkwood');box(0,.025,.007,.030,.004,.095,'oak');
- }else if(id==='folded-linen'){for(let i=0;i<4;i++){box((i%2)*.007,.018+i*.026,0,.31-i*.011,.025,.23-i*.009,i%2?'cloth':'linen');for(let j=0;j<2;j++)box(-.11+j*.015,.032+i*.026,0,.005,.002,.20,'blue');}
+ }else if(id==='folded-linen'){for(let i=0;i<4;i++){
+  const w=.31-i*.011,d=.23-i*.009,g=new RoundedBoxGeometry(w,.025,d,2,.010),p=g.attributes.position;
+  for(let j=0;j<p.count;j++){const x=p.getX(j),y=p.getY(j),z=p.getZ(j),edge=Math.pow(Math.abs(x)/(w/2),6);
+   p.setXYZ(j,x*(1-.012*Math.cos(z*32)),y+.0025*Math.sin(x*43+z*12+i),z+.0015*Math.sin(x*37+i));}
+  const foldMesh=new T.Mesh(g,new T.MeshBasicMaterial({side:T.DoubleSide})),foldRay=new T.Raycaster();foldMesh.updateMatrixWorld();
+  for(let j=0;j<2;j++){
+   const stripe=new T.PlaneGeometry(.005,.20,1,12);stripe.rotateX(-Math.PI/2);const sp=stripe.attributes.position;
+   for(let k=0;k<sp.count;k++){const x=sp.getX(k)-.11+j*.015,z=sp.getZ(k),xx=x*(1-.012*Math.cos(z*32)),zz=z+.0015*Math.sin(x*37+i);foldRay.set(new T.Vector3(xx,1,zz),new T.Vector3(0,-1,0));const hit=foldRay.intersectObject(foldMesh,false)[0];sp.setXYZ(k,xx+(i%2)*.007,.018+i*.026+(hit?.point.y??.0125)+.0007,zz);}
+   stripe.computeVertexNormals();put(stripe,'blue',0,0,0);
+  }
+  foldMesh.material.dispose();put(g,i%2?'cloth':'linen',(i%2)*.007,.018+i*.026,0);
+ }
  }else if(id==='patchwork-quilt'){quilt();
  }else if(id==='pillow'){softBox(0,.07,0,.52,.14,.32,'linen',.06);for(let i=0;i<9;i++)rod([-.20+i*.05,.107,-.11],[-.20+i*.05,.107,.11],.0018,'blue');
  }else if(id==='bolster'){const g=new T.CapsuleGeometry(.095,.63,6,16);g.rotateZ(Math.PI/2);put(g,'linen',0,.095,0);for(const x of [-.33,.33])ring(x,.095,0,.07,.005,'cloth',0,Math.PI/2);
@@ -316,7 +338,7 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
  }else if(id==='apron'){cloth(0,.27,0,.37,.52,'cream');cloth(0,.61,0,.21,.23,'cream');ring(0,.78,0,.065,.006,'cream');rod([-.18,.52,0],[.18,.52,0],.009,'cloth');box(0,.25,.025,.17,.14,.009,'cloth');
  }else if(id==='towel'){cloth(0,.29,0,.29,.56,'cream');for(const y of [.04,.075])rod([-.14,y,.014],[.14,y,.014],.003,'blue');
  }else if(id==='curtains'){
-  rod([-.64,1.09,0],[.64,1.09,0],.013,'darkwood');for(const side of [-1,1]){ball(side*.66,1.09,0,.025,.025,.025,'oak');const g=new T.PlaneGeometry(.30,1.03,20,24),p=g.attributes.position;for(let i=0;i<p.count;i++){const yy=p.getY(i),xx=p.getX(i);p.setX(i,xx*(.70+.30*Math.abs(yy)*2)+side*(.40+.03*Math.cos(yy*5)));p.setZ(i,.024*Math.sin(xx*85));}g.computeVertexNormals();put(g,'cloth',0,.53,.025);for(let j=0;j<5;j++)ring(side*.40+(j-2)*.052,1.065,0,.022,.004,'iron',0,Math.PI/2);}
+  rod([-.64,1.09,0],[.64,1.09,0],.013,'darkwood');for(const side of [-1,1]){ball(side*.66,1.09,0,.025,.025,.025,'oak');const g=new T.PlaneGeometry(.30,1.03,20,24),p=g.attributes.position;for(let i=0;i<p.count;i++){const yy=p.getY(i),xx=p.getX(i),drop=(.515-yy)/1.03;const fold=xx*75+.22*Math.sin(yy*6)+side*.24;p.setX(i,xx*(.70+.30*Math.abs(yy)*2)+side*(.40+.03*Math.cos(yy*5)));p.setZ(i,(.020+.014*drop)*Math.sin(fold)+.005*Math.sin(xx*143+yy*5));p.setY(i,yy+.009*Math.sin(xx*51+side)*drop*drop);}g.computeVertexNormals();put(g,'cloth',0,.53,.025);for(let j=0;j<5;j++)ring(side*.40+(j-2)*.052,1.065,0,.022,.004,'iron',0,Math.PI/2);}
  }else if(id==='rag-rug'){cloth(0,.02,0,.90,1.28,'cloth',true);for(let i=0;i<16;i++)box(0,.039,(i-7.5)*.076,.88,.003,.025,i%3?'green':'cream');for(let i=0;i<20;i++)for(const side of [-1,1])rod([(i-9.5)*.044,.023,side*.63],[(i-9.5)*.044,.023,side*.68],.002,'cream');
  }else if(id==='mirror'||id==='framed-print'){
   const w=id==='mirror'?.32:.39,h=id==='mirror'?.43:.29;panel(0,h/2,0,w,h);box(0,h/2,.030,w-.075,h-.075,.008,id==='mirror'?'glass':'paper');if(id==='framed-print'){for(let i=0;i<5;i++)ball((i-2)*.050,.12,.038,.047,.020+i*.005,.002,'green');box(.055,.112,.041,.065,.055,.002,'clay');}rod([-w*.28,h-.03,-.012],[0,h+.08,-.012],.002,'darkwood');rod([0,h+.08,-.012],[w*.28,h-.03,-.012],.002,'darkwood');
