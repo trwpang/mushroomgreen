@@ -1,3 +1,4 @@
+import {domesticWear} from './domestic-wear';
 import {wearFloor} from './floor-wear';
 import {refineSurface,cloneSurface,type Surface} from '../rendering/surfaces';
 import * as T from 'three';
@@ -55,6 +56,9 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   const finish:InteriorObjectId=!floor&&(home.number%3!==0||home.number===22)?(home.number%7===0?'flagstones':'quarry-tiles'):'board-ceiling';
   const objectMats:Record<ObjectMaterial,T.Material>={oak:woods[0],darkwood:woods[2],iron,steel:mat('#8f9389',undefined,.44,'iron'),copper:mat('#a17b43',undefined,.48,'iron'),cream:ceramic,blue:mat('#394e69',undefined,.4,'ceramic'),clay:earthenware,cloth:blanket,green:mat('#636e54',clothMap,.92,'cloth'),coal:dark,glass:mat('#71867c',undefined,.18,'glass'),lampglass:own(new T.MeshBasicMaterial({color:'#a6bab2',transparent:true,opacity:.035,depthWrite:false,side:T.DoubleSide})),paper:mat('#c3b79c',plasterMap,.95,'cloth'),linen:mat('#d0c7ae',clothMap,.97,'cloth'),tile:own(new T.MeshStandardMaterial({color:'#955b43',roughness:.83})),stone:mat('#807b69',plasterMap,.97,'stone')};
   const fabric=own(new T.MeshStandardMaterial({color:blanket.color,map:clothMap,roughness:.98,side:T.DoubleSide}));refineSurface(fabric,'cloth');objectMats.cloth=fabric;for(const key of ['tile','stone','steel'] as const)(objectMats[key] as T.MeshStandardMaterial).vertexColors=true;for(const key of ['steel','copper'] as const)(objectMats[key] as T.MeshStandardMaterial).metalness=.55;
+  for(const m of woods)domesticWear(m,plan,floor,base,'wood');
+  for(const m of [lime,brick])domesticWear(m,plan,floor,base,'plaster');
+  for(const key of ['iron','steel','copper','cream','blue','clay','cloth','linen','green'] as const){const m=objectMats[key];if(m instanceof T.MeshStandardMaterial)domesticWear(m,plan,floor,base,['iron','steel','copper'].includes(key)?'metal':['cloth','linen','green'].includes(key)?'cloth':'ceramic');}
   const floorMaterials=new Map<T.Material,T.Material>();
   function object(id:InteriorObjectId,x:number,y:number,z:number,sx=1,scaleY=1,sz=1,angle=0,tilt=0,floorSurface=false){
    for(const part of interiorObject(id).parts){const g=part.geometry.clone();g.scale(sx,scaleY,sz);g.rotateX(tilt);let m=objectMats[part.material];if(floorSurface&&m instanceof T.MeshStandardMaterial){if(!floorMaterials.has(m))floorMaterials.set(m,wearFloor(own(cloneSurface(m)),plan,floor,id==='flagstones'?'stone':'wood'));m=floorMaterials.get(m)!;}add(g,m,x,y,z,0,angle);}
@@ -68,11 +72,11 @@ export function createInteriors(scene:T.Object3D,embedded=false){
     const fw=Math.min(pitch,w/2-.10-x),fd=Math.min(pitch,d/2-.10-z);
     if(fw<=gap||fd<=gap)continue;
     // Small rounded shoulders and isolated corner losses, with a level walking face.
-    const hw=(fw-gap)/2-.001,hd=(fd-gap)/2-.001,cut=Math.min(.002+tileRand()*.002,hw*.15,hd*.15),shape=new T.Shape();
+    const hw=(fw-gap)/2-.001,hd=(fd-gap)/2-.001,cut=Math.min(.003+Math.pow(tileRand(),5)*.012,hw*.15,hd*.15),shape=new T.Shape();
     shape.moveTo(-hw+cut,-hd);shape.lineTo(hw-cut,-hd);shape.lineTo(hw,-hd+cut);shape.lineTo(hw,hd-cut);shape.lineTo(hw-cut,hd);shape.lineTo(-hw+cut,hd);shape.lineTo(-hw,hd-cut);shape.lineTo(-hw,-hd+cut);shape.closePath();
     const g=new T.ExtrudeGeometry(shape,{depth:.004,bevelEnabled:true,bevelSize:.001,bevelThickness:.001,bevelSegments:1,steps:1});g.rotateX(-Math.PI/2);
     const palette=['#8c5946','#95634e','#9d6c55','#855a4c','#a16e58','#91604c'];
-    const tint=new T.Color(palette[Math.floor(tileRand()*palette.length)]).lerp(new T.Color('#93634e'),.65).multiplyScalar(.97+tileRand()*.06);
+    const tint=new T.Color(palette[Math.floor(tileRand()*palette.length)]).lerp(new T.Color('#93634e'),.55).multiplyScalar(.92+tileRand()*.10);
     const pos=g.getAttribute('position'),uv=g.getAttribute('uv');for(let i=0;i<pos.count;i++)uv.setXY(i,(pos.getX(i)+x+fw/2+w/2)/w,1-(pos.getZ(i)+z+fd/2+d/2)/d);
     const colours=new Float32Array(pos.count*3);for(let i=0;i<pos.count;i++)tint.toArray(colours,i*3);g.setAttribute('color',new T.Float32BufferAttribute(colours,3));
     add(g,objectMats.tile,x+fw/2,.025,z+fd/2);

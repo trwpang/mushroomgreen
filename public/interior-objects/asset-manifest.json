@@ -1,13 +1,13 @@
 {
   "models": 115,
-  "bytes": 1212636,
-  "triangles": 164028,
-  "sha256": "21a0878e4f821924f189c8be72c94d2b8556d65cd5a30a525040156d39eb8fc7",
+  "bytes": 1240904,
+  "triangles": 166743,
+  "sha256": "7c53a026e860a45ec7efff693362fabeb27c459b26af2d3b46f053a454c74251",
   "compression": "EXT_meshopt_compression",
   "validationErrors": 0,
   "sourceHashes": {
     "src/scripts/village/interior-catalogue.ts": "cd412b2b9707061caf6760d5e96b03744a7ed3dcbc6b26088a38589a2a8fbb22",
-    "src/scripts/village/interior-objects.ts": "7dd5be90ec20bd53f1353d97b01ac1f747e2dd37dc9774a4911d4e84221f8039"
+    "src/scripts/village/interior-objects.ts": "9e15f33e730ede9abf7eedbc44cfee15caa92700b4c7ea0aa663e5ffbe591bd6"
   },
   "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
   "usage": "Same terms as this repository; no new third-party asset licence.",
@@ -49,9 +49,9 @@
       "name": "Scrubbed plank dining table",
       "support": "core",
       "dimensions": [
-        1.2970000505447388,
-        0.7825000357627867,
-        0.7050000131130219
+        1.300019919872284,
+        0.7828000259399412,
+        0.7040099799633026
       ]
     },
     {
@@ -59,9 +59,9 @@
       "name": "Turned-leg kitchen table",
       "support": "core",
       "dimensions": [
-        1.2970000505447388,
-        0.7825000286102295,
-        0.7050000131130219
+        1.300019919872284,
+        0.782800018787384,
+        0.7040099799633026
       ]
     },
     {
@@ -69,9 +69,9 @@
       "name": "Braced trestle dining table",
       "support": "core",
       "dimensions": [
-        1.2970000505447388,
-        0.7325000278651714,
-        0.6800000071525574
+        1.300019919872284,
+        0.732800018042326,
+        0.6780146658420563
       ]
     },
     {

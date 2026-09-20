@@ -1,20 +1,22 @@
 import * as T from 'three';
 import type {InteriorPlan} from './interior-plans';
 
-/** Clean material loss and foot polish. Shared by room floors, never ceilings or furniture. */
+/** Material loss, ground-in work dust and foot polish. Shared by room floors, never ceilings or furniture. */
 export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floor:number,kind:'clay'|'stone'|'wood'){
  const previous=material.onBeforeCompile,previousKey=material.customProgramCacheKey();
  const destinations=plan.floors[floor].items.filter(a=>['prep','hearth','table','washstand','bed','sewingtable'].includes(a.kind)).slice(0,6);
  const routes=destinations.map(a=>new T.Vector4(0,plan.depth/2-.4,a.x,a.z+(a.z<0?a.d/2+.35:-a.d/2-.35)));
  while(routes.length<6)routes.push(new T.Vector4(0,0,0,0));
- material.userData.floorWear={kind,routes:destinations.length,finish:'worn clean; no dirt layer'};
+ material.userData.floorWear={kind,routes:destinations.length,finish:'scrubbed wear, old cracks, edge deposits and hearth dust'};
  material.onBeforeCompile=function(shader,renderer){
   previous.call(this,shader,renderer);
   shader.uniforms.floorRoutes={value:routes};
+  const hearth=plan.floors[floor].items.find(a=>a.kind==='hearth');
+  shader.uniforms.floorHearth={value:new T.Vector2(hearth?.x??-100,hearth?.z??-100)};
   shader.uniforms.floorOrigin={value:new T.Vector2(plan.width/2-.10,plan.depth/2-.10)};
   shader.vertexShader='varying vec3 wornFloorPoint;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nwornFloorPoint=position;');
-  shader.fragmentShader=`varying vec3 wornFloorPoint;uniform vec4 floorRoutes[6];uniform vec2 floorOrigin;
+  shader.fragmentShader=`varying vec3 wornFloorPoint;uniform vec4 floorRoutes[6];uniform vec2 floorOrigin;uniform vec2 floorHearth;
    float fwHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
    float fwNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(fwHash(i),fwHash(i+vec2(1,0)),f.x),mix(fwHash(i+vec2(0,1)),fwHash(i+vec2(1,1)),f.x),f.y);}
    float fwSegment(vec2 p,vec4 route){vec2 v=route.zw-route.xy;float t=clamp(dot(p-route.xy,v)/max(dot(v,v),.001),0.,1.);return length(p-route.xy-v*t);}
@@ -29,20 +31,33 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
    float fwPolish=1.-smoothstep(.12,.63+fwBroad*.26,fwPath);
    vec2 fwCell=fract((fwP+floorOrigin)/.2286);vec2 fwSide=min(fwCell,1.-fwCell)*.2286;
    float fwEdge=1.-smoothstep(.002,.009+fwMottle*.006,min(fwSide.x,fwSide.y));
-   diffuseColor.rgb*=1.+fwBroad*.20+fwMottle*.24+fwGrain*.07;
+   diffuseColor.rgb*=1.+fwBroad*.38+fwMottle*.35+fwGrain*.13;
    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.07,1.08,1.08),fwPolish*.45);
-   ${kind==='clay'?'diffuseColor.rgb*=1.+fwEdge*.085;':''}
+   float fwWall=min(floorOrigin.x-abs(fwP.x),floorOrigin.y-abs(fwP.y));
+   float fwDeposit=(1.-smoothstep(.035,.32+fwBroad*.18,fwWall))*(.5+fwMottle);
+   float fwSoot=exp(-length(fwP-floorHearth)*1.6)*(.6+fwBroad);
+   float fwScuff=smoothstep(.08,.32,fwBroad+fwMottle*.3)*fwPolish;
+   diffuseColor.rgb*=1.-fwDeposit*.28-fwSoot*.28-fwScuff*.12;
+   vec2 fwIndex=floor((fwP+floorOrigin)/.2286);
+   float fwOld=step(.92,fwHash(fwIndex));
+   vec2 fwFracture=fwHash(fwIndex+7.)>.5?fwCell.yx:fwCell;
+   if(fwHash(fwIndex+13.)>.5)fwFracture.x=1.-fwFracture.x;
+   float fwLine=abs(fwFracture.x-(.23+fwFracture.y*.47+sin(fwFracture.y*13.+fwHash(fwIndex)*6.)*.035))*.2286;
+   float fwAA=max(fwidth(fwLine),.00035);
+   float fwCrack=(1.-smoothstep(.00035,.0009+fwAA,fwLine))*fwOld;
+   ${kind==='clay'?'diffuseColor.rgb*=1.+fwEdge*.13;diffuseColor.rgb*=1.-fwCrack*.36;':''}
+
   `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
    roughnessFactor=clamp(roughnessFactor-fwPolish*.22+fwMottle*.10,.60,.98);
   `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
-   float fwHeight=(fwMottle*.0015+fwGrain*.0008)*(1.-fwPolish*.65)${kind==='clay'?'-fwEdge*.0006':''};
+   float fwHeight=(fwMottle*.0028+fwGrain*.0012)*(1.-fwPolish*.65)${kind==='clay'?'-fwEdge*.0012-fwCrack*.0007':''};
    vec3 fwDx=dFdx(-vViewPosition),fwDy=dFdy(-vViewPosition),fwR1=cross(fwDy,normal),fwR2=cross(normal,fwDx);
    float fwDet=dot(fwDx,fwR1);vec3 fwGrad=sign(fwDet)*(dFdx(fwHeight)*fwR1+dFdy(fwHeight)*fwR2);
    normal=normalize(max(abs(fwDet),1e-9)*normal-fwGrad);
   `);
  };
- material.customProgramCacheKey=()=>previousKey+'|clean-floor-wear-v1-'+kind+'-'+plan.number;
+ material.customProgramCacheKey=()=>previousKey+'|worked-floor-wear-v2-'+kind+'-'+plan.number;
  material.needsUpdate=true;return material;
 }

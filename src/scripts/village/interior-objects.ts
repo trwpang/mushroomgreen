@@ -38,6 +38,20 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
   surfaces.push({x,y:y+.0225,z,width:w,depth:d});
   for(let i=0;i<5;i++)box(x-w/2+w*(i+.5)/5,y,z,w/5-.003,.045,d,i%3===0?'darkwood':m);
  };
+ const wornTableTop=(y:number,w:number,d:number)=>{
+  surfaces.push({x:0,y:y+.0225,z:0,width:w,depth:d});
+  const proportions=[.19,.215,.185,.205,.205];let edge=-w/2;
+  for(let i=0;i<5;i++){
+   const width=w*proportions[i],left=edge+.003,right=edge+width-.003,end=d/2-.004-(i%3)*.002;
+   const shape=new T.Shape();shape.moveTo(left+.004,-end);shape.lineTo(right-.007,-end+.002);shape.lineTo(right,-end+.009);shape.lineTo(right-.002,-d*.15);shape.lineTo(right-.005,d*.23);shape.lineTo(right-.004,end-.006);shape.lineTo(right-.011,end);shape.lineTo(left+.007,end-.002);shape.lineTo(left,end-.011);shape.lineTo(left+.002,d*.13);shape.lineTo(left+.005,-d*.23);shape.closePath();
+   const g=new T.ExtrudeGeometry(shape,{depth:.035,bevelEnabled:true,bevelSize:.003,bevelThickness:.005,bevelSegments:2,steps:1});g.rotateX(-Math.PI/2);put(g,i%3===0?'darkwood':'oak',0,y-.0175,0);
+   // Pegs and short end checks are part of the wood, below the working face.
+   for(const z of [-d*.36,d*.36])cyl((left+right)/2,y+.021,z,.005,.005,.002,'darkwood',8);
+   const check=new T.Shape();check.moveTo(left+width*.34,end-.004);check.lineTo(left+width*.34+.002,end-.004);check.lineTo(left+width*.36,end-.065-(i%2)*.02);check.closePath();
+   const slit=new T.ShapeGeometry(check);slit.rotateX(-Math.PI/2);put(slit,'darkwood',0,y+.0228,0);
+   edge+=width;
+  }
+ };
  const panel=(x:number,y:number,z:number,w:number,h:number,m:ObjectMaterial='oak')=>{
   const trim=m==='iron'?'iron':'darkwood';box(x,y,z,w,h,.025,m);for(const dx of [-1,1])box(x+dx*(w/2-.016),y,z+.020,.027,h,.019,trim);for(const dy of [-1,1])box(x,y+dy*(h/2-.018),z+.020,w-.04,.028,.019,trim);
  };
@@ -137,7 +151,7 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
   for(const x of [-.40,.40]){cyl(x,.45,.22,.018,.018,.44,'steel');ball(x,.70,.22,.025,.024,.025,'steel');}
   put(new T.LatheGeometry([[.068,0],[.068,.20],[.054,.20],[.054,0]].map(([r,y])=>new T.Vector2(r,y)),20),'iron',0,.97,-.15);ring(0,1.17,-.15,.066,.009,'iron',Math.PI/2);
  }else if(['scrubbed-table','turned-table','trestle-table'].includes(id)){
-  board(0,.76,0,1.30,.68,id==='scrubbed-table'?'oak':'darkwood');
+  wornTableTop(.76,1.30,.68);
   if(id==='trestle-table'){for(const x of [-.44,.44]){box(x,.10,0,.11,.10,.58);rod([x,.13,-.23],[x,.73,-.04],.035,'oak');rod([x,.13,.23],[x,.73,.04],.035,'oak');}rod([-.48,.22,0],[.48,.22,0],.03,'oak');}
   else{for(const x of [-.55,.55])for(const z of [-.25,.25])leg(x,z,.735,id==='turned-table');for(const z of [-.28,.28])box(0,.64,z,1.14,.14,.027);for(const x of [-.56,.56])box(x,.64,0,.028,.14,.52);box(0,.64,.32,.36,.095,.034,'darkwood');ball(0,.64,.346,.015,.015,.019,'iron');}
  }else if(['rope-bed','iron-bed','box-bed'].includes(id)){

@@ -55,3 +55,13 @@ Twelve additional models bring the catalogue to **112**: two armchairs, preparat
 ### Washing equipment
 
 A 43 cm bowl and handled pitcher now share the left end of the kitchen workbench. The centre stays clear for food preparation. A portable oval tin bath is stored on end against the rear wall beside the partition, below the portrait. See the [object reference notes](interior-objects.md#washing-equipment--20-september-2026) for the source and limits.
+
+### Lived-in surface pass — 20 September 2026
+
+The dining table now has five unequal planks, slightly uneven ends, rounded shoulders, small end checks and timber pegs. The working face remains level, so existing meals and the oil lamp stay supported. This affects all three dining-table models.
+
+The shared room finish adds worn timber grain, a scrubbed table centre, a faint cup ring, dull metal, slightly faded cloth, and smoke staining concentrated around the hearth. Ceramic items receive much less staining than wood and metal. Room lights and exposure remain unchanged.
+
+Floors now show stronger mottling, small corner losses, occasional fine cracks in varied directions, embedded dust at room edges and the hearth, and scuffs along walking routes. Tile faces remain level. This is an artistic interpretation of maintained working households, not evidence of a particular family's housekeeping.
+
+Checks: all 115 object models retain valid geometry and measured furniture contact; all 58 homes and 74 floors retain open windows, doors, stair openings and bounded streaming. The compressed collection contains 166,743 triangles and 1,240,904 bytes, with no glTF validation errors.
