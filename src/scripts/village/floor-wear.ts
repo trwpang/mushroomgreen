@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {workedMaterials} from './worked-materials';
+import {bindMaterialAtlas,domesticAtlas} from './worked-materials';
 import type {InteriorPlan} from './interior-plans';
 
 /** Material loss, ground-in work dust and foot polish. Shared by room floors, never ceilings or furniture. */
@@ -12,7 +12,7 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
  material.onBeforeCompile=function(shader,renderer){
   previous.call(this,shader,renderer);
   shader.uniforms.floorRoutes={value:routes};
-  const atlas=workedMaterials();shader.uniforms.fwAtlas={value:atlas.texture};shader.uniforms.fwAtlasReady=atlas.ready;
+  if(kind==='clay')bindMaterialAtlas(this,shader,'fwAtlas','fwAtlasReady',domesticAtlas());
   const hearth=plan.floors[floor].items.find(a=>a.kind==='hearth');
   shader.uniforms.floorHearth={value:new T.Vector2(hearth?.x??-100,hearth?.z??-100)};
   shader.uniforms.floorOrigin={value:new T.Vector2(plan.width/2-.10,plan.depth/2-.10)};

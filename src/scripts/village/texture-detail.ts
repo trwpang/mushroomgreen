@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {sharedMaterialTexture} from './worked-materials';
+import {bindMaterialAtlas} from './worked-materials';
 
 export type TextureDetail='fired-brick'|'lime-mortar'|'split-slate'|'broadleaf-bark'|'cast-iron'|'dull-tin'|'salt-glaze'|'end-grain';
 // Mean linear colour preserves the established household and landscape palette.
@@ -21,8 +21,7 @@ export function textureDetail<M extends T.MeshStandardMaterial>(material:M,kind:
  material.userData.textureDetail=kind;
  material.onBeforeCompile=function(shader,renderer){
   previous.call(this,shader,renderer);
-  const atlas=sharedMaterialTexture(`/surface-textures/${d.atlas}-v1.webp`);
-  shader.uniforms.detailAtlas={value:atlas.texture};shader.uniforms.detailReady=atlas.ready;
+  bindMaterialAtlas(this,shader,'detailAtlas','detailReady',`/surface-textures/${d.atlas}-v1.webp`);
   shader.vertexShader='varying vec3 detailPoint;varying vec3 detailNormal;varying vec2 detailUV;\n'+shader.vertexShader;
   if(kind==='broadleaf-bark')shader.vertexShader='attribute float barkCoverage;varying float detailCoverage;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>

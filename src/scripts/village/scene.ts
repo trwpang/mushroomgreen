@@ -8,6 +8,7 @@ import {addWorkingChainmaker} from '../chainmaker/worker';
 import {centralWorkstation} from './workshop';
 import {wearWorkshop} from './workshop-wear';
 import {detailArchitecture,textureDetail} from './texture-detail';
+import {maintainMaterialTextures,disposeMaterialTextures} from './worked-materials';
 import {rememberPlace} from './location';
 import {createInspection} from './inspection';
 import {addVillageLife} from './village-life';
@@ -42,6 +43,7 @@ function cube(x:number,y:number,z:number,w:number,h:number,d:number,m:T.Material
 function beam(a:T.Vector3,b:T.Vector3,r:number,m:T.Material){const diff=b.clone().sub(a);dummy.position.copy(a).add(b).multiplyScalar(.5);dummy.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),diff.clone().normalize());dummy.scale.set(1,1,1);dummy.updateMatrix();batch(new T.CylinderGeometry(r*.75,r,diff.length(),5),m,dummy.matrix);}
 async function start(){
 const mount=$('village-canvas');const renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;mount.append(renderer.domElement);renderer.domElement.tabIndex=0;renderer.domElement.setAttribute('aria-label','Village. Drag to orbit; scroll to zoom; select a house.');
+addEventListener('pagehide',event=>{if(!event.persisted)disposeMaterialTextures();});
 const scene=new T.Scene();scene.background=new T.Color('#c4c7b9');scene.fog=new T.Fog('#c4c7b9',850,1700);
 const camera=new T.PerspectiveCamera(38,innerWidth/innerHeight,.2,2600);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=9;controls.maxDistance=1800;controls.maxPolarAngle=Math.PI*.48;controls.minPolarAngle=.04;controls.maxTargetRadius=300;controls.cursor.set(0,0,-60);controls.zoomSpeed=.8;
 const hemi=new T.HemisphereLight('#e4e9de','#6e6045',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#ccd8e0',.8);fill.position.set(70,50,-90);scene.add(fill);
@@ -313,7 +315,7 @@ if(savePicture){
   renderer.domElement.toBlob(blob=>{if(!blob){$('village-status').textContent='Could not create the picture. Try again.';return;}const image=$<HTMLImageElement>('picture-image');if(image.src.startsWith('blob:'))URL.revokeObjectURL(image.src);const picture=URL.createObjectURL(blob);image.src=picture;const download=$<HTMLAnchorElement>('picture-download');download.href=picture;download.download='mushroom-green-'+($('village-app').dataset.view||'village')+'.png';$<HTMLDialogElement>('picture-preview').showModal();$('village-status').textContent='Picture ready to download.';},'image/png');
   camera.aspect=aspect;camera.updateProjectionMatrix();renderer.setPixelRatio(pixelRatio);composer.setPixelRatio(pixelRatio);renderer.setSize(mount.clientWidth,mount.clientHeight);composer.setSize(mount.clientWidth,mount.clientHeight);
 }
-frame++;total+=real;if(frame%120===0){mount.dataset.fps=String(Math.round(frame/total));mount.dataset.drawCalls=String(renderer.info.render.calls);}}
+frame++;total+=real;if(frame%60===0){mount.dataset.surfaceTextureMemory=JSON.stringify(maintainMaterialTextures());mount.dataset.gpuTextures=String(renderer.info.memory.textures);}if(frame%120===0){mount.dataset.fps=String(Math.round(frame/total));mount.dataset.drawCalls=String(renderer.info.render.calls);}}
 requestAnimationFrame(animate);}requestAnimationFrame(animate);
 renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();$('loading').hidden=false;$('load-label').textContent='Graphics paused. Reload to return to the village.';});
 }

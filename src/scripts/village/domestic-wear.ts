@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {workedMaterials} from './worked-materials';
+import {bindMaterialAtlas,domesticAtlas} from './worked-materials';
 import type {InteriorPlan} from './interior-plans';
 
 /** Room-local signs of use. Kept separate from the exterior weather finish. */
@@ -10,8 +10,8 @@ export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,f
   previous.call(this,shader,renderer);
   shader.uniforms.dwHearth={value:new T.Vector2(hearth?.x??-100,hearth?.z??-100)};
   shader.uniforms.dwBase={value:base};
-  const fabricAtlas=workedMaterials('lime-linen');shader.uniforms.dwSoftAtlas={value:fabricAtlas.texture};shader.uniforms.dwSoftReady=fabricAtlas.ready;
-  const atlas=workedMaterials();shader.uniforms.dwAtlas={value:atlas.texture};shader.uniforms.dwAtlasReady=atlas.ready;
+  if(kind==='plaster'||kind==='cloth')bindMaterialAtlas(this,shader,'dwSoftAtlas','dwSoftReady',domesticAtlas('lime-linen'));
+  if(kind==='wood')bindMaterialAtlas(this,shader,'dwAtlas','dwAtlasReady',domesticAtlas());
   const table=plan.floors[floor].items.find(p=>p.kind==='table');
   shader.uniforms.dwTable={value:new T.Vector4(table?.x??-100,table?.z??-100,table?.w??1,table?.d??1)};
   shader.uniforms.dwTableAngle={value:table?.angle??0};

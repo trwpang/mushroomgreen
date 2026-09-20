@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {cloneSurface} from '../rendering/surfaces';
-import {workedMaterials} from './worked-materials';
+import {bindMaterialAtlas,domesticAtlas} from './worked-materials';
 
 /** Deposits follow the three authored hearths and anvils, in workshop-local metres. */
 export function wearWorkshop(root:T.Group){
@@ -16,9 +16,8 @@ export function wearWorkshop(root:T.Group){
    m.userData.workshopWear={plaster,floor,face,hood};
    m.onBeforeCompile=function(shader,renderer){
     previous.call(this,shader,renderer);
-    const atlas=workedMaterials('lime-linen');
     shader.uniforms.shopInverse={value:inverse};
-    shader.uniforms.shopAtlas={value:atlas.texture};shader.uniforms.shopAtlasReady=atlas.ready;
+    if(plaster)bindMaterialAtlas(this,shader,'shopAtlas','shopAtlasReady',domesticAtlas('lime-linen'));
     shader.vertexShader='uniform mat4 shopInverse;varying vec3 shopPoint;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\nshopPoint=(shopInverse*modelMatrix*vec4(transformed,1.)).xyz;');
     shader.fragmentShader=`varying vec3 shopPoint;uniform sampler2D shopAtlas;uniform float shopAtlasReady;
