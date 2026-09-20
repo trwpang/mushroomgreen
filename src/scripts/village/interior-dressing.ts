@@ -52,10 +52,15 @@ export function planDressing(home:Home,plan:InteriorPlan,floor:number,sy:number)
    }
    for(const [i,id]of (['vegetable-basket','storage-crock','flour-sack'] as InteriorObjectId[]).entries())surface(id,p,.2425,a.w,a.d,(i-1)*a.w*.29,0,.85);
    surface('spice-jar',p,top,a.w,a.d,0,-.20,.9);
+  }else if(a.kind==='spinningwheel'){
+   fit('spinning-wheel',a);
+  }else if(a.kind==='warpingframe'){
+   fit('warping-frame',a);
   }else if(a.kind==='sewingtable'){
    const p=fit('sewing-table',a);surface('hand-machine',p,.8125,a.w,a.d,-a.w*.13,0,.88);
    surface('thread-spools',p,.8125,a.w,a.d,a.w*.33,-.10,.85);surface('scissors',p,.8125,a.w,a.d,a.w*.33,.15,.8);
-   surface('folded-linen',p,.2425,a.w,a.d,-a.w*.22,0,.9);surface('sewing-basket',p,.2425,a.w,a.d,a.w*.24,0,1);
+   surface(n===22?'wool-cards':'folded-linen',p,.2425,a.w,a.d,-a.w*.22,0,.9);surface('sewing-basket',p,.2425,a.w,a.d,a.w*.24,0,1);
+   if(n===22)surface('wool-combs',p,.2425,a.w,a.d,0,0,.70);
   }else if(a.kind==='armchair'){
    fit(a.variant%2?'rush-armchair':'windsor-armchair',a);
   }else if(a.kind==='waterstation'){
@@ -85,7 +90,9 @@ export function planDressing(home:Home,plan:InteriorPlan,floor:number,sy:number)
    surface('scrub-brush',p,.335,a.w-.1,a.d-.06,0,-.11*p.sz,.85);
   }else if(a.kind==='fuelbucket'){fit('coal-scuttle',a,Math.PI/2); // Coal stays at the planned hearth-side position.
   }else if(a.kind==='chest'){
-   const p=fit('blanket-box',a);surface(n%4===0?'cap':'folded-linen',p,.538,a.w,a.d,0,0,.85);
+   const p=fit('blanket-box',a);
+   if(n===22){surface('yarn-reel',p,.538,a.w,a.d,-.30,0,.85);surface('folded-linen',p,.538,a.w,a.d,0,0,.70);surface('yarn-scales',p,.538,a.w,a.d,.30,0,.82);}
+   else surface(n%4===0?'cap':'folded-linen',p,.538,a.w,a.d,0,0,.85);
   }else if(a.kind==='linenbench'){
    if(n%7===0){const p=fit('treadle-machine',a);surface('thread-spools',p,.777,a.w,a.d,-a.w*.37,.05,.75);}
    else{const p=fit('bench',a);surface(n===22?'book':'folded-linen',p,.463,a.w,a.d,-a.w*.34,0,.8);if(n!==22)surface('sewing-basket',p,.463,a.w,a.d,a.w*.28,0,.9);}

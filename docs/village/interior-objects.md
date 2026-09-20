@@ -2,12 +2,12 @@
 
 ## Result and scope
 
-115 distinct catalogue entries: 112 objects and three floor/ceiling fitting kits. See [Henry’s furnishing plan](henry-furnishing-plan.md) for the latest arrangement and references. They furnish the 58 visible cottages across 74 floors. Historical household No. 5 retains its record, but its visible site is the main forge, not an additional cottage.
+121 distinct catalogue entries: 118 objects and three floor/ceiling fitting kits. See [Henry’s furnishing plan](henry-furnishing-plan.md) for the latest arrangement and references. They furnish the 58 visible cottages across 74 floors. Historical household No. 5 retains its record, but its visible site is the main forge, not an additional cottage.
 
 These are original procedural meshes. No museum photograph pixels, purchased models, external textures, or generated-image bytes are included. The photographs guide shapes and room arrangements. This is an interpretation of 1865, not a claim that a named family owned any particular item.
 
 - `/interior-objects` lets you inspect each model, turn it, and see its dimensions.
-- `/interior-objects/catalogue.glb` contains 115 named models on a 2.5 m inspection grid for Blender. Portable PBR colours are included. The live village adds its shared texture maps, household colours, and procedural surface finishes.
+- `/interior-objects/catalogue.glb` contains 121 named models on a 2.5 m inspection grid for Blender. Portable PBR colours are included. The live village adds its shared texture maps, household colours, and procedural surface finishes.
 - `src/scripts/village/interior-catalogue.ts` is the stable inventory.
 - `src/scripts/village/interior-objects.ts` builds the meshes and records their actual support surfaces.
 - `src/scripts/village/interior-dressing.ts` chooses and places household selections.
@@ -47,7 +47,7 @@ Every home retains a cooking source, dining table with seats, storage, and a bed
 
 Run `npm run village:objects`, `npm run village:layouts`, `npm run village:inhabited`, `npm run village:check`, and `npm run build`.
 
-The catalogue check requires 115 unique IDs and distinct geometry hashes, finite positions/normals/UVs, grounded origins, model budgets, deterministic household selection, complete catalogue usage, and core furniture in each home. Ray tests check actual mesh contact between small objects and their supporting furniture. The inhabited-room check retains glazing, door, window-border and streaming regressions, and now checks the ceiling stair opening.
+The catalogue check requires 121 unique IDs and distinct geometry hashes, finite positions/normals/UVs, grounded origins, model budgets, deterministic household selection, complete catalogue usage, and core furniture in each home. Ray tests check actual mesh contact between small objects and their supporting furniture. The inhabited-room check retains glazing, door, window-border and streaming regressions, and now checks the ceiling stair opening.
 
 `npm run village:objects:export` regenerates the portable collection. It validates the compressed GLB, decodes it again, checks indices and positions, and records the source and output hashes. The build checks the asset receipt before serving it.
 
@@ -185,3 +185,7 @@ The bowl and pitcher appear on all 23 preparation benches. Existing smaller wash
 | wash-basin | 0.43 × 0.14 × 0.43 | 23 |
 | water-pitcher | 0.20 × 0.32 × 0.27 | 23 |
 | tin-bath | 0.58 × 1.21 × 0.27 | 58 |
+
+## Inherited textile collection
+
+Six original models were added for Henry only: spinning wheel, warping frame, yarn reel, wool cards, wool combs and beam scales. See [Henry’s furnishing plan](henry-furnishing-plan.md#inherited-textile-tools--20-september-2026) for placement and evidence limits.

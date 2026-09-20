@@ -20,7 +20,7 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
   for(let i=0;i<p.count;i++){const v=new T.Vector3().fromBufferAttribute(p,i),inner=v.clone().clamp(half.clone().negate(),half),delta=v.sub(inner).normalize().multiplyScalar(r);p.setXYZ(i,inner.x+delta.x,inner.y+delta.y,inner.z+delta.z);}
   g.computeVertexNormals();put(g,m,x,y,z);
  };
- const rod=(a:number[],b:number[],r:number,m:ObjectMaterial='iron')=>{const start=new T.Vector3(...a),end=new T.Vector3(...b),g=new T.CylinderGeometry(r,r,start.distanceTo(end),8);g.applyQuaternion(new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),end.clone().sub(start).normalize()));const p=start.add(end).multiplyScalar(.5);put(g,m,p.x,p.y,p.z);};
+ const rod=(a:number[],b:number[],r:number,m:ObjectMaterial='iron',sides=8)=>{const start=new T.Vector3(...a),end=new T.Vector3(...b),g=new T.CylinderGeometry(r,r,start.distanceTo(end),sides);g.applyQuaternion(new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),end.clone().sub(start).normalize()));const p=start.add(end).multiplyScalar(.5);put(g,m,p.x,p.y,p.z);};
  const ring=(x:number,y:number,z:number,r:number,t:number,m:ObjectMaterial='iron',rx=0,ry=0,arc=Math.PI*2)=>put(new T.TorusGeometry(r,t,6,24,arc),m,x,y,z,rx,ry);
  const vessel=(x:number,y:number,z:number,r:number,h:number,m:ObjectMaterial,shape='bowl')=>{
   const profile=shape==='bottle'?[[0,0],[r*.8,0],[r,h*.15],[r,h*.6],[r*.32,h*.78],[r*.30,h],[r*.20,h],[r*.20,h*.80],[r*.88,h*.58],[r*.88,.014],[0,.014]]:
@@ -74,7 +74,53 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
   rod([.24,b+.19,0],[.27,b+.12,.06],.008);cyl(.09,b+.318,0,.021,.021,.055,'cream');rod([.09,b+.345,0],[-.15,b+.273,0],.0015,'cream');for(let i=0;i<5;i++)ring(-.08+i*.044,b+.26,.038,.009,.002,'copper');
   if(treadle){rod([.31,.31,.15],[.24,b+.19,.09],.0025,'darkwood');rod([.31,.31,-.15],[.24,b+.19,-.09],.0025,'darkwood');}
  };
- if(id==='wash-basin'){
+ if(id==='spinning-wheel'){
+  // Saxony form: wheel and flyer on a low bench, with a connected treadle and drive band.
+  box(0,.32,0,.78,.065,.23,'darkwood');
+  for(const [x,z]of [[-.32,-.085],[.32,-.085],[0,.13]])rod([x,.30,z],[x*1.17,.018,z*1.8],.025,'oak');
+  const wx=.19,wy=.65,r=.295;
+  for(const z of [-.07,.07])rod([wx,.35,z],[wx,wy,z],.024,'darkwood');
+  for(const z of [-.015,.015])ring(wx,wy,z,r,.016,'darkwood');
+  rod([wx,wy,-.11],[wx,wy,.12],.016,'iron');
+  for(let i=0;i<12;i++){const a=i*Math.PI/6;rod([wx,wy,0],[wx+Math.cos(a)*r,wy+Math.sin(a)*r,0],.009,'oak');rod([wx+Math.cos(a)*r*.47,wy+Math.sin(a)*r*.47,0],[wx+Math.cos(a)*r*.59,wy+Math.sin(a)*r*.59,0],.013,'darkwood');}
+  const treadle=new T.BoxGeometry(.13,.023,.29);treadle.rotateX(-.10);put(treadle,'oak',.07,.06,.13);
+  rod([-.374,.05,-.153],[-.08,.06,.005],.014,'oak');rod([.374,.05,-.153],[.22,.06,.005],.014,'oak');rod([-.08,.06,.005],[.22,.06,.005],.009,'iron');rod([.07,.072,.22],[wx+.042,wy-.06,.125],.010,'oak');rod([wx,wy,.12],[wx+.042,wy-.06,.125],.011,'iron');
+  const fx=-.29,fy=.66;
+  for(const z of [-.12,.18])rod([fx,.35,z*.5],[fx,fy,z],.019,'darkwood');
+  rod([fx,fy,-.16],[fx,fy,.21],.005,'steel');
+  const bobbin=new T.CylinderGeometry(.021,.021,.16,16);bobbin.rotateX(Math.PI/2);put(bobbin,'linen',fx,fy,.07);
+  for(const z of [-.02,.16]){const flange=new T.CylinderGeometry(.04,.04,.009,16);flange.rotateX(Math.PI/2);put(flange,'oak',fx,fy,z);}
+  for(const side of [-1,1]){rod([fx,fy,.205],[fx+side*.06,fy,.18],.009,'darkwood');rod([fx+side*.06,fy,.18],[fx+side*.06,fy,-.025],.008,'darkwood');for(let j=0;j<4;j++)rod([fx+side*.06,fy,.01+j*.04],[fx+side*.05,fy+.007,.01+j*.04],.0015,'iron');}
+  ring(fx,fy,0,.037,.006,'darkwood');
+  // Common external tangents connect the two pulleys without crossing the wheel.
+  const dx=wx-fx,dy=wy-fy,L=Math.hypot(dx,dy),nx=dx/L,ny=dy/L,k=(r-.037)/L;
+  for(const side of [-1,1]){const tx=-nx*k+side*(-ny)*Math.sqrt(1-k*k),ty=-ny*k+side*nx*Math.sqrt(1-k*k);rod([fx+tx*.037,fy+ty*.037,.019],[wx+tx*r,wy+ty*r,.019],.0018,'linen');}
+  ring(wx,wy,.019,r,.0018,'linen');ring(fx,fy,.019,.037,.0018,'linen');
+ }else if(id==='warping-frame'){
+  for(const x of [-.37,.37])box(x,.50,0,.035,1,.036,'darkwood');
+  for(const y of [.04,.96])box(0,y,0,.74,.042,.036,'oak');
+  for(let i=0;i<6;i++)for(const side of [-1,1])rod([side*.34,.12+i*.15,.016],[side*.34,.12+i*.15,.11],.006,'oak');
+  // A small surviving warp is looped over the lower pegs; the rest is stored empty.
+  for(let j=0;j<6;j++){
+   const z=.055+j*.003;rod([-.34,.12,z],[.34,.12,z],.0014,'linen');rod([.34,.12,z],[-.34,.27,z],.0014,'linen');rod([-.34,.27,z],[.34,.27,z],.0014,'linen');
+  }
+  for(const x of [-.37,.37])for(const y of [.04,.96])ball(x,y,.021,.005,.005,.003,'oak');
+ }else if(id==='yarn-reel'){
+  box(0,.014,0,.26,.028,.18,'darkwood');rod([0,.027,0],[0,.31,0],.018,'oak');rod([0,.30,-.09],[0,.30,.09],.008,'iron');
+  const radius=.16;
+  for(let i=0;i<4;i++){const a=i*Math.PI/2+.38,x=Math.cos(a)*radius,y=.30+Math.sin(a)*radius;rod([0,.30,0],[x,y,0],.013,'oak');rod([x,y,-.065],[x,y,.065],.008,'darkwood');}
+  for(let j=0;j<10;j++)for(let i=0;i<4;i++){const a=i*Math.PI/2+.38,b=a+Math.PI/2,z=-.035+j*.007;rod([Math.cos(a)*radius,.30+Math.sin(a)*radius,z],[Math.cos(b)*radius,.30+Math.sin(b)*radius,z],.0018,'linen');}
+  rod([0,.30,.09],[.045,.26,.09],.007,'iron');rod([.045,.26,.09],[.045,.26,.13],.009,'oak');
+ }else if(id==='wool-cards'){
+  for(const side of [-1,1]){const x=side*.075;box(x,.017,0,.135,.032,.105,'oak');box(x,.036,0,.123,.007,.094,'darkwood');rod([x,.018,.04],[x,.018,.15],.010,'darkwood');
+   for(let i=0;i<9;i++)for(let j=0;j<6;j++)rod([x+(i-4)*.012,.04,(j-2.5)*.013],[x+(i-4)*.012+.002,.049,(j-2.5)*.013+.003],.0008,'steel',4);}
+ }else if(id==='wool-combs'){
+  for(const side of [-1,1]){const x=side*.063;box(x,.018,0,.105,.035,.026,'darkwood');rod([x,.018,-.015],[x,.018,-.13],.012,'oak');for(let i=0;i<8;i++)rod([x+(i-3.5)*.012,.022,.01],[x+(i-3.5)*.012,.028,.105-(i%2)*.013],.0014,'steel');}
+ }else if(id==='yarn-scales'){
+  box(0,.012,0,.28,.024,.13,'darkwood');rod([0,.025,0],[0,.29,0],.009,'copper');rod([-.105,.287,0],[.105,.287,0],.004,'iron');ring(0,.30,0,.016,.003,'iron');
+  for(const side of [-1,1]){const x=side*.103;vessel(x,.085,0,.057,.018,'copper');for(let i=0;i<3;i++){const a=i*Math.PI*2/3;rod([x,.285,0],[x+Math.cos(a)*.054,.101,Math.sin(a)*.054],.0011,'iron');}}
+  for(let i=0;i<3;i++)cyl(-.08+i*.032,.035,.043,.008+i*.002,.010+i*.002,.020,'iron',12);
+ }else if(id==='wash-basin'){
   // Thick earthenware foot, generous hollow bowl and a rolled lip; 43 cm across.
   const profile=[[0,0],[.105,0],[.11,.012],[.133,.028],[.173,.067],[.207,.123],[.215,.135],[.213,.143],[.203,.145],[.196,.132],[.164,.072],[.123,.033],[.10,.023],[0,.023]];
   put(new T.LatheGeometry(profile.map(([r,y])=>new T.Vector2(r,y)),48),'cream');

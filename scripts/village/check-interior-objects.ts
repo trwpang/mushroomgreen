@@ -8,7 +8,7 @@ import {planDressing,objectBounds} from '../../src/scripts/village/interior-dres
 import {makeHomes} from '../../src/scripts/village/layout';
 import {planInterior,seeded} from '../../src/scripts/village/interior-plans';
 const stats:Record<string,unknown>={},hashes=new Set<string>(),counts=Object.fromEntries(interiorCatalogue.map(([id])=>[id,0])) as Record<InteriorObjectId,number>;
-assert.equal(interiorCatalogue.length,115);assert.equal(new Set(interiorCatalogue.map(a=>a[0])).size,115);
+assert.equal(interiorCatalogue.length,121);assert.equal(new Set(interiorCatalogue.map(a=>a[0])).size,121);
 for(const [id]of interiorCatalogue){const asset=interiorObject(id),size=asset.bounds.getSize(new T.Vector3());let triangles=0;const hash=createHash('sha256');
  assert(asset.parts.length>0);assert(Math.abs(asset.bounds.min.y)<1e-6);assert(Math.min(size.x,size.y,size.z)>0);assert(Math.max(size.x,size.y,size.z)<2.1);
  for(const p of asset.parts){for(const key of ['position','normal','uv']){const a=p.geometry.getAttribute(key);assert(a&&[...a.array].every(Number.isFinite),`${id}: invalid ${key}`);}triangles+=p.geometry.getAttribute('position').count/3;hash.update(new Uint8Array(p.geometry.getAttribute('position').array.buffer));}
@@ -55,6 +55,7 @@ assert(henry.depth/2-(Math.abs(bench.z)+bench.d/2)<.25,'Bench belongs against th
 assert(prep.w>=2&&hp.some(p=>p.anchor===prep.id&&p.id==='vegetable-basket'),'Cooking needs preparation and ingredient storage');
 for(const id of ['wash-basin','water-pitcher'] as const)assert(hp.some(p=>p.anchor===prep.id&&p.id===id),`${id} must stand on Henry’s kitchen worktop`);
 assert(hp.some(p=>p.id==='tin-bath'),'Henry needs a stored bath');
+for(const id of ['spinning-wheel','warping-frame','wool-cards','wool-combs','yarn-reel','yarn-scales'])assert(hp.some(p=>p.id===id),`Henry’s inherited textile collection needs ${id}`);
 const workArea=new T.Box3(new T.Vector3(prep.x-.21,.75,prep.z-.12),new T.Vector3(prep.x+.21,1.4,prep.z+.18));
 assert(!hp.some(p=>p.anchor===prep.id&&p.role==='surface'&&objectBounds(p).intersectsBox(workArea)),'Leave a clear section of preparation surface');
 const missing=Object.entries(counts).filter(([,count])=>!count).map(([id])=>id);

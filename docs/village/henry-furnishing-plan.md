@@ -65,3 +65,23 @@ The shared room finish adds worn timber grain, a scrubbed table centre, a faint 
 Floors now show stronger mottling, small corner losses, occasional fine cracks in varied directions, embedded dust at room edges and the hearth, and scuffs along walking routes. Tile faces remain level. This is an artistic interpretation of maintained working households, not evidence of a particular family's housekeeping.
 
 Checks: all 115 object models retain valid geometry and measured furniture contact; all 58 homes and 74 floors retain open windows, doors, stair openings and bounded streaming. The compressed collection contains 166,743 triangles and 1,240,904 bytes, with no glTF validation errors.
+
+### Inherited textile tools — 20 September 2026
+
+Tom supplied this passage from the family history: “alongside basic domestic furniture was a hand loom, warping frame, spinning wheels, wool combs and cards, yarn reels, cloths chests and weighing scales”. Its date and named household have not been established here. It supports depicting the family's textile background, but it does not prove which items Henry retained in 1865.
+
+The chosen arrangement is a small stored collection, not a complete working weaving shop:
+
+- One compact treadle spinning wheel stands on the floor beside the sewing table. The wheel, flyer, bobbin, drive band, crank and treadle connect. It is a static model.
+- Wool cards and combs sit on the lower sewing-table shelf, with the existing sewing basket. The cards have wire teeth on dark backing; combs have longer straight teeth.
+- The existing cloth chest carries a cross-arm yarn reel, folded cloth and a small beam balance with pans and weights.
+- A warping frame stands beside the collection against the side wall, with a short surviving length of warp on its pegs.
+- No full hand loom was added. It would require a separate working area and would imply continued cloth production without supporting evidence.
+
+The models are original interpretations. The [Science Museum's small Saxony wheel](https://collection.sciencemuseumgroup.org.uk/objects/co44835/saxony-wheel-late-18th-century) establishes an older wheel form suitable for the inherited collection. Its catalogue describes long-fibre flax and wool spinning. [Museum Wales](https://museum.wales/wool/about/historic-machinery/) distinguishes the cheaper great wheel from the later, more expensive seated treadle wheel. The compact wheel here is a spatial and artistic choice, not a claim that it was the cheapest equipment.
+
+Repairing, altering and reusing clothes is distinct from spinning and weaving the cloth itself. [Oxford research on Victorian tailoring](https://ora.ox.ac.uk/objects/uuid%3A4176be67-8337-4487-8fea-3b68227e442d/files/m70bfc3c898a7f0e23fa635a4b3da495d) describes poorer people relying on second-hand clothes as well as making and mending. Poverty alone therefore does not establish home cloth production.
+
+Validation checks the wheel and frame in the room's person-sized route plan, the smaller objects' measured furniture contact, and the presence of all six pieces in Henry's home only.
+
+Collection: 121 original models, 177,711 triangles, 1,342,796 bytes and zero glTF validation errors.

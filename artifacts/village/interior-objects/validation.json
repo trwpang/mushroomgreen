@@ -1,8 +1,8 @@
 {
-  "models": 115,
+  "models": 121,
   "homes": 58,
   "floors": 74,
-  "instances": 3488,
+  "instances": 3493,
   "counts": {
     "open-range": 19,
     "oven-range": 20,
@@ -82,7 +82,7 @@
     "pincushion": 3,
     "darning-mushroom": 3,
     "needle-case": 2,
-    "folded-linen": 89,
+    "folded-linen": 88,
     "patchwork-quilt": 92,
     "pillow": 46,
     "bolster": 46,
@@ -118,7 +118,13 @@
     "dish-rack": 1,
     "wash-basin": 23,
     "water-pitcher": 23,
-    "tin-bath": 58
+    "tin-bath": 58,
+    "spinning-wheel": 1,
+    "warping-frame": 1,
+    "yarn-reel": 1,
+    "wool-cards": 1,
+    "wool-combs": 1,
+    "yarn-scales": 1
   },
   "missing": [],
   "stats": {
@@ -1271,6 +1277,66 @@
       ],
       "materials": 2,
       "sha256": "53f7a7060f516d4993a4449c8887359c309b6487f113fbf8efc70a2154cf86a3"
+    },
+    "spinning-wheel": {
+      "triangles": 3320,
+      "dimensions": [
+        0.8992473185062408,
+        0.9516503158956766,
+        0.4522709995508194
+      ],
+      "materials": 5,
+      "sha256": "3d3a2081f79fc2638072c015fd0e943f5d93bf256176ebebac68de3866d3b94f"
+    },
+    "warping-frame": {
+      "triangles": 2160,
+      "dimensions": [
+        0.7749999761581421,
+        1,
+        0.12799999862909317
+      ],
+      "materials": 3,
+      "sha256": "913db71f1025e3c7548ff52ba5c84a7e3e62c8c5c560e91bb9319a9e3e23d3d9"
+    },
+    "yarn-reel": {
+      "triangles": 1676,
+      "dimensions": [
+        0.31317269802093506,
+        0.45658633156120776,
+        0.2199999988079071
+      ],
+      "materials": 4,
+      "sha256": "ae84ac031614ad189620752a3598bc689d31a863a568cd95dd47daaaf198652f"
+    },
+    "wool-cards": {
+      "triangles": 1840,
+      "dimensions": [
+        0.2849999964237213,
+        0.048247541300952435,
+        0.20250000432133675
+      ],
+      "materials": 3,
+      "sha256": "f241cafb57ff91a437882c653115c8a7fb23a0c1d8e1d5e46a3a9d4e50140733"
+    },
+    "wool-combs": {
+      "triangles": 600,
+      "dimensions": [
+        0.23099999129772186,
+        0.03500000125495717,
+        0.23508824408054352
+      ],
+      "materials": 3,
+      "sha256": "3b437e521d972a5961416b3a0374fcdaec43e7452a0542063fde7b295819a57a"
+    },
+    "yarn-scales": {
+      "triangles": 1372,
+      "dimensions": [
+        0.3199999928474426,
+        0.319000005826354,
+        0.12999999523162842
+      ],
+      "materials": 3,
+      "sha256": "41f61a51b859344ef42d20b7f4ddc1dff045f85ab29cde8f7d0729e24c055183"
     }
   },
   "plans": [
@@ -17449,7 +17515,7 @@
           "role": "surface"
         },
         {
-          "id": "folded-linen",
+          "id": "wool-cards",
           "x": 3.4528000000000003,
           "y": 0.2435,
           "z": 2.71,
@@ -17473,6 +17539,43 @@
           "sz": 1,
           "anchor": "22-0-sewingtable-sewing",
           "role": "surface"
+        },
+        {
+          "id": "wool-combs",
+          "x": 3.18,
+          "y": 0.2435,
+          "z": 2.71,
+          "angle": 3.141592653589793,
+          "tilt": 0,
+          "sx": 0.7,
+          "sy": 0.7,
+          "sz": 0.7,
+          "anchor": "22-0-sewingtable-sewing",
+          "role": "surface"
+        },
+        {
+          "id": "spinning-wheel",
+          "x": 1.84,
+          "y": 0,
+          "z": 2.67,
+          "anchor": "22-0-spinningwheel-inherited-textiles",
+          "role": "core",
+          "angle": 3.141592653589793,
+          "sx": 1.1342819478120258,
+          "sz": 1.061310586963834,
+          "sy": 1
+        },
+        {
+          "id": "warping-frame",
+          "x": 5,
+          "y": 0,
+          "z": 0.7,
+          "anchor": "22-0-warpingframe-inherited-textiles",
+          "role": "core",
+          "angle": -1.5707963267948966,
+          "sx": 1.0193548700687922,
+          "sz": 1.1718750125510269,
+          "sy": 1
         },
         {
           "id": "rush-armchair",
@@ -17562,8 +17665,8 @@
           "sy": 1
         },
         {
-          "id": "folded-linen",
-          "x": 4.35,
+          "id": "yarn-reel",
+          "x": 4.05,
           "y": 0.49349999858438964,
           "z": -0.49,
           "angle": 0,
@@ -17571,6 +17674,32 @@
           "sx": 0.85,
           "sy": 0.85,
           "sz": 0.85,
+          "anchor": "22-0-chest-sleeping",
+          "role": "surface"
+        },
+        {
+          "id": "folded-linen",
+          "x": 4.35,
+          "y": 0.49349999858438964,
+          "z": -0.49,
+          "angle": 0,
+          "tilt": 0,
+          "sx": 0.7,
+          "sy": 0.7,
+          "sz": 0.7,
+          "anchor": "22-0-chest-sleeping",
+          "role": "surface"
+        },
+        {
+          "id": "yarn-scales",
+          "x": 4.6499999999999995,
+          "y": 0.49349999858438964,
+          "z": -0.49,
+          "angle": 0,
+          "tilt": 0,
+          "sx": 0.82,
+          "sy": 0.82,
+          "sz": 0.82,
           "anchor": "22-0-chest-sleeping",
           "role": "surface"
         },

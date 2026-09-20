@@ -1,5 +1,5 @@
 import type {Home} from './layout';
-export type FurnitureKind='hearth'|'bed'|'table'|'stool'|'cupboard'|'chest'|'washstand'|'stairs'|'pallet'|'linenbench'|'clothesrail'|'basket'|'flue'|'fuelbucket'|'partition'|'prep'|'sewingtable'|'armchair'|'pantry'|'waterstation'|'fuelstore';
+export type FurnitureKind='hearth'|'bed'|'table'|'stool'|'cupboard'|'chest'|'washstand'|'stairs'|'pallet'|'linenbench'|'clothesrail'|'basket'|'flue'|'fuelbucket'|'partition'|'prep'|'sewingtable'|'armchair'|'pantry'|'waterstation'|'fuelstore'|'spinningwheel'|'warpingframe';
 export interface Furnishing {id:string;kind:FurnitureKind;x:number;z:number;w:number;d:number;variant:number;angle?:number;zone?:string;}
 export interface InteriorFloor {name:string;items:Furnishing[];curtain:boolean;}
 export interface InteriorPlan {number:number;width:number;depth:number;wallHeight:number;chimneyX:number;occupants:number;seed:number;floors:InteriorFloor[];palette:number;}
@@ -109,6 +109,8 @@ function furnishLivingPlan(plan:InteriorPlan):InteriorPlan {
    item('fuelstore',-4.66,2.70,.60,.46,'fuel',Math.PI),
    item('waterstation',-1.34,-1.40,.50,.50,'cooking'),
    item('sewingtable',3.18,2.71,1.24,.58,'sewing',Math.PI),
+   item('spinningwheel',1.84,2.67,1.02,.48,'inherited-textiles',Math.PI),
+   item('warpingframe',5.00,.70,.15,.79,'inherited-textiles',-Math.PI/2),
    item('armchair',3.18,1.71,.58,.58,'sewing',0,1),
    item('washstand',2.21,-2.75,.64,.46,'sleeping'),
    item('chest',4.35,-.49,1.10,.48,'sleeping'),

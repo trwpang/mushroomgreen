@@ -1,13 +1,13 @@
 {
-  "models": 115,
-  "bytes": 1240904,
-  "triangles": 166743,
-  "sha256": "7c53a026e860a45ec7efff693362fabeb27c459b26af2d3b46f053a454c74251",
+  "models": 121,
+  "bytes": 1342796,
+  "triangles": 177711,
+  "sha256": "a9601ee1fe6515b163eba592ef9b13ba5646f4e0caac5830515323d69a90c98f",
   "compression": "EXT_meshopt_compression",
   "validationErrors": 0,
   "sourceHashes": {
-    "src/scripts/village/interior-catalogue.ts": "cd412b2b9707061caf6760d5e96b03744a7ed3dcbc6b26088a38589a2a8fbb22",
-    "src/scripts/village/interior-objects.ts": "9e15f33e730ede9abf7eedbc44cfee15caa92700b4c7ea0aa663e5ffbe591bd6"
+    "src/scripts/village/interior-catalogue.ts": "f314bec32ba2f3b40fe001601a93cdad352bf9ef0f13bac4c705cecb05a9c30d",
+    "src/scripts/village/interior-objects.ts": "3cafd063bd0b79a1319a66373609bfe843d4aa5e2345720b0c9a081f54a93279"
   },
   "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
   "usage": "Same terms as this repository; no new third-party asset licence.",
@@ -1162,6 +1162,66 @@
         0.5799999833106995,
         1.212552547454834,
         0.2680000066757202
+      ]
+    },
+    {
+      "id": "spinning-wheel",
+      "name": "Old treadle spinning wheel",
+      "support": "core",
+      "dimensions": [
+        0.8992473185062408,
+        0.9516503158956766,
+        0.4522709995508194
+      ]
+    },
+    {
+      "id": "warping-frame",
+      "name": "Stored wooden warping frame",
+      "support": "core",
+      "dimensions": [
+        0.7749999761581421,
+        1,
+        0.12799999862909317
+      ]
+    },
+    {
+      "id": "yarn-reel",
+      "name": "Cross-arm yarn reel",
+      "support": "surface",
+      "dimensions": [
+        0.31317269802093506,
+        0.45658633156120776,
+        0.2199999988079071
+      ]
+    },
+    {
+      "id": "wool-cards",
+      "name": "Pair of wool hand cards",
+      "support": "surface",
+      "dimensions": [
+        0.2849999964237213,
+        0.048247541300952435,
+        0.20250000432133675
+      ]
+    },
+    {
+      "id": "wool-combs",
+      "name": "Paired long-tooth wool combs",
+      "support": "surface",
+      "dimensions": [
+        0.23099999129772186,
+        0.03500000125495717,
+        0.23508824408054352
+      ]
+    },
+    {
+      "id": "yarn-scales",
+      "name": "Small beam balance and weights",
+      "support": "surface",
+      "dimensions": [
+        0.3199999928474426,
+        0.319000005826354,
+        0.12999999523162842
       ]
     }
   ]

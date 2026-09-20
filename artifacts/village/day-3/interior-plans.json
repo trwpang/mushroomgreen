@@ -4110,6 +4110,28 @@
               "variant": 0
             },
             {
+              "id": "22-0-spinningwheel-inherited-textiles",
+              "kind": "spinningwheel",
+              "x": 1.84,
+              "z": 2.67,
+              "w": 1.02,
+              "d": 0.48,
+              "zone": "inherited-textiles",
+              "angle": 3.141592653589793,
+              "variant": 0
+            },
+            {
+              "id": "22-0-warpingframe-inherited-textiles",
+              "kind": "warpingframe",
+              "x": 5,
+              "z": 0.7,
+              "w": 0.15,
+              "d": 0.79,
+              "zone": "inherited-textiles",
+              "angle": -1.5707963267948966,
+              "variant": 0
+            },
+            {
               "id": "22-0-armchair-sewing",
               "kind": "armchair",
               "x": 3.18,
