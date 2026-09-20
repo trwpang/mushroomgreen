@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {workedMaterials} from './worked-materials';
 import type {InteriorPlan} from './interior-plans';
 
 /** Material loss, ground-in work dust and foot polish. Shared by room floors, never ceilings or furniture. */
@@ -11,12 +12,13 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
  material.onBeforeCompile=function(shader,renderer){
   previous.call(this,shader,renderer);
   shader.uniforms.floorRoutes={value:routes};
+  const atlas=workedMaterials();shader.uniforms.fwAtlas={value:atlas.texture};shader.uniforms.fwAtlasReady=atlas.ready;
   const hearth=plan.floors[floor].items.find(a=>a.kind==='hearth');
   shader.uniforms.floorHearth={value:new T.Vector2(hearth?.x??-100,hearth?.z??-100)};
   shader.uniforms.floorOrigin={value:new T.Vector2(plan.width/2-.10,plan.depth/2-.10)};
   shader.vertexShader='varying vec3 wornFloorPoint;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nwornFloorPoint=position;');
-  shader.fragmentShader=`varying vec3 wornFloorPoint;uniform vec4 floorRoutes[6];uniform vec2 floorOrigin;uniform vec2 floorHearth;
+  shader.fragmentShader=`varying vec3 wornFloorPoint;uniform vec4 floorRoutes[6];uniform vec2 floorOrigin;uniform vec2 floorHearth;uniform sampler2D fwAtlas;uniform float fwAtlasReady;
    float fwHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
    float fwNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(fwHash(i),fwHash(i+vec2(1,0)),f.x),mix(fwHash(i+vec2(0,1)),fwHash(i+vec2(1,1)),f.x),f.y);}
    float fwSegment(vec2 p,vec4 route){vec2 v=route.zw-route.xy;float t=clamp(dot(p-route.xy,v)/max(dot(v,v),.001),0.,1.);return length(p-route.xy-v*t);}
@@ -31,7 +33,7 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
    float fwPolish=1.-smoothstep(.12,.63+fwBroad*.26,fwPath);
    vec2 fwCell=fract((fwP+floorOrigin)/.2286);vec2 fwSide=min(fwCell,1.-fwCell)*.2286;
    float fwEdge=1.-smoothstep(.002,.009+fwMottle*.006,min(fwSide.x,fwSide.y));
-   diffuseColor.rgb*=1.+fwBroad*.38+fwMottle*.35+fwGrain*.13;
+   diffuseColor.rgb*=1.+fwBroad*${kind==='clay'?'.12':'.38'}+fwMottle*${kind==='clay'?'.10':'.35'}+fwGrain*.08;
    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.07,1.08,1.08),fwPolish*.45);
    float fwWall=min(floorOrigin.x-abs(fwP.x),floorOrigin.y-abs(fwP.y));
    float fwDeposit=(1.-smoothstep(.035,.32+fwBroad*.18,fwWall))*(.5+fwMottle);
@@ -39,6 +41,19 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
    float fwScuff=smoothstep(.08,.32,fwBroad+fwMottle*.3)*fwPolish;
    diffuseColor.rgb*=1.-fwDeposit*.28-fwSoot*.28-fwScuff*.12;
    vec2 fwIndex=floor((fwP+floorOrigin)/.2286);
+   float fwRelief=0.;
+   ${kind==='clay'?`// Random inset crops keep the two atlas panels and their mip borders separate.
+   vec2 fwCrop=fwCell;
+   if(fwHash(fwIndex+19.)>.5)fwCrop=fwCrop.yx;
+   if(fwHash(fwIndex+27.)>.5)fwCrop.x=1.-fwCrop.x;
+   if(fwHash(fwIndex+31.)>.5)fwCrop.y=1.-fwCrop.y;
+   vec2 fwCropOffset=vec2(fwHash(fwIndex+43.),fwHash(fwIndex+59.))*.38;
+   vec2 fwUV=vec2(.008, .016)+(fwCropOffset+fwCrop*.57)*vec2(.48,.96);
+   vec3 fwClay=texture2D(fwAtlas,fwUV).rgb;
+   float fwMineral=dot(fwClay,vec3(.2126,.7152,.0722));
+   diffuseColor.rgb*=mix(vec3(1.),clamp(fwClay/vec3(.22,.105,.063),vec3(.48),vec3(1.85)),fwAtlasReady*.82);
+   fwRelief=(fwMineral-.14)*.006*fwAtlasReady;
+   `:''}
    float fwOld=step(.92,fwHash(fwIndex));
    vec2 fwFracture=fwHash(fwIndex+7.)>.5?fwCell.yx:fwCell;
    if(fwHash(fwIndex+13.)>.5)fwFracture.x=1.-fwFracture.x;
@@ -52,12 +67,12 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
    roughnessFactor=clamp(roughnessFactor-fwPolish*.22+fwMottle*.10,.60,.98);
   `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
-   float fwHeight=(fwMottle*.0028+fwGrain*.0012)*(1.-fwPolish*.65)${kind==='clay'?'-fwEdge*.0012-fwCrack*.0007':''};
+   float fwHeight=(fwRelief+fwMottle*${kind==='clay'?'.0008':'.0028'}+fwGrain*${kind==='clay'?'.0004':'.0012'})*(1.-fwPolish*.65)${kind==='clay'?'-fwEdge*.0012-fwCrack*.0007':''};
    vec3 fwDx=dFdx(-vViewPosition),fwDy=dFdy(-vViewPosition),fwR1=cross(fwDy,normal),fwR2=cross(normal,fwDx);
    float fwDet=dot(fwDx,fwR1);vec3 fwGrad=sign(fwDet)*(dFdx(fwHeight)*fwR1+dFdy(fwHeight)*fwR2);
    normal=normalize(max(abs(fwDet),1e-9)*normal-fwGrad);
   `);
  };
- material.customProgramCacheKey=()=>previousKey+'|worked-floor-wear-v2-'+kind+'-'+plan.number;
+ material.customProgramCacheKey=()=>previousKey+'|worked-floor-wear-v3-'+kind+'-'+plan.number;
  material.needsUpdate=true;return material;
 }
