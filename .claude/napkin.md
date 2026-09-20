@@ -157,3 +157,5 @@ Quick-reference notes Claude should internalize on every session start. Update w
 - Reused cottage oak maps are 4×4 atlases. Give each new chest plank one inset panel; mapping the whole sheet makes a tiny checkerboard. Use a pale material tint with authored dark albedo to avoid double-darkening the wood.
 
 - No. 21 records seven occupants in 1861 but no floor plan. Its two-storey form is an automatic visual choice in makeHomes, not sourced evidence. Inside navigation now exposes Go upstairs/Go downstairs, shares roomDimensions with geometry, preserves floor bookmarks and labels upper floors as interpretations. Do not infer storeys from poverty or household count. Dining benches must use a clear bench model, not the linenbench sewing-machine variant.
+
+- Removed 13 generic rectangular paving fragments per visible home (754 blocks). They read as randomly dropped tiles, with no evidence or use-based placement. Keep the 65 RNG draws per home to preserve the landscape. Retain authored thresholds, paving and deliberate material stacks.

@@ -106,8 +106,9 @@ if(h.number===chainshopReplacesHouse)continue;
 // Short yard boundaries leave gaps for shared approaches.
 const width=[6.4,7.2,9.2][h.style]*h.sx,depth=[4.6,4.8,4.5][h.style]*h.sz;
 for(const side of [-1,1]){if(h.number===22&&side===-1)continue;for(let k=0;k<4;k++){const a=localPoint(h,side*(width/2+1.4),-depth/2+k*1.5);cube(a[0],ground(...a)+.48,a[1],.12,.95,.13,timber,h.angle);if(k<3){const b=localPoint(h,side*(width/2+1.4),-depth/2+(k+1)*1.5);for(const y of [.32,.73])beam(new T.Vector3(a[0],ground(...a)+y,a[1]),new T.Vector3(b[0],ground(...b)+y,b[1]),.032,timber);}}}
-// Ash, paving fragments, and a few useful logs around each doorway.
-for(let k=0;k<13;k++){const a=localPoint(h,(rand()-.5)*(width+2),depth/2+rand()*2.8);cube(a[0],ground(...a)+.035,a[1],.18+rand()*.23,.07,.13+rand()*.2,k%4?stone:soil,rand()*3);}
+// Retire the uniform doorstep rubble scatter. Preserve its five random draws per
+// fragment so established woodland and other seeded landscape details stay put.
+for(let k=0;k<13*5;k++)rand();
 }
 // Founder yard: a wash line, privy, vegetable rows, stacked timber, and a bench.
 const yardMat=material('#6a553c'),leafMat=material('#637341');
