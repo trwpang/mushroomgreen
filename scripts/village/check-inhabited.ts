@@ -20,6 +20,10 @@ for(const h of homes){
   const lime=v.group.children.filter(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.surfaceKind==='plaster');
   const timber=v.group.children.filter(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.surfaceKind==='wood');
   const base=.12+f*2.225*sy;
+  const wornFloor=v.group.children.filter(o=>o instanceof T.Mesh&&(o.material as T.Material).userData.floorWear) as T.Mesh[];
+  assert(wornFloor.length>0,'Every internal floor needs its own wear finish');
+  for(const mesh of wornFloor){mesh.geometry.computeBoundingBox();assert(mesh.geometry.boundingBox!.max.y<base+.06,'Floor wear must not affect walls, furniture or ceiling boards');}
+
   if(h.number===22&&f===0){assert(v.group.userData.litOilLamp,'Henry needs a lit table lamp');const chimney=v.group.children.find(o=>o.userData.lampChimney) as T.Mesh;assert(chimney&&chimney.layers.mask===2&&!chimney.castShadow,'Transparent chimneys must stay out of the opaque AO pass');assert(v.group.children.some(o=>o instanceof T.PointLight&&o.distance===3.5),'Lamp must cast local light');}
   if(v.group.userData.floorFinish==='quarry-tiles'){
    const tile=v.group.children.find(o=>o.userData.quarryFloor) as T.Mesh;

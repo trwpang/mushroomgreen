@@ -35,7 +35,9 @@ No reference photograph pixels enter the scene or GLB.
 
 ## Floor correction
 
-The room uses one continuous 9-inch (228.6 mm) square grid. Each tile has a level top at the same height. Joints are 3 mm wide. Edge tiles are cut to the room, not stretched. Per-tile colour variation is small and seeded across the whole room, so a dark diagonal pattern cannot repeat every metre. There are no overlapping tile lips or roof-like ridges.
+The room uses one continuous 9-inch (228.6 mm) square grid with narrow joints. Edge tiles are cut to the room. All walking faces share the same height. Shallow rounded shoulders and small corner losses soften the regular grid without roof-like overlaps.
+
+The September 20 wear pass replaces the new-looking uniform finish with muted kiln-colour differences, clay mottling and fine surface relief. Routes between the entrance and household work areas are smoother from repeated use. This is clean wear, not added dirt or stains. Timber and stone floors use separate floor-only materials, so their wear does not spread to furniture or ceilings. Procedural grain fades below pixel size to limit shimmer during movement.
 
 ## Wider village pass
 

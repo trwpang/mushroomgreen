@@ -1,4 +1,5 @@
-import {refineSurface,type Surface} from '../rendering/surfaces';
+import {wearFloor} from './floor-wear';
+import {refineSurface,cloneSurface,type Surface} from '../rendering/surfaces';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {Home} from './layout';
@@ -54,29 +55,27 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   const finish:InteriorObjectId=!floor&&(home.number%3!==0||home.number===22)?(home.number%7===0?'flagstones':'quarry-tiles'):'board-ceiling';
   const objectMats:Record<ObjectMaterial,T.Material>={oak:woods[0],darkwood:woods[2],iron,steel:mat('#8f9389',undefined,.44,'iron'),copper:mat('#a17b43',undefined,.48,'iron'),cream:ceramic,blue:mat('#394e69',undefined,.4,'ceramic'),clay:earthenware,cloth:blanket,green:mat('#636e54',clothMap,.92,'cloth'),coal:dark,glass:mat('#71867c',undefined,.18,'glass'),lampglass:own(new T.MeshBasicMaterial({color:'#a6bab2',transparent:true,opacity:.035,depthWrite:false,side:T.DoubleSide})),paper:mat('#c3b79c',plasterMap,.95,'cloth'),linen:mat('#d0c7ae',clothMap,.97,'cloth'),tile:own(new T.MeshStandardMaterial({color:'#955b43',roughness:.83})),stone:mat('#807b69',plasterMap,.97,'stone')};
   const fabric=own(new T.MeshStandardMaterial({color:blanket.color,map:clothMap,roughness:.98,side:T.DoubleSide}));refineSurface(fabric,'cloth');objectMats.cloth=fabric;for(const key of ['tile','stone'] as const)(objectMats[key] as T.MeshStandardMaterial).vertexColors=true;for(const key of ['steel','copper'] as const)(objectMats[key] as T.MeshStandardMaterial).metalness=.55;
-  function object(id:InteriorObjectId,x:number,y:number,z:number,sx=1,scaleY=1,sz=1,angle=0,tilt=0){
-   for(const part of interiorObject(id).parts){const g=part.geometry.clone();g.scale(sx,scaleY,sz);g.rotateX(tilt);add(g,objectMats[part.material],x,y,z,0,angle);}
+  const floorMaterials=new Map<T.Material,T.Material>();
+  function object(id:InteriorObjectId,x:number,y:number,z:number,sx=1,scaleY=1,sz=1,angle=0,tilt=0,floorSurface=false){
+   for(const part of interiorObject(id).parts){const g=part.geometry.clone();g.scale(sx,scaleY,sz);g.rotateX(tilt);let m=objectMats[part.material];if(floorSurface&&m instanceof T.MeshStandardMaterial){if(!floorMaterials.has(m))floorMaterials.set(m,wearFloor(own(cloneSurface(m)),plan,floor,id==='flagstones'?'stone':'wood'));m=floorMaterials.get(m)!;}add(g,m,x,y,z,0,angle);}
   }
   // Quarry tiles use one room-wide 9-inch grid. No stretched edge modules or repeated dark diagonal pattern.
   if(finish==='quarry-tiles'){
    box(0,.006,0,w-.20,.024,d-.20,own(new T.MeshStandardMaterial({color:'#766a59',roughness:.98})));
-   const wearCanvas=document.createElement('canvas');wearCanvas.width=wearCanvas.height=512;const paint=wearCanvas.getContext('2d')!,wearRand=seeded(home.number*997+21);
-   paint.fillStyle='#f0ece5';paint.fillRect(0,0,512,512);
-   // One room-wide wear map: ash by the grate, handling dirt at storage, and fine clay pores.
-   for(let i=0;i<12000;i++){paint.fillStyle=i%2?'#51413209':'#ffffff10';paint.fillRect(wearRand()*512,wearRand()*512,1+wearRand(),1+wearRand());}
-   for(const a of plan.floors[floor].items.filter(a=>['hearth','prep','cupboard','table','sewingtable'].includes(a.kind))){
-    const px=(a.x/w+.5)*512,pz=(.5-a.z/d)*512,r=a.kind==='hearth'?90:45;
-    const stain=paint.createRadialGradient(px,pz,0,px,pz,r);stain.addColorStop(0,a.kind==='hearth'?'#46372950':'#66544425');stain.addColorStop(1,'#75604d00');paint.fillStyle=stain;paint.fillRect(px-r,pz-r,r*2,r*2);
-   }
-   const wearMap=own(new T.CanvasTexture(wearCanvas));wearMap.colorSpace=T.SRGBColorSpace;wearMap.anisotropy=8;(objectMats.tile as T.MeshStandardMaterial).map=wearMap;
+   const clay=objectMats.tile as T.MeshStandardMaterial;clay.color.set('#ffffff');clay.roughness=.93;wearFloor(clay,plan,floor,'clay');
    const tileRand=seeded(home.number*631+floor*31),pitch=.2286,gap=.003;
    for(let x=-w/2+.10;x<w/2-.10;x+=pitch)for(let z=-d/2+.10;z<d/2-.10;z+=pitch){
     const fw=Math.min(pitch,w/2-.10-x),fd=Math.min(pitch,d/2-.10-z);
     if(fw<=gap||fd<=gap)continue;
-    const g=new T.BoxGeometry(fw-gap,.006,fd-gap),shade=.94+tileRand()*.11;
+    // Small rounded shoulders and isolated corner losses, with a level walking face.
+    const hw=(fw-gap)/2-.001,hd=(fd-gap)/2-.001,cut=Math.min(.002+tileRand()*.002,hw*.15,hd*.15),shape=new T.Shape();
+    shape.moveTo(-hw+cut,-hd);shape.lineTo(hw-cut,-hd);shape.lineTo(hw,-hd+cut);shape.lineTo(hw,hd-cut);shape.lineTo(hw-cut,hd);shape.lineTo(-hw+cut,hd);shape.lineTo(-hw,hd-cut);shape.lineTo(-hw,-hd+cut);shape.closePath();
+    const g=new T.ExtrudeGeometry(shape,{depth:.004,bevelEnabled:true,bevelSize:.001,bevelThickness:.001,bevelSegments:1,steps:1});g.rotateX(-Math.PI/2);
+    const palette=['#8c5946','#95634e','#9d6c55','#855a4c','#a16e58','#91604c'];
+    const tint=new T.Color(palette[Math.floor(tileRand()*palette.length)]).lerp(new T.Color('#93634e'),.65).multiplyScalar(.97+tileRand()*.06);
     const pos=g.getAttribute('position'),uv=g.getAttribute('uv');for(let i=0;i<pos.count;i++)uv.setXY(i,(pos.getX(i)+x+fw/2+w/2)/w,1-(pos.getZ(i)+z+fd/2+d/2)/d);
-    g.setAttribute('color',new T.Float32BufferAttribute(new Float32Array(g.getAttribute('position').count*3).fill(shade),3));
-    add(g,objectMats.tile,x+fw/2,.027,z+fd/2);
+    const colours=new Float32Array(pos.count*3);for(let i=0;i<pos.count;i++)tint.toArray(colours,i*3);g.setAttribute('color',new T.Float32BufferAttribute(colours,3));
+    add(g,objectMats.tile,x+fw/2,.025,z+fd/2);
    }
   }else{
   // Short metre-scale modules fit the room boundaries and leave the actual stair opening.
@@ -87,7 +86,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
    xs.sort((a,b)=>a-b);zs.sort((a,b)=>a-b);
    for(let i=1;i<xs.length;i++)for(let j=1;j<zs.length;j++){const cx=(xs[i-1]+xs[i])/2,cz=(zs[j-1]+zs[j])/2;
     if(floor&&stair&&Math.abs(cx-stair.x)<stair.w/2&&Math.abs(cz-stair.z)<stair.d/2)continue;
-    object(finish,cx,finish==='board-ceiling'?-.06:0,cz,xs[i]-xs[i-1],1,zs[j]-zs[j-1]);
+    object(finish,cx,finish==='board-ceiling'?-.06:0,cz,xs[i]-xs[i-1],1,zs[j]-zs[j-1],0,0,true);
    }
   }
   }

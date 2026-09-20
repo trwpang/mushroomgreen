@@ -130,3 +130,5 @@ Quick-reference notes Claude should internalize on every session start. Update w
 
 - Indoor controls must turn about the eye, not orbit a distant target. Disable OrbitControls rotation indoors and use turnDestination; containRoom clamps eye and translates target equally. Restore outdoor pan/zoom/polar/near settings on exit. Lamp glass has its own transparent material; do not change bottle/mirror glass globally.
 - GTAO renders transparent lamp chimneys as opaque silhouettes in its override pass. Put chimney meshes on layer 1, like smoke; the main camera sees layer 1 and the AO camera uses only layer 0.
+
+- User wants worn internal floors, not grime. Avoid high-contrast random tile palettes (reads as new decorative patchwork). Use restrained kiln colour, small rounded shoulders, clay relief and foot-polished paths. ExtrudeGeometry rotated -PI/2 makes positive depth become positive Y; tile datum .025 keeps bounds .024–.030. Floor-only cloned materials protect ceilings and furniture.
