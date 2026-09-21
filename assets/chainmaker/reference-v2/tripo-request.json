@@ -1,0 +1,74 @@
+{
+  "asset": "Mushroom Green chainmaker v2",
+  "route": "Tripo Studio browser, image to model",
+  "source": "chainmaker-a-pose.png",
+  "model": "v3.1 Best Quality",
+  "generation": "Geometry & Texture",
+  "options": {
+    "generateInParts": false,
+    "texture8k": false
+  },
+  "privacy": "Sharing Only, account setting after user upgrade",
+  "displayedGenerationCredits": 55,
+  "cashSpendCeiling": 0,
+  "authorization": "User authorised one character trial, then independently upgraded the account on 2026-09-20. One generation at 55 existing credits; no purchases by agent.",
+  "purpose": "Inspect generated anatomy and textures, then assess rigging and browser suitability.",
+  "target": {
+    "heightMetres": 1.72,
+    "runtimeTrianglesMax": 120000,
+    "runtimeBytesMax": 4000000,
+    "textureResolutionTarget": 2048
+  },
+  "license": "Generated after user upgrade. Tripo paid-user output rights; help-page source retained in review documentation.",
+  "provenance": "Original interpreted chainmaker reference generated with built-in ImageGen; not an identified resident or a historical photograph. Exact image prompts saved alongside source.",
+  "acceptedModelId": "2bf82aaa-1009-4dc9-985b-3899edf32916",
+  "workspaceUrl": "https://studio.tripo3d.ai/workspace/generate/2bf82aaa-1009-4dc9-985b-3899edf32916",
+  "sourceSha256": "01d434de8321899d4d5153ddf7c9a00c44c8e220a96f802d74bae4b2c803d2c8",
+  "plannedProcessing": [
+    {
+      "operation": "Retopology",
+      "sourceModel": "2bf82aaa-1009-4dc9-985b-3899edf32916",
+      "topology": "triangle",
+      "smartMesh": false,
+      "targetFaces": 100000,
+      "displayedCredits": 5
+    },
+    {
+      "operation": "Humanoid Auto Rig",
+      "skeleton": "Mixamo",
+      "displayedCredits": 20
+    }
+  ],
+  "plannedTotalCredits": 80,
+  "completedProcessing": [
+    {
+      "operation": "Retopology",
+      "credits": 5,
+      "faces": 99999,
+      "vertices": 57449
+    }
+  ],
+  "rigging": {
+    "status": "complete, observed in browser",
+    "skeleton": "Mixamo",
+    "credits": 20
+  },
+  "creditsSpent": 80,
+  "verifiedBalance": 3120,
+  "preview": {
+    "preset": "chop",
+    "durationSeconds": 6.58,
+    "observedPoses": [
+      "rest",
+      "lowered two-hand grip",
+      "raised two-hand grip at 1.64 seconds"
+    ],
+    "extraCredits": 0
+  },
+  "export": {
+    "format": "GLB",
+    "textureResolution": 2048,
+    "exportSkeleton": true,
+    "status": "UI export attempted; no local file received; manual download requested"
+  }
+}
