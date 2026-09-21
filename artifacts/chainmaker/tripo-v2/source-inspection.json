@@ -1,0 +1,239 @@
+{
+  "source": "assets/chainmaker/tripo-v2/source.glb",
+  "bytes": 11077112,
+  "sha256": "73e63652cff7f908c43f53801062093472f99048caf081b5ca9c1da07e870c44",
+  "triangles": 99999,
+  "finitePositions": true,
+  "meshes": [
+    {
+      "name": "meshes[0]",
+      "primitives": [
+        {
+          "vertices": 57449,
+          "mode": 4,
+          "skinAttributes": true
+        }
+      ]
+    }
+  ],
+  "skins": [
+    {
+      "name": "skin",
+      "joints": [
+        "mixamorig:Hips",
+        "mixamorig:LeftUpLeg",
+        "mixamorig:LeftLeg",
+        "mixamorig:LeftFoot",
+        "mixamorig:LeftToeBase",
+        "mixamorig:LeftToe_End",
+        "mixamorig:RightUpLeg",
+        "mixamorig:RightLeg",
+        "mixamorig:RightFoot",
+        "mixamorig:RightToeBase",
+        "mixamorig:RightToe_End",
+        "mixamorig:Spine",
+        "mixamorig:Spine1",
+        "mixamorig:Spine2",
+        "mixamorig:LeftShoulder",
+        "mixamorig:LeftArm",
+        "mixamorig:LeftForeArm",
+        "mixamorig:LeftHand",
+        "mixamorig:LeftHandIndex1",
+        "mixamorig:LeftHandIndex2",
+        "mixamorig:LeftHandIndex3",
+        "mixamorig:LeftHandMiddle1",
+        "mixamorig:LeftHandMiddle2",
+        "mixamorig:LeftHandMiddle3",
+        "mixamorig:LeftHandPinky1",
+        "mixamorig:LeftHandPinky2",
+        "mixamorig:LeftHandPinky3",
+        "mixamorig:LeftHandRing1",
+        "mixamorig:LeftHandRing2",
+        "mixamorig:LeftHandRing3",
+        "mixamorig:LeftHandThumb1",
+        "mixamorig:LeftHandThumb2",
+        "mixamorig:LeftHandThumb3",
+        "mixamorig:Neck",
+        "mixamorig:Head",
+        "mixamorig:RightShoulder",
+        "mixamorig:RightArm",
+        "mixamorig:RightForeArm",
+        "mixamorig:RightHand",
+        "mixamorig:RightHandIndex1",
+        "mixamorig:RightHandIndex2",
+        "mixamorig:RightHandIndex3",
+        "mixamorig:RightHandMiddle1",
+        "mixamorig:RightHandMiddle2",
+        "mixamorig:RightHandMiddle3",
+        "mixamorig:RightHandPinky1",
+        "mixamorig:RightHandPinky2",
+        "mixamorig:RightHandPinky3",
+        "mixamorig:RightHandRing1",
+        "mixamorig:RightHandRing2",
+        "mixamorig:RightHandRing3",
+        "mixamorig:RightHandThumb1",
+        "mixamorig:RightHandThumb2",
+        "mixamorig:RightHandThumb3"
+      ]
+    }
+  ],
+  "animations": [],
+  "textures": [
+    {
+      "name": "historical+worker+3d+model_basecolor.jpg",
+      "mimeType": "image/jpeg",
+      "bytes": 1966485,
+      "width": 4096,
+      "height": 4096
+    },
+    {
+      "name": "historical+worker+3d+model_rm.png",
+      "mimeType": "image/png",
+      "bytes": 4381962,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "name": "historical+worker+3d+model_normal.jpg",
+      "mimeType": "image/jpeg",
+      "bytes": 301465,
+      "width": 1024,
+      "height": 1024
+    }
+  ],
+  "rigWarnings": [
+    "All joints have the same world origin. This is not a usable humanoid rest pose.",
+    "99.98% of vertices follow one joint; inspect the skin weights."
+  ],
+  "validation": {
+    "numErrors": 4,
+    "numWarnings": 2,
+    "numInfos": 12,
+    "numHints": 2,
+    "messages": [
+      {
+        "code": "UNSUPPORTED_EXTENSION",
+        "message": "Cannot validate an extension as it is not supported by the validator: 'FB_ngon_encoding'.",
+        "severity": 2,
+        "pointer": "/extensionsUsed/1"
+      },
+      {
+        "code": "BUFFER_VIEW_TARGET_MISSING",
+        "message": "bufferView.target should be set for vertex or index data.",
+        "severity": 3,
+        "pointer": "/meshes/0/primitives/0/attributes/JOINTS_0"
+      },
+      {
+        "code": "BUFFER_VIEW_TARGET_MISSING",
+        "message": "bufferView.target should be set for vertex or index data.",
+        "severity": 3,
+        "pointer": "/meshes/0/primitives/0/attributes/WEIGHTS_0"
+      },
+      {
+        "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+        "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+        "severity": 1,
+        "pointer": "/meshes/0/primitives/0/material"
+      },
+      {
+        "code": "NODE_SKINNED_MESH_NON_ROOT",
+        "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+        "severity": 1,
+        "pointer": "/nodes/1"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/23"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/27"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/31"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/35"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/39"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/42"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/50"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/54"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/58"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/62"
+      },
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/66"
+      },
+      {
+        "code": "ACCESSOR_MIN_MISMATCH",
+        "message": "Declared minimum value for this component (0) does not match actual minimum (0.00048828125).",
+        "severity": 0,
+        "pointer": "/accessors/2/min/0"
+      },
+      {
+        "code": "ACCESSOR_MIN_MISMATCH",
+        "message": "Declared minimum value for this component (0) does not match actual minimum (0.00048828125).",
+        "severity": 0,
+        "pointer": "/accessors/2/min/1"
+      },
+      {
+        "code": "ACCESSOR_MIN_MISMATCH",
+        "message": "Declared minimum value for this component (0) does not match actual minimum (0.9999960660934448).",
+        "severity": 0,
+        "pointer": "/accessors/4/min/0"
+      },
+      {
+        "code": "ACCESSOR_MIN_MISMATCH",
+        "message": "Declared minimum value for this component (0) does not match actual minimum (1).",
+        "severity": 0,
+        "pointer": "/accessors/6/min/15"
+      }
+    ],
+    "truncated": false
+  },
+  "withinCurrentRuntimeBudget": false,
+  "note": "Static inspection only. Visual anatomy, rig deformation, scale, licensing and tool contact require separate review."
+}

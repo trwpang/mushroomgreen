@@ -69,6 +69,19 @@
     "format": "GLB",
     "textureResolution": 2048,
     "exportSkeleton": true,
-    "status": "UI export attempted; no local file received; manual download requested"
+    "status": "Received from user Chrome download; repaired and integrated locally on 2026-09-21",
+    "downloadName": "historical worker 3d model.glb",
+    "preservedSource": "assets/chainmaker/tripo-v2/source.glb",
+    "downloadSha256": "73e63652cff7f908c43f53801062093472f99048caf081b5ca9c1da07e870c44"
+  },
+  "localRepair": {
+    "extraProviderCredits": 0,
+    "method": "Recover bind positions, rebuild skin weights in Blender, correct apron and trousers, fit tools and fingers in Three.js",
+    "runtime": "public/chainmaker-v2/chainmaker.glb",
+    "bytes": 2354016,
+    "triangles": 98328,
+    "joints": 54,
+    "validationErrors": 0,
+    "motionFramesChecked": 282
   }
 }

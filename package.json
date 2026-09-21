@@ -30,7 +30,8 @@
     "village:props": "esbuild scripts/village/check-props.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-props-check.mjs && node /tmp/mushroom-props-check.mjs",
     "village:objects": "esbuild scripts/village/check-interior-objects.ts --bundle --platform=node --format=esm --outfile=/tmp/interior-objects-check.mjs && node /tmp/interior-objects-check.mjs",
     "village:objects:export": "esbuild scripts/village/export-interior-objects.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/mushroom-interior-export.mjs && node node_modules/.cache/mushroom-interior-export.mjs",
-    "village:textures": "esbuild scripts/village/check-texture-residency.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-texture-check.mjs && node /tmp/mushroom-texture-check.mjs"
+    "village:textures": "esbuild scripts/village/check-texture-residency.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-texture-check.mjs && node /tmp/mushroom-texture-check.mjs",
+    "chainmaker:skeletal": "esbuild scripts/chainmaker/check-skeletal-rig.ts --bundle --platform=node --format=esm --outfile=/tmp/chainmaker-skeletal-check.mjs && node /tmp/chainmaker-skeletal-check.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",

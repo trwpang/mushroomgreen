@@ -1,0 +1,140 @@
+{
+  "source": "assets/chainmaker/tripo-v2/recovered-rig.glb",
+  "bytes": 5572496,
+  "sha256": "533a887c273b16f3bede56e9b3ccfffc6e2902ec6ca5d68ffb581d878ded0e68",
+  "triangles": 97596,
+  "finitePositions": true,
+  "meshes": [
+    {
+      "name": "meshes[0]",
+      "primitives": [
+        {
+          "vertices": 47695,
+          "mode": 4,
+          "skinAttributes": true
+        },
+        {
+          "vertices": 8795,
+          "mode": 4,
+          "skinAttributes": true
+        }
+      ]
+    }
+  ],
+  "skins": [
+    {
+      "name": "ChainmakerRig",
+      "joints": [
+        "mixamorig:Hips",
+        "mixamorig:LeftUpLeg",
+        "mixamorig:LeftLeg",
+        "mixamorig:LeftFoot",
+        "mixamorig:LeftToeBase",
+        "mixamorig:LeftToe_End",
+        "mixamorig:RightUpLeg",
+        "mixamorig:RightLeg",
+        "mixamorig:RightFoot",
+        "mixamorig:RightToeBase",
+        "mixamorig:RightToe_End",
+        "mixamorig:Spine",
+        "mixamorig:Spine1",
+        "mixamorig:Spine2",
+        "mixamorig:LeftShoulder",
+        "mixamorig:LeftArm",
+        "mixamorig:LeftForeArm",
+        "mixamorig:LeftHand",
+        "mixamorig:LeftHandIndex1",
+        "mixamorig:LeftHandIndex2",
+        "mixamorig:LeftHandIndex3",
+        "mixamorig:LeftHandMiddle1",
+        "mixamorig:LeftHandMiddle2",
+        "mixamorig:LeftHandMiddle3",
+        "mixamorig:LeftHandPinky1",
+        "mixamorig:LeftHandPinky2",
+        "mixamorig:LeftHandPinky3",
+        "mixamorig:LeftHandRing1",
+        "mixamorig:LeftHandRing2",
+        "mixamorig:LeftHandRing3",
+        "mixamorig:LeftHandThumb1",
+        "mixamorig:LeftHandThumb2",
+        "mixamorig:LeftHandThumb3",
+        "mixamorig:Neck",
+        "mixamorig:Head",
+        "mixamorig:RightShoulder",
+        "mixamorig:RightArm",
+        "mixamorig:RightForeArm",
+        "mixamorig:RightHand",
+        "mixamorig:RightHandIndex1",
+        "mixamorig:RightHandIndex2",
+        "mixamorig:RightHandIndex3",
+        "mixamorig:RightHandMiddle1",
+        "mixamorig:RightHandMiddle2",
+        "mixamorig:RightHandMiddle3",
+        "mixamorig:RightHandPinky1",
+        "mixamorig:RightHandPinky2",
+        "mixamorig:RightHandPinky3",
+        "mixamorig:RightHandRing1",
+        "mixamorig:RightHandRing2",
+        "mixamorig:RightHandRing3",
+        "mixamorig:RightHandThumb1",
+        "mixamorig:RightHandThumb2",
+        "mixamorig:RightHandThumb3"
+      ]
+    }
+  ],
+  "animations": [],
+  "textures": [
+    {
+      "name": "historical+worker+3d+model_normal",
+      "mimeType": "image/webp",
+      "bytes": 209694,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "name": "historical+worker+3d+model_basecolor",
+      "mimeType": "image/webp",
+      "bytes": 1072732,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "name": "historical+worker+3d+model_rm",
+      "mimeType": "image/webp",
+      "bytes": 439690,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "name": "Trouser wool weave",
+      "mimeType": "image/png",
+      "bytes": 305788,
+      "width": 512,
+      "height": 512
+    }
+  ],
+  "rigWarnings": [],
+  "validation": {
+    "numErrors": 0,
+    "numWarnings": 2,
+    "numInfos": 0,
+    "numHints": 0,
+    "messages": [
+      {
+        "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+        "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+        "severity": 1,
+        "pointer": "/meshes/0/primitives/0/material"
+      },
+      {
+        "code": "NODE_SKINNED_MESH_NON_ROOT",
+        "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+        "severity": 1,
+        "pointer": "/nodes/54"
+      }
+    ],
+    "truncated": false
+  },
+  "withinCurrentRuntimeBudget": false,
+  "note": "Static inspection only. Visual anatomy, rig deformation, scale, licensing and tool contact require separate review."
+}

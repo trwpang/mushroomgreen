@@ -59,3 +59,9 @@ artifacts/chainmaker/raw/
 artifacts/chainmaker/*.log
 artifacts/chainmaker/reference-browser.png
 assets/chainmaker/*.blend1
+
+# Reproducible Tripo inspection intermediates (keep the source, Blender repair, and runtime GLB)
+assets/chainmaker/tripo-v2/*.blend1
+assets/chainmaker/tripo-v2/inspection.blend
+assets/chainmaker/tripo-v2/static-preview*.glb
+assets/chainmaker/tripo-v2/recovered-rig.glb

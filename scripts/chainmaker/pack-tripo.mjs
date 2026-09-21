@@ -1,0 +1,28 @@
+import {NodeIO} from '@gltf-transform/core';
+import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
+import {mergeDocuments,prune,dedup,textureCompress,meshopt,unpartition} from '@gltf-transform/functions';
+import {MeshoptEncoder,MeshoptDecoder} from 'meshoptimizer';
+import {validateBytes} from 'gltf-validator';
+import sharp from 'sharp';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+await Promise.all([MeshoptEncoder.ready,MeshoptDecoder.ready]);
+const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.encoder':MeshoptEncoder,'meshopt.decoder':MeshoptDecoder});
+const doc=await io.read('assets/chainmaker/tripo-v2/recovered-rig.glb');
+const old=await io.read('public/chainmaker/chainmaker.glb');
+const keep=new Set();function walk(n){keep.add(n);n.listChildren().forEach(walk)}
+old.getRoot().listNodes().filter(n=>['Hammer','Tongs'].includes(n.getName())).forEach(walk);
+for(const n of [...old.getRoot().listNodes()])if(!keep.has(n))n.dispose();
+await old.transform(prune());
+const map=mergeDocuments(doc,old),scene=doc.getRoot().getDefaultScene();
+for(const n of old.getRoot().listNodes())if(['Hammer','Tongs'].includes(n.getName()))scene.addChild(map.get(n));
+for(const s of doc.getRoot().listScenes())if(s!==scene)s.dispose();
+await doc.transform(prune(),dedup(),textureCompress({encoder:sharp,targetFormat:'webp',slots:/metallicRoughnessTexture/,resize:[1024,1024],quality:92}),textureCompress({encoder:sharp,targetFormat:'webp',resize:[2048,2048],quality:92}),meshopt({encoder:MeshoptEncoder,level:'high'}),unpartition());
+const bytes=await io.writeBinary(doc),validation=await validateBytes(bytes,{maxIssues:100});
+if(validation.issues.numErrors)throw new Error(JSON.stringify(validation.issues));
+let triangles=0;for(const m of doc.getRoot().listMeshes())for(const p of m.listPrimitives())triangles+=(p.getIndices()?.getCount()??p.getAttribute('POSITION').getCount())/3;
+if(bytes.length>4e6||triangles>120000)throw new Error('Candidate exceeds character budget');
+const sourcePaths=['assets/chainmaker/tripo-v2/source.glb','scripts/chainmaker/prepare-tripo-preview.mjs','scripts/chainmaker/recover-tripo-bind.mjs','scripts/chainmaker/recover-tripo-rig.py','scripts/chainmaker/repair-tripo-apron.py','scripts/chainmaker/pack-tripo.mjs'];
+const sourceHashes=Object.fromEntries(await Promise.all(sourcePaths.map(async path=>[path,createHash('sha256').update(await readFile(path)).digest('hex')])));
+const manifest={name:'Male chainmaker — Tripo and Blender refinement',sourceHashes,bytes:bytes.length,triangles,sha256:createHash('sha256').update(bytes).digest('hex'),validationErrors:0,compression:'EXT_meshopt_compression',provenance:'Tripo output from original generated reference; recovered bind layout and Blender proxy weights; existing locally authored hammer/tongs.',status:'Local village integration checked on 2026-09-21; pose and anatomy remain an interpretation'};
+await mkdir('public/chainmaker-v2',{recursive:true});await writeFile('public/chainmaker-v2/chainmaker.glb',bytes);await writeFile('public/chainmaker-v2/asset-manifest.json',JSON.stringify(manifest,null,2)+'\n');await writeFile('artifacts/chainmaker/tripo-v2/candidate-validation.json',JSON.stringify(validation,null,2));console.log(manifest);

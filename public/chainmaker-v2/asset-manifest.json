@@ -1,0 +1,18 @@
+{
+  "name": "Male chainmaker — Tripo and Blender refinement",
+  "sourceHashes": {
+    "assets/chainmaker/tripo-v2/source.glb": "73e63652cff7f908c43f53801062093472f99048caf081b5ca9c1da07e870c44",
+    "scripts/chainmaker/prepare-tripo-preview.mjs": "1945bcd7b1f898a11a52c4756729cce063e2907074d40ea25ec5e01841d69243",
+    "scripts/chainmaker/recover-tripo-bind.mjs": "9cf6c12b218be63bee3286bf4b1159ceb410f86e08f4e9ad22ca3665a62932b5",
+    "scripts/chainmaker/recover-tripo-rig.py": "fb8a4bbce9e2e2da9799a70adbd8ae55f7ea11fb97d146df21828c14310421d1",
+    "scripts/chainmaker/repair-tripo-apron.py": "476c0c87572cb712144b404225fce21b850a18ce53b8d0c55eb0b50690e6359c",
+    "scripts/chainmaker/pack-tripo.mjs": "8cceaa2ad4738fc222ed2b98edf3bb868d1e5366c54b148b697cb44a5a1e2689"
+  },
+  "bytes": 2354016,
+  "triangles": 98328,
+  "sha256": "c0b71eb1f907825c9e93d4c8b30d4da2100cc466bb5b08f63bda24201a85f2b8",
+  "validationErrors": 0,
+  "compression": "EXT_meshopt_compression",
+  "provenance": "Tripo output from original generated reference; recovered bind layout and Blender proxy weights; existing locally authored hammer/tongs.",
+  "status": "Local village integration checked on 2026-09-21; pose and anatomy remain an interpretation"
+}

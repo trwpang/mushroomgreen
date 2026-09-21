@@ -32,7 +32,7 @@ Tripo's paid-user rights summary permits modification, distribution and commerci
 4. Scale: approximately 1.72 m; soles on brick floor; reachable anvil and clear doorway.
 5. Browser: validated GLB; bounded textures and triangles; inspect at actual forge lighting and close camera.
 
-The original figure stays in the village until the replacement passes these checks. A successful generation is not proof of rig quality or readiness for the village.
+The original figure stayed in the village until the replacement passed the checks below. A successful generation is not proof of rig quality or readiness for the village.
 
 ## First visual review and processing
 
@@ -49,3 +49,42 @@ Mixamo auto-rigging completed. The free `chop` preset runs for 6.58 seconds. Ins
 Export was tried again for the reduced, rigged model: GLB, 2K textures, Export Skeleton enabled, name `mushroom-chainmaker-v2-rigged`. No matching local file arrived. Tom was asked to download this GLB manually to Downloads. The model and rig remain saved in Tripo. No live village asset has been replaced.
 
 Next steps after receipt: inspect GLB/skin/texture payload; correct the wraparound rear apron in Blender; normalize to 1.72 m; compress within the 4 MB and 120,000-triangle budget; add skeletal hammer/tongs grips and test full motion against the anvil; review in forge lighting before replacement.
+
+
+## Local import, repair and integration — 21 September 2026
+
+Tom exported `historical worker 3d model.glb` with Chrome. The unchanged 11,077,112-byte download is preserved in `assets/chainmaker/tripo-v2/source.glb`. Its SHA256 is `73e63652cff7f908c43f53801062093472f99048caf081b5ca9c1da07e870c44`. This resolves the earlier download handoff; no further export is needed.
+
+The download had 54 skin joints but no node transforms, four invalid minimum bounds, and 57,437 of 57,449 vertices dominated by the hip. It contained no animation clips. The preview rig could not be used directly. Its inverse bind matrices retained useful joint positions; rotating these by −π/2 around Y aligned them with the mesh. We rebuilt the rig locally, without further provider credits.
+
+Blender automatic weights on the original generated mesh failed. A watertight 6 mm voxel proxy provided body weights, transferred to the render mesh. Finger weights use local bone-capsule distances because automatic weights omitted several fingers and thumbs. The rebuilt mesh has no unweighted vertices. The saved Blender source is `assets/chainmaker/tripo-v2/recovered-rig.blend`.
+
+The wraparound rear apron was cut away with plane splits. Dark wool upper trousers were added and the exposed lower trousers received the same material. The original face, cap, waistcoat and shirt texture remain. Front/rear/side PNGs in the receipt folder show the **original static source before these repairs**, not the final character.
+
+The new Three.js rig fits the existing hammer and tongs to actual arm lengths. Finger curls close around the shafts; calibrated thumbs oppose the fingers. The body stands 18 cm nearer the anvil so its forearms can reach both grips. The head tilts toward the work. The original strike timing remains, including hammer contact with the anvil. This is an interpreted work cycle, not a captured historical motion.
+
+The replacement now loads in the main forge and by default at `/chainmaker`. `/chainmaker?asset=legacy` retains the earlier figure for comparison. The worker is approximately 1.72 m tall. Final payload: **2,354,016 bytes, 98,328 triangles, 54 joints**, Meshopt geometry and WebP textures. Colour is bounded at 2K; roughness and normal maps are 1K. The 4 MB / 120,000-triangle admission limits pass.
+
+### Validation and remaining limits
+
+- Final GLB: zero glTF validation errors and no semantic rig warnings.
+- Skeletal test: 282 frames at two floor heights and under a translated/rotated forge parent; finite sampled skin vertices, wrist contact within 0.003 m, thumb pads near the shafts, and no hammer penetration into the anvil.
+- Existing chainmaker checks, village type checks and production build pass. The build also checks source hashes and asset budgets.
+- Browser review: work, raised, hand and back views; main-forge placement and live movement. No village console errors were recorded.
+- Hands improve substantially but retain some generated thumb-base and wrist irregularities at extreme close range. This is not perfect anatomical reconstruction. No additional provider jobs or cash purchases were used.
+- Local changes only; do not push because Netlify is connected.
+
+### Reproduction
+
+Run from the repository root. The static preview and intermediate GLBs are ignored; the original download, repaired Blender source, runtime asset and validation receipts are retained.
+
+```sh
+node scripts/chainmaker/prepare-tripo-preview.mjs
+node scripts/chainmaker/recover-tripo-bind.mjs
+blender --background --python-exit-code 1 --python scripts/chainmaker/recover-tripo-rig.py
+node scripts/chainmaker/pack-tripo.mjs
+npm run chainmaker:skeletal
+npm run chainmaker:check
+npm run village:check
+npm run build
+```

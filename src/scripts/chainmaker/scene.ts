@@ -6,6 +6,7 @@ import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {centralWorkstation} from '../village/workshop';
 import {createChainmakerRig,LINK,PERIOD} from './rig';
+import {createSkeletalChainmakerRig} from './skeletal-rig';
 const mount=document.getElementById('study-canvas')!;
 const renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.04;mount.append(renderer.domElement);renderer.domElement.tabIndex=0;renderer.domElement.setAttribute('aria-label','Chainmaker. Drag to rotate; scroll to zoom.');
 const scene=new T.Scene();scene.background=new T.Color('#d9d6c9');scene.fog=new T.Fog('#d9d6c9',8,22);
@@ -33,15 +34,16 @@ const loading=document.getElementById('loading')!;
 const query=new URLSearchParams(location.search);const reduce=matchMedia('(prefers-reduced-motion: reduce)');let paused=query.has('still')||reduce.matches;const requestedTime=Number(query.get('t')??1.97);let time=Number.isFinite(requestedTime)?requestedTime:1.97;let last=performance.now();
 const motion=document.getElementById('motion') as HTMLButtonElement;
 function setPause(value:boolean){paused=value;motion.textContent=paused?'Play':'Pause';motion.setAttribute('aria-pressed',String(paused));}setPause(paused);
-const views={work:{eye:[2.25,1.95,3.7],target:[.13,1.04,.30]},portrait:{eye:[.95,1.8,2.2],target:[0,1.48,.10]},side:{eye:[-3.5,1.95,1.25],target:[0,1.03,.45]}};
+const views={hands:{eye:[.7,1.4,1.3],target:[0,1.13,.42]},back:{eye:[-1.8,1.6,-3],target:[0,.92,.14]},work:{eye:[2.25,1.95,3.7],target:[.13,1.04,.30]},portrait:{eye:[.95,1.8,2.2],target:[0,1.48,.10]},side:{eye:[-3.5,1.95,1.25],target:[0,1.03,.45]}};
 function setView(name:keyof typeof views){const v=views[name];const aspect=innerWidth/innerHeight;const target=new T.Vector3(...v.target);camera.position.copy(target).add(new T.Vector3(...v.eye).sub(target).multiplyScalar(aspect<.8?1.42:1));controls.target.copy(target);controls.update();document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===name)));}
 setView((query.get('view') in views?query.get('view'):'work') as keyof typeof views);
 document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view as keyof typeof views));
 motion.onclick=()=>setPause(!paused);document.getElementById('strike')!.onclick=()=>{time=PERIOD*.68;setPause(true);};document.getElementById('lift')!.onclick=()=>{time=PERIOD*.45;setPause(true);};reduce.addEventListener('change',e=>{if(e.matches)setPause(true);});
+if(query.get('asset')==='legacy'){document.querySelector('.edition')!.textContent='01 / EARLIER FIGURE';document.querySelector<HTMLAnchorElement>('#notes a[download]')!.href='/chainmaker/chainmaker.glb';}
 const notes=document.getElementById('notes')!,about=document.getElementById('show-notes')!;about.onclick=()=>{notes.hidden=!notes.hidden;about.setAttribute('aria-expanded',String(!notes.hidden));};document.getElementById('close-notes')!.onclick=()=>{notes.hidden=true;about.setAttribute('aria-expanded','false');about.focus();};
 window.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===renderer.domElement){e.preventDefault();setPause(!paused);}if(e.key==='Escape'&&!notes.hidden){notes.hidden=true;about.setAttribute('aria-expanded','false');about.focus();}});
-Promise.all([loader.loadAsync('/chainmaker/chainmaker.glb'),loader.loadAsync('/forge/mushroom-green-forge.glb')]).then(([figure,forge])=>{
- figure.scene.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(figure.scene);rig=createChainmakerRig(figure.scene);
+Promise.all([loader.loadAsync(query.get('asset')==='legacy'?'/chainmaker/chainmaker.glb':'/chainmaker-v2/chainmaker.glb'),loader.loadAsync('/forge/mushroom-green-forge.glb')]).then(([figure,forge])=>{
+ figure.scene.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(figure.scene);rig=query.get('asset')==='legacy'?createChainmakerRig(figure.scene):createSkeletalChainmakerRig(figure.scene);
  forge.scene.updateMatrixWorld(true);forge.scene.traverse(o=>{if(!(o instanceof T.Mesh)||!/^Anvil|^Hearth/.test(o.name))return;const geo=centralWorkstation(o.geometry,o.matrixWorld);if(!geo.index?.count){geo.dispose();return;}const materials=(Array.isArray(o.material)?o.material:[o.material]).map(mat=>{const copy=mat.clone();if(copy instanceof T.MeshStandardMaterial&&copy.emissive.getHex()!==0){copy.color.set('#342f25');copy.emissive.set('#a82c05');copy.emissiveIntensity=.35;}return copy;});const m=new T.Mesh(geo,Array.isArray(o.material)?materials:materials[0]);if(!/^Anvil/.test(o.name))m.position.set(-1.35,0,-.5);m.castShadow=true;m.receiveShadow=true;scene.add(m);});
  refineObject(scene);ready=true;loading.hidden=true;rig.update(time);
 }).catch(error=>{console.error(error);loading.textContent='The study could not load. Reload to try again.';});
