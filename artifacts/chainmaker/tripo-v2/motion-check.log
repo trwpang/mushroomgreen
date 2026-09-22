@@ -8,7 +8,9 @@
     0,
     0.125
   ],
-  "maxWristError": 2.3835500448305123e-8,
+  "maxWristError": 1.2255874912679037e-8,
   "maxVertex": 1.7148738991394772,
+  "maxWristBend": 18.00245530881631,
+  "maxJointStep": 4.618901478664659,
   "finiteSkin": true
 }

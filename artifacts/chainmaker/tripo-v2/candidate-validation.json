@@ -1,7 +1,7 @@
 {
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-21T06:48:14.626Z",
+  "validatedAt": "2026-09-22T08:46:08.536Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 3,
@@ -53,7 +53,7 @@
         "pointer": "/buffers/0",
         "mimeType": "application/gltf-buffer",
         "storage": "glb",
-        "byteLength": 2330320
+        "byteLength": 2319712
       },
       {
         "pointer": "/buffers/1",

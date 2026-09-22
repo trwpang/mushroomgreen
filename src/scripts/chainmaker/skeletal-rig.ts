@@ -37,23 +37,60 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
  function update(time:number){
   for(const [b,r]of rest)b.quaternion.copy(r.q);
   root.updateMatrixWorld(true);const p=poseAt(time,floorHeight);
+  p.grip.y+=p.lift*.07;p.hammerFace.y+=p.lift*.07;
   const head=bone('Head');orient(head,new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),.27+p.lift*.03).multiply(rest.get(head)!.world));
   for(let i=0;i<rigs.length;i++){
    const r=rigs[i],a=p.arms[i];
-   // This mesh has a longer palm than the earlier assembled hands.
-   a.wrist.copy(a.grip).addScaledVector(a.tool.y,.105).addScaledVector(a.tool.z,r.side*.027);
-   const shoulder=position(r.upper),delta=a.wrist.clone().sub(shoulder),distance=delta.length(),max=r.upperLength+r.lowerLength;
-   if(distance>max+.002)throw Error(`Skeletal wrist unreachable: ${distance.toFixed(3)} > ${max.toFixed(3)}`);
-   const axis=delta.normalize(),pole=new T.Vector3(r.side*.65,.48,-.18);pole.addScaledVector(axis,-pole.dot(axis)).normalize();
-   const along=(r.upperLength**2-r.lowerLength**2+distance**2)/(2*distance),height=Math.sqrt(Math.max(0,r.upperLength**2-along**2));
-   const elbow=shoulder.clone().addScaledVector(axis,along).addScaledVector(pole,height);
-   aim(r.upper,r.fore,elbow);aim(r.fore,r.hand,a.wrist);
-   const across=a.tool.x.clone().multiplyScalar(r.side*r.palmSign),forward=a.tool.y.clone().negate(),normal=new T.Vector3().crossVectors(across,forward);
+   // Roll each grip around its shaft so the palm continues the forearm.
+   // A tool's arbitrary mesh up-axis must never dictate a person's wrist bend.
+   const shoulder=position(r.upper),shaft=a.tool.x.clone();
+   const solve=(roll:number)=>{
+    const y=a.tool.y.clone().applyAxisAngle(shaft,roll),z=new T.Vector3().crossVectors(shaft,y);
+    const rake=i===0?1.0:.95;
+    const forward=y.clone().multiplyScalar(-Math.cos(rake)).addScaledVector(shaft,Math.sin(rake));
+    const wrist=a.grip.clone().addScaledVector(forward,-.105).addScaledVector(z,r.side*.027);
+    const delta=wrist.clone().sub(shoulder),distance=delta.length(),axis=delta.normalize();
+    const pole=new T.Vector3(r.side*.55,-.8,-.28);pole.addScaledVector(axis,-pole.dot(axis)).normalize();
+    const along=(r.upperLength**2-r.lowerLength**2+distance**2)/(2*distance);
+    const height=Math.sqrt(Math.max(0,r.upperLength**2-along**2));
+    const elbow=shoulder.clone().addScaledVector(axis,along).addScaledVector(pole,height);
+    const foreDirection=wrist.clone().sub(elbow).normalize();
+    const cost=1-forward.dot(foreDirection)+Math.max(0,distance-r.upperLength-r.lowerLength+.015)*50;
+    return {y,z,forward,wrist,elbow,foreDirection,cost};
+   };
+   let roll=0,best=Infinity;
+   for(let n=0;n<72;n++){const value=-Math.PI+n*Math.PI/36,c=solve(value).cost;if(c<best){best=c;roll=value;}}
+   for(const step of [.025,.008,.002])for(let n=0;n<3;n++){
+    const lo=solve(roll-step).cost,hi=solve(roll+step).cost;
+    if(lo<best){best=lo;roll-=step;}else if(hi<best){best=hi;roll+=step;}
+   }
+   const chosen=solve(roll);a.wrist.copy(chosen.wrist);a.elbow.copy(chosen.elbow);a.shoulder.copy(shoulder);
+   a.tool={x:shaft,y:chosen.y,z:chosen.z,q:new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(shaft,chosen.y,chosen.z))};
+   aim(r.upper,r.fore,chosen.elbow);
+   const forward=chosen.forward,across=shaft.clone().addScaledVector(forward,-shaft.dot(forward)).normalize().multiplyScalar(r.side*r.palmSign),normal=new T.Vector3().crossVectors(across,forward);
    const targetFrame=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(across,forward,normal));
-   orient(r.hand,targetFrame.multiply(r.palmFrame.clone().invert()).multiply(rest.get(r.hand)!.world));
+   const handRotation=targetFrame.multiply(r.palmFrame.clone().invert()).multiply(rest.get(r.hand)!.world);
+   // Transport palm roll into the forearm, rather than twisting only the wrist skin.
+   const foreRest=rest.get(r.hand)!.position.clone().sub(rest.get(r.fore)!.position).normalize();
+   const transport=handRotation.clone().multiply(rest.get(r.hand)!.world.clone().invert());
+   const foreRotation=new T.Quaternion().setFromUnitVectors(foreRest.applyQuaternion(transport),chosen.foreDirection).multiply(transport).multiply(rest.get(r.fore)!.world);
+   orient(r.fore,foreRotation);orient(r.hand,handRotation);
    const applyFingers=()=>{for(const f of r.fingers){f.b.quaternion.copy(rest.get(f.b)!.q);if(f.adduction)f.b.quaternion.premultiply(new T.Quaternion().setFromAxisAngle(f.adductionAxis,f.adduction));f.b.quaternion.multiply(new T.Quaternion().setFromAxisAngle(f.axis,f.angle));}root.updateMatrixWorld(true);};
    applyFingers();
    if(!calibrated){
+    // Fit each finger to the handle with bounded flexion at all three joints.
+    for(const digit of ['Index','Middle','Ring','Pinky']){
+     const chain=r.fingers.filter(f=>f.b.name.includes(digit));
+     const base=position(chain[0].b).sub(a.grip).dot(a.tool.x);
+     const target=a.grip.clone().addScaledVector(a.tool.x,base+.008).addScaledVector(a.tool.z,-r.side*.017);
+     const score=()=>{applyFingers();return new T.Vector3(0,.018,0).applyMatrix4(relative(chain[2].b)).distanceToSquared(target);};
+     for(const step of [.3,.15,.06,.02])for(let round=0;round<5;round++)for(const f of chain){
+      const initial=f.angle;let best=score(),value=initial;
+      for(const change of [-step,step]){f.angle=T.MathUtils.clamp(initial+change,.12,1.65);const cost=score();if(cost<best){best=cost;value=f.angle;}}
+      f.angle=value;
+     }
+     applyFingers();
+    }
     // Fit the thumb pad once in the invariant hand/tool frame. It must oppose the fingers.
     const thumb=r.fingers.filter(f=>f.b.name.includes('Thumb'));
     const index=position(bone((i===0?'Right':'Left')+'HandIndex2')).sub(a.grip).dot(a.tool.x);
@@ -76,7 +113,7 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
   }
   calibrated=true;
   tools.Hammer.position.copy(p.grip);tools.Hammer.quaternion.copy(p.hammer.q);
-  tools.Tongs.position.copy(p.tongGrip);tools.Tongs.quaternion.copy(p.tongs.q);
+  tools.Tongs.position.copy(p.tongGrip);tools.Tongs.quaternion.copy(p.arms[0].tool.q);
   root.updateMatrixWorld(true);return p;
  }
  return {update};

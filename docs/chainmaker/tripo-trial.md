@@ -88,3 +88,16 @@ npm run chainmaker:check
 npm run village:check
 npm run build
 ```
+
+
+## Movement correction — 22 September 2026
+
+Tom's close view exposed a defect that the first contact tests did not cover: palms were aligned to each tool's up-axis, producing sharply bent wrists. The elbows also flared, and the hand surface blended between too many nearby bones. The earlier acceptance statement did not establish natural movement.
+
+The revised rig uses diagonal grips and chooses rotation about each shaft to keep the palm aligned with the forearm. Elbows stay lower and outside the torso. Forearm rotation follows the palm instead of placing all twist at the wrist. An extra 7 cm of lift gives the hammer arm room above the raised forge floor. The hammer still meets the same chain link at impact.
+
+Each finger is fitted to its handle with bounded flexion. Tong reins now turn with the gripping hand. Hand weights use the two nearest bone capsules and a 5 mm falloff, limiting unrelated finger influence. These changes preserve the original provider file and regenerate the local Blender and runtime models.
+
+The 282-frame regression now measures the actual palm-to-forearm angle, with a working-pose limit of 22 degrees. The observed maximum is 18.01 degrees. Arm joints change at most 4.62 degrees per 20 ms sample; the guard rejects changes above 9 degrees. Existing contact, finite-skin, both-floor and transformed-parent checks still pass. These are project constraints for this stroke, not general anatomical limits.
+
+Reviewed strike, raised and live poses in the browser, including the main forge. Character and village type checks, production build and GLB inspection pass. Final payload is 2,343,408 bytes with the same 98,328 triangles. Fine hand anatomy remains generated and can still benefit from sculpting; this correction addresses the severe pose defect. No provider spend or push.

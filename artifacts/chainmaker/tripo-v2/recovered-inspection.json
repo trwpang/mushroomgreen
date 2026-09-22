@@ -1,7 +1,7 @@
 {
   "source": "assets/chainmaker/tripo-v2/recovered-rig.glb",
   "bytes": 5572496,
-  "sha256": "533a887c273b16f3bede56e9b3ccfffc6e2902ec6ca5d68ffb581d878ded0e68",
+  "sha256": "20c6351787d1f9fac7530744f30b56d58a0493e861c6403151d5e1995fb9ffbe",
   "triangles": 97596,
   "finitePositions": true,
   "meshes": [

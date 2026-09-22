@@ -1,7 +1,7 @@
 {
   "source": "public/chainmaker-v2/chainmaker.glb",
-  "bytes": 2354016,
-  "sha256": "c0b71eb1f907825c9e93d4c8b30d4da2100cc466bb5b08f63bda24201a85f2b8",
+  "bytes": 2343408,
+  "sha256": "0502181a6ad2acbc6d13d24c40de22bb5c9b25de50150954e60bbf4869cc0ca2",
   "triangles": 98328,
   "finitePositions": true,
   "meshes": [

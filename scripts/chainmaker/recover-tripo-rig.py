@@ -57,8 +57,8 @@ for side in ['Left','Right']:
             delta=b.tail_local-b.head_local;along=max(0,min(1,(vertex.co-b.head_local).dot(delta)/max(delta.length_squared,1e-9)))
             distance=(vertex.co-b.head_local-along*delta).length
             values.append((distance,b.name))
-        values.sort();near=values[:4];minimum=near[0][0]
-        weights_local=[math.exp(-((d-minimum)/.013)**2) for d,_ in near];total=sum(weights_local)
+        values.sort();near=values[:2];minimum=near[0][0]
+        weights_local=[math.exp(-((d-minimum)/.005)**2) for d,_ in near];total=sum(weights_local)
         for group in mesh.vertex_groups:group.remove([vertex.index])
         for weight,(_,name) in zip(weights_local,near):mesh.vertex_groups[name].add([vertex.index],weight/total,'REPLACE')
 mesh.parent=rig

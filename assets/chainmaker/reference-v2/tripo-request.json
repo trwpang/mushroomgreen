@@ -78,10 +78,11 @@
     "extraProviderCredits": 0,
     "method": "Recover bind positions, rebuild skin weights in Blender, correct apron and trousers, fit tools and fingers in Three.js",
     "runtime": "public/chainmaker-v2/chainmaker.glb",
-    "bytes": 2354016,
+    "bytes": 2343408,
     "triangles": 98328,
     "joints": 54,
     "validationErrors": 0,
-    "motionFramesChecked": 282
+    "motionFramesChecked": 282,
+    "lastRefinement": "2026-09-22: diagonal grips, lower elbows, forearm roll, bounded wrist bend and narrower hand skin weights"
   }
 }
