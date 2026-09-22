@@ -21,11 +21,19 @@ for(const floor of [0,.125]){
  const gltf=await loader.parseAsync(cleaned.buffer.slice(cleaned.byteOffset,cleaned.byteOffset+cleaned.byteLength),'');
  const root=gltf.scene,parent=new T.Group();parent.position.set(12,7,-9);parent.rotation.y=.73;parent.add(root);parent.updateMatrixWorld(true);const rig=createSkeletalChainmakerRig(root,floor);root.position.y=floor;
  const getBone=(name:string)=>{let found:T.Bone;root.traverse(o=>{if(o instanceof T.Bone&&o.name.replace(/[^a-z0-9]/gi,'')==='mixamorig'+name)found=o;});return found!;};
+ const palmSigns=['RightHand','LeftHand'].map(name=>{
+  const wrist=getBone(name).getWorldPosition(new T.Vector3());
+  const across=getBone(name+'Index1').getWorldPosition(new T.Vector3()).sub(getBone(name+'Pinky1').getWorldPosition(new T.Vector3()));
+  const forward=getBone(name+'Middle1').getWorldPosition(new T.Vector3()).sub(wrist);
+  return Math.sign(new T.Vector3().crossVectors(across,forward).applyQuaternion(parent.quaternion.clone().invert()).z);
+ });
  const previous=new Map<string,T.Quaternion>();
  const footNames=['LeftFoot','RightFoot'];
  rig.update(0);
  for(const hand of rig.grips())for(const f of hand){
   if(f.name.includes('Thumb'))assert.ok(f.angle>=-.35&&f.angle<=1.25,'Thumb must not fold backwards to reach the handle');
+  if(!f.name.includes('Thumb')&&f.name.endsWith('1'))assert.ok(f.angle>=1.3,'Power grip must close at the main knuckles');
+  if(!f.name.includes('Thumb')&&f.name.endsWith('2'))assert.ok(f.angle>=1.2,'Power grip must close the middle finger joints');
   if(!f.name.includes('Thumb')&&f.name.endsWith('3'))assert.ok(f.angle<=1.35,'Fingertip must not curl into a hook');
  }
  const feet=footNames.map(name=>getBone(name).getWorldPosition(new T.Vector3()));
@@ -40,6 +48,9 @@ for(const floor of [0,.125]){
    const arm=p.arms[k];
    const middle=root.worldToLocal(getBone(name+'Middle1').getWorldPosition(new T.Vector3()));
    const palm=middle.clone().sub(actual).normalize(),fore=actual.clone().sub(arm.elbow).normalize();
+   const across=root.worldToLocal(getBone(name+'Index1').getWorldPosition(new T.Vector3())).sub(root.worldToLocal(getBone(name+'Pinky1').getWorldPosition(new T.Vector3())));
+   const facing=new T.Vector3().crossVectors(across,palm).normalize().multiplyScalar(palmSigns[k]);
+   assert.ok(facing.y<-.2,'Both hands must hold from above, not balance tools palm-up');
    const bend=T.MathUtils.radToDeg(palm.angleTo(fore));maxWristBend=Math.max(maxWristBend,bend);
    assert.ok(bend<22,`Wrist bend must stay below 22 degrees; got ${bend}`);
    for(const joint of [name,name.replace('Hand','ForeArm'),name.replace('Hand','Arm')]){

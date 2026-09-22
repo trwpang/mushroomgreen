@@ -2,15 +2,19 @@
 > mushroomgreen@0.1.0 chainmaker:skeletal
 > esbuild scripts/chainmaker/check-skeletal-rig.ts --bundle --platform=node --format=esm --outfile=/tmp/chainmaker-skeletal-check.mjs && node /tmp/chainmaker-skeletal-check.mjs
 
+
+  ../../../../tmp/chainmaker-skeletal-check.mjs  1007.5kb
+
+⚡ Done in 40ms
 {
   "frames": 842,
   "floors": [
     0,
     0.125
   ],
-  "maxWristError": 9.746872745299817e-9,
+  "maxWristError": 1.1192364833343451e-8,
   "maxVertex": 1.706301212414571,
-  "maxWristBend": 19.88220427794521,
-  "maxJointStep": 4.5787530618956875,
+  "maxWristBend": 14.387311687280418,
+  "maxJointStep": 4.5842362512665265,
   "finiteSkin": true
 }

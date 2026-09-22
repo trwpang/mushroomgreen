@@ -61,14 +61,17 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
   orient(head,new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),.38+.018*motion.impact-.035*motion.inspect).multiply(rest.get(head)!.world));
   for(let i=0;i<rigs.length;i++){
    const r=rigs[i],a=p.arms[i];
+   // Both source palms must face into the handle from above. Mirroring by arm
+   // side gives the holding hand an underhand, open-palm grip.
+   const gripSide=1;
    // Roll each grip around its shaft so the palm continues the forearm.
    // A tool's arbitrary mesh up-axis must never dictate a person's wrist bend.
    const shoulder=position(r.upper),shaft=a.tool.x.clone();
    const solve=(roll:number)=>{
     const y=a.tool.y.clone().applyAxisAngle(shaft,roll),z=new T.Vector3().crossVectors(shaft,y);
-    const rake=i===0?1.0:.95;
+    const rake=.9;
     const forward=y.clone().multiplyScalar(-Math.cos(rake)).addScaledVector(shaft,Math.sin(rake));
-    const wrist=a.grip.clone().addScaledVector(forward,-.105).addScaledVector(z,r.side*.027);
+    const wrist=a.grip.clone().addScaledVector(forward,-.095).addScaledVector(z,gripSide*.034);
     const delta=wrist.clone().sub(shoulder),distance=delta.length(),axis=delta.normalize();
     const pole=new T.Vector3(r.side*.55,-.8,-.28);pole.addScaledVector(axis,-pole.dot(axis)).normalize();
     const along=(r.upperLength**2-r.lowerLength**2+distance**2)/(2*distance);
@@ -87,7 +90,7 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
    const chosen=solve(roll);a.wrist.copy(chosen.wrist);a.elbow.copy(chosen.elbow);a.shoulder.copy(shoulder);
    a.tool={x:shaft,y:chosen.y,z:chosen.z,q:new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(shaft,chosen.y,chosen.z))};
    aim(r.upper,r.fore,chosen.elbow);
-   const forward=chosen.forward,across=shaft.clone().addScaledVector(forward,-shaft.dot(forward)).normalize().multiplyScalar(r.side*r.palmSign),normal=new T.Vector3().crossVectors(across,forward);
+   const forward=chosen.forward,across=shaft.clone().addScaledVector(forward,-shaft.dot(forward)).normalize().multiplyScalar(gripSide*r.palmSign),normal=new T.Vector3().crossVectors(across,forward);
    const targetFrame=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(across,forward,normal));
    const handRotation=targetFrame.multiply(r.palmFrame.clone().invert()).multiply(rest.get(r.hand)!.world);
    // Transport palm roll into the forearm, rather than twisting only the wrist skin.
@@ -98,15 +101,17 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
    const applyFingers=()=>{for(const f of r.fingers){f.b.quaternion.copy(rest.get(f.b)!.q);if(f.adduction)f.b.quaternion.premultiply(new T.Quaternion().setFromAxisAngle(f.adductionAxis,f.adduction));f.b.quaternion.multiply(new T.Quaternion().setFromAxisAngle(f.axis,f.angle));}root.updateMatrixWorld(true);};
    applyFingers();
    if(!calibrated){
-    // Fit each finger to the handle with bounded flexion at all three joints.
+    // Start within the power-grip bounds: candidate limits alone allow an open
+    // initial pose to win. Close the knuckles first, then fit the fingertips.
     for(const digit of ['Index','Middle','Ring','Pinky']){
      const chain=r.fingers.filter(f=>f.b.name.includes(digit));
+     chain.forEach((f,j)=>f.angle=[1.3,1.2,.65][j]);
      const base=position(chain[0].b).sub(a.grip).dot(a.tool.x);
-     const target=a.grip.clone().addScaledVector(a.tool.x,base+.008).addScaledVector(a.tool.z,-r.side*.017);
-     const score=()=>{applyFingers();const contact=new T.Vector3(0,.018,0).applyMatrix4(relative(chain[2].b)).distanceToSquared(target);return contact+.00003*chain.reduce((sum,f,j)=>sum+(f.angle-[1,1.1,.65][j])**2,0);};
+     const target=a.grip.clone().addScaledVector(a.tool.x,base+.008).addScaledVector(a.tool.z,-gripSide*.017);
+     const score=()=>{applyFingers();const contact=new T.Vector3(0,.018,0).applyMatrix4(relative(chain[2].b)).distanceToSquared(target);return contact+.00015*chain.reduce((sum,f,j)=>sum+(f.angle-[1.3,1.2,.65][j])**2,0);};
      for(const step of [.3,.15,.06,.02])for(let round=0;round<5;round++)for(const f of chain){
       const initial=f.angle;let best=score(),value=initial;
-      for(const change of [-step,step]){f.angle=T.MathUtils.clamp(initial+change,.12,f.b===chain[2].b?1.35:f.b===chain[0].b?1.4:1.65);const cost=score();if(cost<best){best=cost;value=f.angle;}}
+      for(const change of [-step,step]){f.angle=T.MathUtils.clamp(initial+change,f.b===chain[0].b?1.3:f.b===chain[1].b?1.2:.5,f.b===chain[2].b?1.35:f.b===chain[0].b?1.4:1.65);const cost=score();if(cost<best){best=cost;value=f.angle;}}
       f.angle=value;
      }
      applyFingers();
@@ -114,7 +119,7 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
     // Fit the thumb beside the curled fingers, without folding its base backwards.
     const thumb=r.fingers.filter(f=>f.b.name.includes('Thumb'));
     const index=position(bone((i===0?'Right':'Left')+'HandIndex2')).sub(a.grip).dot(a.tool.x);
-    const target=a.grip.clone().addScaledVector(a.tool.x,index).addScaledVector(a.tool.z,-r.side*.023);
+    const target=a.grip.clone().addScaledVector(a.tool.x,index).addScaledVector(a.tool.z,-gripSide*.023);
     const score=()=>{applyFingers();const tip=new T.Vector3(0,.022,0).applyMatrix4(relative(thumb[2].b));return tip.distanceToSquared(target);};
     const parameters=[{f:thumb[0],key:'adduction' as const,min:-1.3,max:1.3},...thumb.map((f,j)=>({f,key:'angle' as const,min:j===0?-.35:0,max:1.25}))];
     let seedScore=Infinity,seed=[0,0,.6,.6];

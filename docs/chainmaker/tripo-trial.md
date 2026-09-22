@@ -114,3 +114,11 @@ The thumb fit was also defective: it used roughly −1.25 radians at the base to
 Several palm-weight changes were tried, inspected closely, and rejected because they introduced gaps or narrow skin projections. The previous Blender source and runtime mesh remain canonical and unchanged. This pass changes animation and grip poses; it does not claim to repair every defect in the generated hand anatomy.
 
 Validation covers 842 samples across both floor heights, transformed parents, planted feet, shoulder participation, all three impact contacts, bounded thumb/finger poses, wrist bend and abrupt arm rotations. Maximum wrist bend was 19.89 degrees and maximum arm-joint change was 4.58 degrees per 10 ms sample, below the new 6-degree guard. GLB inspection, character/village type checks and production build pass. Browser checks cover raised and strike close-ups, side posture, and the live forge. Runtime payload remains 2,343,408 bytes. No provider spend and no push.
+
+### September 22: overhand grip and closed fists
+
+The holding hand now takes the tongs from above. The forearm carries the turn, rather than applying it only at the wrist. Both tools sit deeper in the palm, with a slightly less diagonal handle angle. Finger fitting starts with closed knuckles and preserves minimum proximal and middle-joint flexion; previously an open initial pose could survive the candidate limits.
+
+Reviewed the impact and raised poses in the browser. The close-up mesh still has angular areas around the thumb bases; this pass corrects grip direction and closure, rather than replacing the recovered hand skin. No new asset generation or Tripo spending.
+
+Validation: 842 skeletal samples on both floor heights, including downward-facing palms, closed finger joints, thumb contact, stable feet and tool contact. Maximum wrist bend 14.39 degrees; maximum arm-joint step 4.59 degrees per 10 ms. Legacy rig checks, village type check and production build pass.
