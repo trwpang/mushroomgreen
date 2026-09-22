@@ -39,7 +39,7 @@ The main shop receives 84 small, 63 medium and 18 large links; 42 straight blank
 
 ## Browser cost and checks
 
-Original local geometry; no Tripo job or new texture image was needed. Metal uses the existing shared iron atlas. Repeated pieces use instancing: 17 batches in the main shop and 13 in Henry’s shop. The new props add 73,144 and 28,976 drawn triangles respectively.
+Original local geometry; no Tripo job or new texture image was needed. Metal uses the existing shared iron atlas. Repeated pieces use instancing: 18 batches in the main shop and 14 in Henry’s shop. The new props add 76,876 and 30,220 drawn triangles respectively.
 
 The rebuilt compressed forge is 11,913,776 bytes and 516,020 triangles, within its existing 12 MB / 600,000 triangle limits. This budget covers the GLB, not the complete village or added runtime props. Khronos validation reports zero errors; decoded position and index checks pass.
 
@@ -47,4 +47,8 @@ Checks: TypeScript; compressed workstation extraction; prop bounds, entrance and
 
 ## Further details visible in the references
 
-A suspended large ring and support rod, dense chain-filled bins, more specific bench fixtures, and worn shutter catches offer useful future modelling references. Their exact forms and historical use need individual checks. These are not claimed as completed in this pass.
+Dense chain-filled bins, more specific bench fixtures, and worn shutter catches offer useful future modelling references. Their exact forms and historical use need individual checks. These are not claimed as completed in this pass.
+
+## Suspended chain rings
+
+Added from IMG_4273 after Tom identified their use for supporting chain. Each main station has a heavy open ring on a slender iron rod, attached to a timber beam with an iron saddle. Henry’s station has a smaller ring and shorter suspension. Rings sit towards the anvil horn, clear of the working figure’s hammer stroke. Supports remain visible in cutaway views. Ring size and beam arrangement are estimates. This adds one instanced batch per shop and uses existing materials.

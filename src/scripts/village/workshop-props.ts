@@ -2,7 +2,7 @@ import * as T from 'three';
 import {refineSurface} from '../rendering/surfaces';
 import {textureDetail} from './texture-detail';
 
-export interface ShopPlacement {kind:string;x:number;z:number;radius:number;support:'floor'|'bench'|'wall';}
+export interface ShopPlacement {kind:string;x:number;z:number;radius:number;support:'floor'|'bench'|'wall'|'beam';}
 /** Visit-derived shop contents. Metres in the unscaled shop, with separate domestic quantities. */
 export function addWorkshopProps(root:T.Group,domestic=false){
  const group=new T.Group();group.name='Workshop_details';root.add(group);
@@ -43,7 +43,25 @@ export function addWorkshopProps(root:T.Group,domestic=false){
  }
  const sizes={small:{l:.075,w:.037,t:.007},medium:{l:.15,w:.078,t:.013},large:{l:.44,w:.23,t:.04}};
  const geometries=Object.fromEntries(Object.entries(sizes).map(([key,s])=>[key,linkGeometry(s.l,s.w,s.t)]));
- const counts={small:0,medium:0,large:0,blanks:0,tools:0};
+ const counts={small:0,medium:0,large:0,blanks:0,tools:0,suspensionRings:0};
+ const suspensionRing=new T.TorusGeometry(1,.09,8,36);
+ function hangingRing(station:number){
+  // IMG_4273: a heavy open iron ring hangs from a slender overhead rod.
+  // Offset towards the horn, outside the hammer stroke and the chimney breast.
+  const x=station*sx+.49,z=.80*sz,beamY=2.46*root.scale.y;
+  const radius=domestic?.10:.12,y=domestic?1.43:1.75;
+  placements.push({kind:'chain suspension ring',x,z,radius,support:'beam'});
+  block([x,beamY,0],[.12,.14,4.08*sz]);
+  // A saddle wraps the timber so the support remains legible in roof cutaways.
+  for(const side of [-1,1])block([x+side*.066,beamY,z],[.018,.17,.058],'iron');
+  block([x,beamY+.079,z],[.15,.018,.058],'iron');
+  block([x,beamY-.079,z],[.15,.018,.058],'iron');
+  rod(new T.Vector3(x,beamY-.083,z),new T.Vector3(x,y+radius+.016,z),.009);
+  // The small lower eye passes around the top of the larger ring.
+  add('suspension-rings',suspensionRing,mats.iron,new T.Vector3(x,y+radius+.008,z),new T.Vector3(.025,.035,.025),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),Math.PI/2));
+  add('suspension-rings',suspensionRing,mats.iron,new T.Vector3(x,y,z),new T.Vector3(radius,radius*1.07,radius));
+  counts.suspensionRings++;
+ }
  function placeLink(kind:keyof typeof sizes,px:number,pz:number,angle:number,i:number,lift=0){
   const s=sizes[kind],tilt=i%2?1.08:-.12,forward=new T.Vector3(Math.cos(angle),0,Math.sin(angle));
   const across=new T.Vector3(-Math.sin(angle),0,Math.cos(angle)).applyAxisAngle(forward,tilt);
@@ -138,6 +156,8 @@ export function addWorkshopProps(root:T.Group,domestic=false){
   toolRail(.70,-1.30);quench(-.62,.86,.17);
   benchTools(-.30,.757,.31);legVice(.35,.76);
  }
+ // Append these after existing props to preserve their seeded variation.
+ for(const station of domestic?[0]:[-3,0,3])hangingRing(station);
  for(const [key,b]of batches){
   const mesh=new T.InstancedMesh(b.geometry,b.material,b.matrices.length);mesh.name='Workshop_'+key;
   b.matrices.forEach((m,i)=>{mesh.setMatrixAt(i,m);mesh.setColorAt(i,b.colors[i]);});

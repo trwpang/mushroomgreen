@@ -18,16 +18,18 @@
       "straightBlanks": 42,
       "openLinks": 6,
       "tools": 15,
-      "drawBatches": 17,
-      "triangles": 73144
+      "drawBatches": 18,
+      "triangles": 76876,
+      "suspensionRings": 3
     },
     "henry": {
       "links": 66,
       "straightBlanks": 14,
       "openLinks": 2,
       "tools": 7,
-      "drawBatches": 13,
-      "triangles": 28976
+      "drawBatches": 14,
+      "triangles": 30220,
+      "suspensionRings": 1
     }
   },
   "checks": [
