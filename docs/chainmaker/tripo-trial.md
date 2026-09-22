@@ -101,3 +101,16 @@ Each finger is fitted to its handle with bounded flexion. Tong reins now turn wi
 The 282-frame regression now measures the actual palm-to-forearm angle, with a working-pose limit of 22 degrees. The observed maximum is 18.01 degrees. Arm joints change at most 4.62 degrees per 20 ms sample; the guard rejects changes above 9 degrees. Existing contact, finite-skin, both-floor and transformed-parent checks still pass. These are project constraints for this stroke, not general anatomical limits.
 
 Reviewed strike, raised and live poses in the browser, including the main forge. Character and village type checks, production build and GLB inspection pass. Final payload is 2,343,408 bytes with the same 98,328 triangles. Fine hand anatomy remains generated and can still benefit from sculpting; this correction addresses the severe pose defect. No provider spend or push.
+
+
+## Working rhythm and grip correction — 22 September, second pass
+
+Tom still found the movement unnatural. The next pass inspected his local `photos/IMG_4265.MOV`, including frame sequences around 3–5 seconds. The visible demonstrator leans toward the work, keeps the holding hand comparatively steady, and uses compact hammer movements. The new animation interprets these cues; it is hand-authored, not tracked motion or an exact reconstruction of that demonstration.
+
+A separate skeletal work cycle now uses three compact blows of different heights and durations, then a short inspection pause. The complete sequence lasts 4.2 seconds. The downstroke accelerates, with a small rebound. The spine carries a forward working lean and restrained follow-through while both feet remain planted. The head looks toward the work. The legacy figure retains its earlier timing. Study pose buttons now select the new strike and raised times.
+
+The thumb fit was also defective: it used roughly −1.25 radians at the base to satisfy a contact target behind the grip. Its target now lies beside the curled fingers. The base cannot extend below −0.35 radians, thumb flexion stops at 1.25 radians, and fingertips stop at 1.35 radians. Finger fitting includes a small preference for a balanced curl, so distal joints do not compensate by forming hooks.
+
+Several palm-weight changes were tried, inspected closely, and rejected because they introduced gaps or narrow skin projections. The previous Blender source and runtime mesh remain canonical and unchanged. This pass changes animation and grip poses; it does not claim to repair every defect in the generated hand anatomy.
+
+Validation covers 842 samples across both floor heights, transformed parents, planted feet, shoulder participation, all three impact contacts, bounded thumb/finger poses, wrist bend and abrupt arm rotations. Maximum wrist bend was 19.89 degrees and maximum arm-joint change was 4.58 degrees per 10 ms sample, below the new 6-degree guard. GLB inspection, character/village type checks and production build pass. Browser checks cover raised and strike close-ups, side posture, and the live forge. Runtime payload remains 2,343,408 bytes. No provider spend and no push.

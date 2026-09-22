@@ -7,6 +7,7 @@ import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {centralWorkstation} from '../village/workshop';
 import {createChainmakerRig,LINK,PERIOD} from './rig';
 import {createSkeletalChainmakerRig} from './skeletal-rig';
+import {WORK_POSES} from './work-cycle';
 const mount=document.getElementById('study-canvas')!;
 const renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.04;mount.append(renderer.domElement);renderer.domElement.tabIndex=0;renderer.domElement.setAttribute('aria-label','Chainmaker. Drag to rotate; scroll to zoom.');
 const scene=new T.Scene();scene.background=new T.Color('#d9d6c9');scene.fog=new T.Fog('#d9d6c9',8,22);
@@ -38,7 +39,7 @@ const views={hands:{eye:[.7,1.4,1.3],target:[0,1.13,.42]},back:{eye:[-1.8,1.6,-3
 function setView(name:keyof typeof views){const v=views[name];const aspect=innerWidth/innerHeight;const target=new T.Vector3(...v.target);camera.position.copy(target).add(new T.Vector3(...v.eye).sub(target).multiplyScalar(aspect<.8?1.42:1));controls.target.copy(target);controls.update();document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===name)));}
 setView((query.get('view') in views?query.get('view'):'work') as keyof typeof views);
 document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view as keyof typeof views));
-motion.onclick=()=>setPause(!paused);document.getElementById('strike')!.onclick=()=>{time=PERIOD*.68;setPause(true);};document.getElementById('lift')!.onclick=()=>{time=PERIOD*.45;setPause(true);};reduce.addEventListener('change',e=>{if(e.matches)setPause(true);});
+motion.onclick=()=>setPause(!paused);document.getElementById('strike')!.onclick=()=>{time=query.get('asset')==='legacy'?PERIOD*.68:WORK_POSES.strike;setPause(true);};document.getElementById('lift')!.onclick=()=>{time=query.get('asset')==='legacy'?PERIOD*.45:WORK_POSES.raised;setPause(true);};reduce.addEventListener('change',e=>{if(e.matches)setPause(true);});
 if(query.get('asset')==='legacy'){document.querySelector('.edition')!.textContent='01 / EARLIER FIGURE';document.querySelector<HTMLAnchorElement>('#notes a[download]')!.href='/chainmaker/chainmaker.glb';}
 const notes=document.getElementById('notes')!,about=document.getElementById('show-notes')!;about.onclick=()=>{notes.hidden=!notes.hidden;about.setAttribute('aria-expanded',String(!notes.hidden));};document.getElementById('close-notes')!.onclick=()=>{notes.hidden=true;about.setAttribute('aria-expanded','false');about.focus();};
 window.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===renderer.domElement){e.preventDefault();setPause(!paused);}if(e.key==='Escape'&&!notes.hidden){notes.hidden=true;about.setAttribute('aria-expanded','false');about.focus();}});

@@ -3,14 +3,14 @@
 > esbuild scripts/chainmaker/check-skeletal-rig.ts --bundle --platform=node --format=esm --outfile=/tmp/chainmaker-skeletal-check.mjs && node /tmp/chainmaker-skeletal-check.mjs
 
 {
-  "frames": 282,
+  "frames": 842,
   "floors": [
     0,
     0.125
   ],
-  "maxWristError": 1.2255874912679037e-8,
-  "maxVertex": 1.7148738991394772,
-  "maxWristBend": 18.00245530881631,
-  "maxJointStep": 4.618901478664659,
+  "maxWristError": 9.746872745299817e-9,
+  "maxVertex": 1.706301212414571,
+  "maxWristBend": 19.88220427794521,
+  "maxJointStep": 4.5787530618956875,
   "finiteSkin": true
 }
