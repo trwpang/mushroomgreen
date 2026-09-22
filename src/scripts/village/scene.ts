@@ -10,6 +10,7 @@ import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfa
 import {addWorkingChainmaker} from '../chainmaker/worker';
 import {centralWorkstation} from './workshop';
 import {wearWorkshop} from './workshop-wear';
+import {addWorkshopProps} from './workshop-props';
 import {detailArchitecture,textureDetail} from './texture-detail';
 import {maintainMaterialTextures,disposeMaterialTextures} from './worked-materials';
 import {rememberPlace} from './location';
@@ -209,10 +210,12 @@ mount.dataset.chainmakers='1';
 const weaverShop=new T.Group();weaverShop.position.set(domesticShop.p[0],ground(...domesticShop.p),domesticShop.p[1]);weaverShop.rotation.y=domesticShop.angle;weaverShop.scale.set(.55,.72,.70);
 forge.scene.traverse(o=>{if(o instanceof T.Mesh&&buildingNames.test(o.name)&&! /^(Chimney|Flue|Lead)/.test(o.name)){let geometry=o.geometry;
 // Keep one full-sized work station in the domestic shop, with a clear central aisle.
-if(/^(Hearth|Cinders|Hood|Anvil|Hammer)/.test(o.name)){geometry=centralWorkstation(o.geometry,o.matrixWorld);const mesh=new T.Mesh(geometry,o.material);mesh.name=o.name;if(/^Cinders/.test(o.name)){const m=(Array.isArray(o.material)?o.material[0]:o.material).clone() as T.MeshStandardMaterial;if(m.emissive.getHex()!==0){m.emissive.set('#d54e14');m.emissiveIntensity=.65;}mesh.material=m;}mesh.castShadow=mesh.receiveShadow=true;weaverShop.add(mesh);return;}
+if(/^(Hearth|Cinders|Hood|Anvil|Hammer)/.test(o.name)){geometry=centralWorkstation(o.geometry,o.matrixWorld);if(/^Anvil/.test(o.name)){geometry.scale(1/.55,1/.72,1);geometry.translate(0,-.035/.72,0);}const mesh=new T.Mesh(geometry,o.material);mesh.name=o.name;if(/^Cinders/.test(o.name)){const m=(Array.isArray(o.material)?o.material[0]:o.material).clone() as T.MeshStandardMaterial;if(m.emissive.getHex()!==0){m.emissive.set('#d54e14');m.emissiveIntensity=.65;}mesh.material=m;}mesh.castShadow=mesh.receiveShadow=true;weaverShop.add(mesh);return;}
 const mesh=new T.Mesh(geometry,o.material);mesh.name=o.name;mesh.applyMatrix4(o.matrixWorld);mesh.castShadow=mesh.receiveShadow=true;weaverShop.add(mesh);}});
-const beforeStack=weaverShop.children.length;openStack(weaverShop,0,4.18,1.25,.66,1.65,.62,distantBrick);weaverShop.children.slice(beforeStack).forEach(o=>o.name='Chimney_domestic');
+const shopLime=new T.MeshStandardMaterial({name:'Chalk limewash domestic stack',color:'#cdc9b7',roughness:.96});
+const beforeStack=weaverShop.children.length;openStack(weaverShop,0,4.18,1.25,.66,1.65,.62,shopLime);weaverShop.children.slice(beforeStack).forEach(o=>o.name='Chimney_domestic');
 const smallPick=new T.Mesh(new T.BoxGeometry(9.4,5,5),new T.MeshBasicMaterial({visible:false}));smallPick.position.y=2.5;smallPick.userData.home=founder;weaverShop.add(smallPick);pickTargets.push(smallPick);scene.add(weaverShop);mount.dataset.domesticChainshops='1';
+const mainContents=addWorkshopProps(forgeRoot),smallContents=addWorkshopProps(weaverShop,true);mount.dataset.workshopContents=JSON.stringify({main:mainContents.counts,small:smallContents.counts});
 const shopGlow=new T.PointLight('#ffab57',5,4,2);shopGlow.position.copy(weaverShop.localToWorld(new T.Vector3(4.3,1.2,0)));scene.add(shopGlow);
 const showcase=addShowcase(scene);
 let cartOak:T.MeshStandardMaterial|undefined;highTemplates[0].traverse(o=>{if(o instanceof T.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])if(m instanceof T.MeshStandardMaterial&&/Old oak/.test(m.name))cartOak=m;});

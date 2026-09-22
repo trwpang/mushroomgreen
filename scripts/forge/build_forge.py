@@ -214,16 +214,9 @@ for side in [-1,1]:
                 box('Brickwork',(side*4.625+random.uniform(-.006,.006),(a+b)/2,z),(.045,b-a-.012,.068),random.choice(brick))
             y+=.30
 box('Interior',(0,0,.04),(9,4.2,.10),dark)
-# Visit photographs show an uneven brick floor and smoke-marked pale inner walls.
-for row in range(17):
-    for col in range(30):
-        x=-4.35+col*.295+(row%2)*.14;y=-1.98+row*.235
-        if x<4.4:box('Interior floor bricks',(x,y,.102+random.uniform(-.006,.006)),(.282,.221,.045),random.choice(sootbrick if random.random()<.25 else brick))
-inner_lime=mat('Smoke stained interior lime',(123,119,103))
-for i in range(28):
-    box('Interior lime',( -4.28+i*.315,1.975,1.21),(.30,.018,2.30),inner_lime)
-for side in [-1,1]:
-    for y in [-1.64,-1.31,1.31,1.64]:box('Interior lime',(side*4.365,y,1.20),(.018,.30,2.28),inner_lime)
+# September visit: small paving and individually limewashed interior brickwork.
+from visit_interior import build_surfaces, build_stations
+limewash,limejoint=build_surfaces(box,mesh,mat,front_hole,end_hole)
 
 def shutter(cx,cy,width,height,angle=0,side=0):
     rot=Matrix.Rotation(angle,3,'Z')
@@ -293,14 +286,14 @@ for i in range(33):
 for x in [-3.,0.,3.]:
     # Continuous recessed mortar walls close the brick joints, leaving an open flue.
     for side in [-1,1]:
-        box('Chimney mortar',(x,-1.3+side*.24,3.955),(.60,.12,2.12),mortar)
-        box('Chimney mortar',(x+side*.24,-1.3,3.955),(.12,.36,2.12),mortar)
+        box('Chimney mortar',(x,-1.3+side*.24,3.955),(.60,.12,2.12),limejoint)
+        box('Chimney mortar',(x+side*.24,-1.3,3.955),(.12,.36,2.12),limejoint)
     for row in range(25):
         z=2.94+row*.083
         for s in [-1,1]:
             for k in range(2):
-                box('Chimneys',(x+(k-.5)*.27,-1.3+s*.255,z),(.261,.12,.071),random.choice(sootbrick if row>16 or random.random()<.24 else brick))
-            box('Chimneys',(x+s*.255,-1.3,z),(.12,.39,.071),random.choice(sootbrick if row>16 else brick))
+                box('Chimneys',(x+(k-.5)*.27,-1.3+s*.255,z),(.261,.12,.071),random.choice(sootbrick if row>22 else limewash))
+            box('Chimneys',(x+s*.255,-1.3,z),(.12,.39,.071),random.choice(sootbrick if row>22 else limewash))
     for y in [-1.60,-1.]:box('Chimney caps',(x,y,5.06),(.69,.14,.10),sootbrick[0])
     for xx in [x-.275,x+.275]:box('Chimney caps',(xx,-1.3,5.06),(.14,.48,.10),sootbrick[0])
     box('Flue darkness',(x,-1.3,4.65),(.43,.43,.02),coal)
@@ -311,26 +304,7 @@ for x in [-3.6,-1.8,0,1.8,3.6]:
     rod('Roof structure',(x,-2.16,2.5),(x,0,4.07),.075,wood[0],sides=4)
     rod('Roof structure',(x,0,4.07),(x,2.16,2.5),.075,wood[0],sides=4)
     box('Roof structure',(x,0,2.5),(.15,4.3,.17),wood[0])
-for x in [-3,0,3]:
-    box('Hearth',(x,-1.60,.47),(1.15,.85,.85),brick[2])
-    box('Hearth',(x,-1.60,.92),(1.35,1.04,.14),dark)
-    for i in range(25):
-        rock('Cinders',(x+random.uniform(-.41,.41),-1.58+random.uniform(-.27,.27),1.02),(random.uniform(.05,.12),.08,.09),ember if i%3 else coal)
-    # Tapered sheet-iron smoke hood.
-    mesh('Hood',[(x+xx,-1.62+yy,z) for z,s in [(1.5,.72),(2.4,.24)] for xx,yy in [(-s,-s*.6),(s,-s*.6),(s,s*.6),(-s,s*.6)]],[(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7)],iron)
-    box('Hood',(x,-1.62,2.7),(.45,.30,.7),iron)
-
-def anvil(x,y):
-    rod('Anvil stump',(x,y,.03),(x,y,.57),.34,wood[0],.29,12)
-    ring('Anvil band',(x,y,.43),.30,.30,.018,iron)
-    box('Anvil',(x,y,.62),(.48,.30,.12),iron)
-    box('Anvil',(x,y,.80),(.25,.21,.29),iron)
-    box('Anvil face',(x,y,.99),(.67,.29,.13),iron_edge)
-    rod('Anvil horn',(x+.32,y,.97),(x+.67,y,1.00),.115,iron_edge,.009,10)
-    box('Hammer',(x-.12,y,.1+1.04),(.22,.12,.10),iron)
-    rod('Hammer',(x-.1,y,1.15),(x-.22,y+.49,1.09),.025,wood[2])
-# Three hearth-side stations, leaving the gable door and centre aisle clear.
-for station_x in [-3.,0.,3.]:anvil(station_x,-.72)
+build_stations(box,rod,mesh,rock,mat,brick,wood,iron,iron_edge,coal,ember,dark,limewash,limejoint)
 for i in range(14):
     ring('Finished chain',(5.48+.12*math.sin(i*.9),-1.3-i*.105,.14+i*.004),.083,.055,.014,iron,Matrix.Rotation(math.pi/2*(i%2),3,'Y'))
 for i in range(7):
@@ -481,7 +455,7 @@ for (name,material_name),(verts,faces,material) in batches.items():
         for li in poly.loop_indices:
             co=data.vertices[data.loops[li].vertex_index].co
             uv.data[li].uv=((co.x+10)/20,(co.y+10)/20) if name=='Ground' else (co[axes[0]]*3,co[axes[1]]*3)
-    if name in ['Brickwork','Roof tiles','Chimneys','Anvil face','Window sills','Threshold']:
+    if name in ['Brickwork','Roof tiles','Anvil face','Window sills','Threshold']:
         mod=obj.modifiers.new('Soft worn edges','BEVEL');mod.width=.006 if name!='Roof tiles' else .003;mod.segments=1
         mod=obj.modifiers.new('Weighted corner normals','WEIGHTED_NORMAL')
     # N-gon stone caps need triangulation before the exporter can calculate tangents.
@@ -514,7 +488,7 @@ RAW=ROOT/'artifacts/forge/raw';RAW.mkdir(parents=True,exist_ok=True)
 # Omit redundant per-vertex tangents to keep the enlarged building in budget.
 bpy.ops.export_scene.gltf(filepath=str(RAW/'mushroom-green-forge.glb'),export_format='GLB',export_apply=True,export_tangents=False,export_cameras=False,export_lights=False,export_yup=True)
 model=RAW/'mushroom-green-forge.glb'
-receipt={'asset':'mushroom-green-forge','seed':1865,'units':'metres','source':'scripts/forge/build_forge.py','blender':bpy.app.version_string,'sha256':hashlib.sha256(model.read_bytes()).hexdigest(),'bytes':model.stat().st_size,'mesh_batches':len(batches),'source_vertices':sum(len(v[0]) for v in batches.values()),'reference_photos':['photos/IMG_7256.HEIC','photos/IMG_7257.HEIC','photos/IMG_7258.HEIC','photos/IMG_4259.HEIC'],'historical_status':'Interpretive study from present-day photographs; not a surveyed reconstruction of 1865.','provenance':'Original scripted geometry; no third-party meshes or textures.'}
+receipt={'asset':'mushroom-green-forge','seed':1865,'units':'metres','source':'scripts/forge/build_forge.py','blender':bpy.app.version_string,'sha256':hashlib.sha256(model.read_bytes()).hexdigest(),'bytes':model.stat().st_size,'mesh_batches':len(batches),'source_vertices':sum(len(v[0]) for v in batches.values()),'reference_photos':['photos/IMG_7256.HEIC','photos/IMG_7257.HEIC','photos/IMG_7258.HEIC','photos/IMG_4259.HEIC']+[str(p.relative_to(ROOT)) for p in sorted((ROOT/'photos').glob('IMG_42*')) if p.stem[4:].isdigit() and 4261<=int(p.stem[4:])<=4280],'historical_status':'Interpretive study from present-day photographs; not a surveyed reconstruction of 1865.','provenance':'Original scripted geometry; no third-party meshes or textures.'}
 (RAW/'asset-manifest.json').write_text(json.dumps(receipt,indent=2)+'\n')
 if '--render' in __import__('sys').argv:
     scene.render.filepath=str(ROOT/'artifacts/forge/blender-preview.png')

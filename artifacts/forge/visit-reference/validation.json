@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-22",
+  "sources": {
+    "files": 20,
+    "stills": 11,
+    "videos": 9,
+    "sampledViews": 38
+  },
+  "forge": {
+    "sha256": "c2f126db36bf5338faee3f92da1a28e0a41af083f22008b81821835d19f9057a",
+    "bytes": 11913776,
+    "triangles": 516020,
+    "validationErrors": 0
+  },
+  "props": {
+    "main": {
+      "links": 165,
+      "straightBlanks": 42,
+      "openLinks": 6,
+      "tools": 15,
+      "drawBatches": 17,
+      "triangles": 73144
+    },
+    "henry": {
+      "links": 66,
+      "straightBlanks": 14,
+      "openLinks": 2,
+      "tools": 7,
+      "drawBatches": 13,
+      "triangles": 28976
+    }
+  },
+  "checks": [
+    "village:check",
+    "village:workshop",
+    "village:workshop-props",
+    "npm run build",
+    "git diff --check"
+  ],
+  "browser": {
+    "mainCutaway": true,
+    "workerCloseView": true,
+    "henryCutawayAndRotatedView": true,
+    "consoleErrors": 0
+  },
+  "historicalStatus": "Modern visit reference; dimensions and 1865 arrangement interpreted",
+  "paidGeneration": false
+}
