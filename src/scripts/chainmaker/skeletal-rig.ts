@@ -19,7 +19,7 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
   const palmNormal=normal.clone().multiplyScalar(normal.z<0?-1:1);
   const palmFrame=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(across,forward,normal));
   const fingers=['Index','Middle','Ring','Pinky','Thumb'].flatMap(name=>[1,2,3].map(n=>{
-   const b=bone(side+'Hand'+name+n),child=b.children.find(c=>c instanceof T.Bone),direction=child?position(child).sub(position(b)).normalize():forward.clone();
+   const b=bone(side+'Hand'+name+n),child=b.children.find(c=>c instanceof T.Bone),direction=child?position(child).sub(position(b)).normalize():i===1?position(b).sub(position(b.parent!)).normalize():forward.clone();
    const axis=new T.Vector3().crossVectors(direction,palmNormal).normalize().applyQuaternion(rest.get(b)!.world.clone().invert());
    const adduction=name==='Thumb'&&n===1?Math.sign(new T.Vector3().crossVectors(direction,forward).dot(palmNormal))*-1.1:0;
    const adductionAxis=palmNormal.clone().applyQuaternion(rotation(b.parent!).invert());
@@ -61,19 +61,19 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
   orient(head,new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),.38+.018*motion.impact-.035*motion.inspect).multiply(rest.get(head)!.world));
   for(let i=0;i<rigs.length;i++){
    const r=rigs[i],a=p.arms[i];
-   // Both source palms must face into the handle from above. Mirroring by arm
-   // side gives the holding hand an underhand, open-palm grip.
-   const gripSide=1;
+   // Keep the accepted overhand tong grip. The hammer needs a different
+   // palm frame: its knuckle row crosses the shaft and thumb faces the head.
+   const gripSide=i===1?-1:1;
    // Roll each grip around its shaft so the palm continues the forearm.
    // A tool's arbitrary mesh up-axis must never dictate a person's wrist bend.
    const shoulder=position(r.upper),shaft=a.tool.x.clone();
    const solve=(roll:number)=>{
     const y=a.tool.y.clone().applyAxisAngle(shaft,roll),z=new T.Vector3().crossVectors(shaft,y);
-    const rake=.9;
+    const rake=i===1?.3:.9; // Recovered hands have different knuckle-row angles.
     const forward=y.clone().multiplyScalar(-Math.cos(rake)).addScaledVector(shaft,Math.sin(rake));
-    const wrist=a.grip.clone().addScaledVector(forward,-.095).addScaledVector(z,gripSide*.034);
+    const wrist=a.grip.clone().addScaledVector(forward,i===1?-.085:-.095).addScaledVector(z,gripSide*(i===1?.028:.034));
     const delta=wrist.clone().sub(shoulder),distance=delta.length(),axis=delta.normalize();
-    const pole=new T.Vector3(r.side*.55,-.8,-.28);pole.addScaledVector(axis,-pole.dot(axis)).normalize();
+    const pole=i===1?new T.Vector3(.6,-.5,.4):new T.Vector3(r.side*.55,-.8,-.28);pole.addScaledVector(axis,-pole.dot(axis)).normalize();
     const along=(r.upperLength**2-r.lowerLength**2+distance**2)/(2*distance);
     const height=Math.sqrt(Math.max(0,r.upperLength**2-along**2));
     const elbow=shoulder.clone().addScaledVector(axis,along).addScaledVector(pole,height);
@@ -116,10 +116,13 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
      }
      applyFingers();
     }
-    // Fit the thumb beside the curled fingers, without folding its base backwards.
+    // The hammer thumb closes across the fingers, rather than chasing the
+    // shaft through them. Preserve the accepted tong-thumb contact.
     const thumb=r.fingers.filter(f=>f.b.name.includes('Thumb'));
     const index=position(bone((i===0?'Right':'Left')+'HandIndex2')).sub(a.grip).dot(a.tool.x);
-    const target=a.grip.clone().addScaledVector(a.tool.x,index).addScaledVector(a.tool.z,-gripSide*.023);
+    const target=i===1
+     ?position(bone('LeftHandIndex3')).lerp(position(bone('LeftHandMiddle3')),.35).addScaledVector(a.tool.z,.008)
+     :a.grip.clone().addScaledVector(a.tool.x,index).addScaledVector(a.tool.z,-gripSide*.023);
     const score=()=>{applyFingers();const tip=new T.Vector3(0,.022,0).applyMatrix4(relative(thumb[2].b));return tip.distanceToSquared(target);};
     const parameters=[{f:thumb[0],key:'adduction' as const,min:-1.3,max:1.3},...thumb.map((f,j)=>({f,key:'angle' as const,min:j===0?-.35:0,max:1.25}))];
     let seedScore=Infinity,seed=[0,0,.6,.6];

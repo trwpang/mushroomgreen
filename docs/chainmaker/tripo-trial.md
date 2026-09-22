@@ -122,3 +122,9 @@ The holding hand now takes the tongs from above. The forearm carries the turn, r
 Reviewed the impact and raised poses in the browser. The close-up mesh still has angular areas around the thumb bases; this pass corrects grip direction and closure, rather than replacing the recovered hand skin. No new asset generation or Tripo spending.
 
 Validation: 842 skeletal samples on both floor heights, including downward-facing palms, closed finger joints, thumb contact, stable feet and tool contact. Maximum wrist bend 14.39 degrees; maximum arm-joint step 4.59 degrees per 10 ms. Legacy rig checks, village type check and production build pass.
+
+### September 22: separate hammer power grip
+
+The next review accepted the holding hand but found the hammer still supported by fingers. The hammer now has its own palm frame and elbow pole. Its knuckle row follows the shaft, with the thumb towards the hammer head. The handle sits 85 mm forward of the wrist and 28 mm from the palm bone plane. The thumb closes across the curled index/middle fingers, rather than seeking a point on the handle. Terminal finger joints use their own segment directions for curl.
+
+The earlier requirement that both palms face down was too broad: the tong hand remains overhand, while the hammer uses a turned power grip. Regression checks now verify those distinct requirements. All 842 motion samples pass, with maximum wrist bend 20.89 degrees and maximum joint step 4.56 degrees per 10 ms. A separate comparison against the previous commit found exactly zero change to the tong arm, fingers and tool over 421 frames. Raised and impact poses were checked in the browser. Some recovered skin edges remain angular; the source asset was not regenerated.

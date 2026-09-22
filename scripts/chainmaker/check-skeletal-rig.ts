@@ -50,7 +50,8 @@ for(const floor of [0,.125]){
    const palm=middle.clone().sub(actual).normalize(),fore=actual.clone().sub(arm.elbow).normalize();
    const across=root.worldToLocal(getBone(name+'Index1').getWorldPosition(new T.Vector3())).sub(root.worldToLocal(getBone(name+'Pinky1').getWorldPosition(new T.Vector3())));
    const facing=new T.Vector3().crossVectors(across,palm).normalize().multiplyScalar(palmSigns[k]);
-   assert.ok(facing.y<-.2,'Both hands must hold from above, not balance tools palm-up');
+   if(k===0)assert.ok(facing.y<-.2,'The tong hand must hold from above');
+   else assert.ok(across.normalize().dot(arm.tool.x)>.95,'Hammer handle must run across the knuckles, with the thumb towards the head');
    const bend=T.MathUtils.radToDeg(palm.angleTo(fore));maxWristBend=Math.max(maxWristBend,bend);
    assert.ok(bend<22,`Wrist bend must stay below 22 degrees; got ${bend}`);
    for(const joint of [name,name.replace('Hand','ForeArm'),name.replace('Hand','Arm')]){
@@ -61,8 +62,15 @@ for(const floor of [0,.125]){
 
    const thumb=getBone(name.replace('Hand','HandThumb3'));
    const pad=root.worldToLocal(thumb.localToWorld(new T.Vector3(0,.022,0))).sub(arm.grip);
-   assert.ok(Math.abs(pad.dot(arm.tool.y))<.012,'Thumb pad must close beside the handle');
-   assert.ok(Math.abs(pad.dot(arm.tool.z))<.03,'Thumb pad must stay within the handle grip');
+   if(k===0){
+    assert.ok(Math.abs(pad.dot(arm.tool.y))<.012,'Tong thumb pad must close beside the handle');
+    assert.ok(Math.abs(pad.dot(arm.tool.z))<.03,'Tong thumb pad must stay within the handle grip');
+   }else{
+    const index=root.worldToLocal(getBone(name+'Index3').getWorldPosition(new T.Vector3()));
+    const middle=root.worldToLocal(getBone(name+'Middle3').getWorldPosition(new T.Vector3()));
+    const target=index.lerp(middle,.35).addScaledVector(arm.tool.z,.008);
+    assert.ok(pad.add(arm.grip).distanceTo(target)<.015,'Hammer thumb must close across the curled fingers');
+   }
    const error=actual.distanceTo(p.arms[k].wrist);maxWristError=Math.max(maxWristError,error);assert.ok(error<.003,'Wrist must reach its tool grip');
   }
   if(i%20===0)root.traverse(o=>{if(!(o instanceof T.SkinnedMesh))return;o.skeleton.update();const pos=o.geometry.getAttribute('position');for(let v=0;v<pos.count;v+=11){const p=o.getVertexPosition(v,new T.Vector3());assert.ok(p.toArray().every(Number.isFinite),'Finite deformed vertices');maxVertex=Math.max(maxVertex,p.length());assert.ok(p.length()<3,'No exploding skin');}});
