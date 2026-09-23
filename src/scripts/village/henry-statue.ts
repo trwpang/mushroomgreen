@@ -28,9 +28,9 @@ export function addHenryStatue(room:T.Group,base:number){
  void loadStatue().then(template=>{
   if(cancelled||!room.parent)return;
   display=new T.Group();display.name='Henry’s commemorative statue — modern family easter egg';
-  // Replace the former coal-bucket position; the +X-facing figure looks into the room.
+  // Set back 20 cm from the former coal-bucket position; the +X-facing figure looks into the room.
   // Match the floor prop datum so the original plinth rests on the quarry tiles.
-  const model=template.clone(true);model.position.set(-3.74,base+.03,-.87);
+  const model=template.clone(true);model.position.set(-3.94,base+.03,-.87);
   model.name='Henry Weaver statue · 18 inches';display.add(model);room.add(display);
   room.userData.henryStatue={heightMetres:.4572,modernEasterEgg:true,placement:'fireplace floor'};
   document.dispatchEvent(new Event('village-asset-ready'));
