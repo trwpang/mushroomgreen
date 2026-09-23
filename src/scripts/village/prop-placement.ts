@@ -1,3 +1,5 @@
+import {siteIssue} from './site-reservations';
+import {industryClear} from './historic-plan';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {createPropKit,type PropKind} from './working-props';
@@ -7,6 +9,7 @@ export type PropPlacement={kind:PropKind;p:Point;angle:number;home:number;group:
 const dims=(h:Home)=>({w:[6.4,7.2,9.2][h.style]*h.sx,d:[4.6,4.8,4.5][h.style]*h.sz});
 const local=(p:Point,c:Point,a:number):Point=>{const x=p[0]-c[0],z=p[1]-c[1];return [x*Math.cos(a)-z*Math.sin(a),x*Math.sin(a)+z*Math.cos(a)];};
 export function propGroundIssue(p:Point,homes:Home[],paths:Point[][],trees:Point[]=[],wall?:{home:number;side:-1|1}):string|null{
+ if(siteIssue(p,.3)||!industryClear(...p,.5))return 'working yard';
  const r=nearestRoad(p);if(Math.hypot(p[0]-r[0],p[1]-r[1])<2.5)return 'lane';
  if(streamDistance(...p)<3.1)return 'brook';
  for(const path of paths)for(let i=1;i<path.length;i++){const q=nearestSegment(p,path[i-1],path[i]);if(Math.hypot(p[0]-q[0],p[1]-q[1])<.75)return 'path';}

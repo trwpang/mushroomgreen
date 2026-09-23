@@ -1,3 +1,4 @@
+import {historicGround,prepareHistoricGround} from './historic-plan';
 import terrain from '../../data/terrain-heights.json';
 import roadsData from '../../data/roads.json';
 import outsideRoadsData from '../../data/outside-roads.json';
@@ -25,6 +26,7 @@ export function baseGround(x:number,z:number) {
  const i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j,k=j*terrain.width+i,h=terrain.heights;
  return h[k]*(1-a)*(1-b)+h[k+1]*a*(1-b)+h[k+terrain.width]*(1-a)*b+h[k+terrain.width+1]*a*b;
 }
+prepareHistoricGround(baseGround);
 // Short rounded corners preserve the source route while removing hard ribbon joints.
 export function roundedLine(line:Point[]):Point[]{const out:Point[]=[line[0]];for(let i=1;i<line.length-1;i++){const a=line[i-1],b=line[i],c=line[i+1];const before:Point=[b[0]+(a[0]-b[0])*.16,b[1]+(a[1]-b[1])*.16],after:Point=[b[0]+(c[0]-b[0])*.16,b[1]+(c[1]-b[1])*.16];out.push(before);for(let j=1;j<=5;j++){const t=j/5;out.push([(1-t)**2*before[0]+2*(1-t)*t*b[0]+t*t*after[0],(1-t)**2*before[1]+2*(1-t)*t*b[1]+t*t*after[1]]);}}out.push(line[line.length-1]);return out;}
 export const brooks=rawBrooks.map(roundedLine);
@@ -59,8 +61,9 @@ export function prepareGround(homes:Home[]){
  platforms.push({x:px,z:pz,angle:0,w:1.8,d:1,y:ground(px,pz)});
  for(const h of homes)h.height=ground(h.x,h.z)-.10;
 }
+export function addGroundPlatforms(items:Platform[]){platforms.unshift(...items);}
 export function ground(x:number,z:number){
- let y=baseGround(x,z);const d=streamDistance(x,z),w=streamWidth(x,z)*.5;
+ let y=historicGround(x,z,baseGround(x,z),laneDistance(x,z));const d=streamDistance(x,z),w=streamWidth(x,z)*.5;
  if(d<w+12){const bed=streamSurface(x,z)-.48;const blend=d<w?1:Math.max(0,1-(d-w)/12)**2;y=Math.min(y,y+(bed-y)*blend);}
  const roadDistance=laneDistance(x,z);
  if(roadDistance<2.8){const shoulder=Math.max(0,Math.min(1,(2.8-roadDistance)/.7));y-=shoulder*(.15+.18*Math.exp(-(((roadDistance-.87)/.43)**2)));}

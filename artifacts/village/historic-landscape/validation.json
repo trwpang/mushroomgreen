@@ -1,0 +1,32 @@
+{
+  "newWorkshops": 50,
+  "domesticWorkshops": 51,
+  "householdsWithoutSeparateNewShop": [
+    6,
+    34,
+    35,
+    36,
+    38,
+    41,
+    42
+  ],
+  "plots": 58,
+  "boundarySections": 261,
+  "vegetableBeds": 10,
+  "railSamples": 620,
+  "minHouseRail": 48.80669742158866,
+  "maxEarthwork": 4.047042015102036,
+  "railMetres": 612,
+  "sleepers": 846,
+  "shafts": 2,
+  "pools": 2,
+  "waterTriangles": 2187,
+  "triangles": 1245411,
+  "draws": 30,
+  "newTextureFiles": 0,
+  "retainedProps": 175,
+  "propHouseholds": 56,
+  "animals": 10,
+  "sourceSheet": "Worcestershire IV.NE, surveyed 1881–1882 / published 1887",
+  "interpretation": true
+}

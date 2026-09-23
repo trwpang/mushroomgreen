@@ -1,3 +1,5 @@
+import {siteIssue} from './site-reservations';
+import {industryClear} from './historic-plan';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {ground,localPoint,nearestRoad,nearestSegment,streamDistance,weaverWorkshop,chainshopPosition,chainshopReplacesHouse,type Home,type Point} from './layout';
@@ -8,6 +10,7 @@ function local(p:Point,centre:Point,angle:number):Point {const x=p[0]-centre[0],
 function inBox(p:Point,c:Point,a:number,w:number,d:number,margin:number){const q=local(p,c,a);return Math.abs(q[0])<w/2+margin&&Math.abs(q[1])<d/2+margin;}
 /** Keep the full animal envelope clear; motion changes pose, never these footprints. */
 export function lifePlacementIssue(p:Point,homes:Home[],paths:Point[][]=[]):string|null {
+ if(siteIssue(p,.3)||!industryClear(...p,.5))return 'working yard';
  const r=nearestRoad(p);if(Math.hypot(p[0]-r[0],p[1]-r[1])<3.6)return 'lane';
  if(streamDistance(...p)<5)return 'brook';
  for(const path of paths)for(let i=1;i<path.length;i++){const q=nearestSegment(p,path[i-1],path[i]);if(Math.hypot(p[0]-q[0],p[1]-q[1])<1.35)return 'footpath';}

@@ -1,3 +1,5 @@
+import {siteIssue} from './site-reservations';
+import {industryClear} from './historic-plan';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {ground,nearestRoad,nearestSegment,streamDistance,chainshopPosition,weaverWorkshop,type Home,type Point} from './layout';
@@ -7,6 +9,7 @@ type Flower={p:Point;scale:number;angle:number};
 // The copse northwest of the main chainshop, visible across the lane in house 5's view.
 export const bluebellCopse={centre:[12,23] as Point,rx:22,rz:23};
 export function flowerClearance(p:Point,homes:Home[],paths:Point[][],trees:Point[]):boolean{
+ if(siteIssue(p,.3)||!industryClear(...p,.5))return false;
  const [x,z]=p,road=nearestRoad(p);
  if(Math.hypot(x-road[0],z-road[1])<3.7||streamDistance(x,z)<3.7)return false;
  if(Math.hypot(x-chainshopPosition[0],z-chainshopPosition[1])<11)return false;
