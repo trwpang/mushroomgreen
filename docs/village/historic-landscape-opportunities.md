@@ -21,7 +21,7 @@ Reference: `artifacts/village/historic-landscape/nls-reference.jpg`.
 
 The mapped brickkilns lie **outside** the perimeter. They have not been moved into the village. The original cottages, household positions, main forge and Henry’s workshop remain in place.
 
-New shops have varied brick, patched limewash or timber walls, mortar cores, individual roof tiles, open braced doors, framed glazing, small pavers, hollow chimneys, an L-shaped hearth, an anvil, stock and a chain-support ring. They are small interpreted working spaces, not additional full cutaway tours. Existing household records open when selecting their shops.
+New shops have weathered red-brown brick or timber exterior walls, pale hearth interiors, mortar cores, individual roof tiles, open braced doors, framed glazing, small pavers, hollow chimneys, an L-shaped hearth, an anvil, stock and a chain-support ring. They are small interpreted working spaces, not additional full cutaway tours. Existing household records open when selecting their shops.
 
 Shared placement exclusions keep new buildings, access paths, fences, trees, flowers, animals and working props apart. Workshop floors receive small level platforms. Existing home floor heights remain unchanged.
 
@@ -34,7 +34,7 @@ Labels are HTML buttons projected onto screen coordinates. They use no image tex
 ## Validation and browser cost
 
 - `village:historic`: 50 new shops, clear entrances, level floors, unchanged house heights, railway clearance, upward water normals and retained logical prop groups.
-- Added detail: **30 material/geometry batches**, approximately **1.245 million triangles**, **zero new texture files**. Existing surface maps are reused.
+- Added detail: **30 material/geometry batches**, approximately **1.151 million triangles**, **zero new texture files**. Existing surface maps are reused.
 - Existing road, navigation, animal, prop, household layout and texture checks pass. Production build and asset budgets pass.
 - Chrome visual review covered the overview, labels, workshop close view and working hollows. Roof overlap and wall-board details were corrected after inspection. No visible console errors were present.
 - An observed workings view reported about 24 FPS, with roughly 24 MiB in the streamed surface-texture cache. This is a single desktop observation, not a cross-device performance guarantee. Chrome reported high total page memory (about 1.3–1.7 GB). The existing `drawCalls` display reads the final compositor pass, so it does not measure the whole frame.

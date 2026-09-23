@@ -39,7 +39,7 @@ export function levelBackyardWorkshops(shops:BackyardShop[]){addGroundPlatforms(
 export function addBackyardWorkshops(scene:T.Scene,shops:BackyardShop[]){
  const b=new DetailBatch();b.root.name='Cottage nail and chain shops';
  const mat=(name:string,color:string,kind:Parameters<typeof refineSurface>[1])=>refineSurface(new T.MeshStandardMaterial({name,color,roughness:.94}),kind);
- const brick=textureDetail(mat('Workshop mottled brick','#76513e','brick'),'fired-brick'),mortar=mat('Workshop dark mortar','#554f41','plaster'),lime=mat('Workshop worn limewash','#a49e87','plaster'),wood=mat('Workshop patched boards','#65513b','wood'),tile=textureDetail(mat('Workshop old roof tiles','#554c40','slate'),'split-slate'),iron=textureDetail(mat('Workshop pitted iron','#37352e','iron'),'cast-iron'),coal=mat('Workshop coal','#292824','coal'),stone=mat('Workshop small floor pavers','#756950','stone');
+ const brick=textureDetail(mat('Workshop mottled brick','#76513e','brick'),'fired-brick'),mortar=mat('Workshop dark mortar','#554f41','plaster'),lime=mat('Workshop interior limewash','#a49e87','plaster'),wood=mat('Workshop patched boards','#65513b','wood'),tile=textureDetail(mat('Workshop old roof tiles','#554c40','slate'),'split-slate'),iron=textureDetail(mat('Workshop pitted iron','#37352e','iron'),'cast-iron'),coal=mat('Workshop coal','#292824','coal'),stone=mat('Workshop small floor pavers','#756950','stone');
  const glass=new T.MeshStandardMaterial({name:'Workshop glass',color:'#647873',roughness:.24,metalness:.3});
  for(const s of shops){const w=s.width,d=s.depth,e=1.93+(s.home%3)*.1,rise=.55,y=s.y;
   const q=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),s.angle);
@@ -70,10 +70,12 @@ export function addBackyardWorkshops(scene:T.Scene,shops:BackyardShop[]){
     if(door||window)continue;
     const px=turn?x:x+along,pz=turn?z+along:z;
 
-    if(s.variant===3&&!front){box(px,h,pz,turn?.19:piece-.005,e/rows-.003,turn?piece-.005:.19,wood,0,0,.85+((row+col*3)%7)*.04);}
-    else {box(px,h,pz,turn?.202:piece-.014,e/rows-.012,turn?piece-.014:.202,brick,0,0,.75+((row*7+col*13+s.home)%11)*.045);
-     if(s.variant===1&&(row*3+col*7)%13<8)box(px,h,pz,turn?.207:piece-.008,e/rows-.008,turn?piece-.008:.207,lime,0,0,.8+row/rows*.2);
-    }
+    // Exterior brick stays exposed. Pale limewash belongs only to the hearth interior.
+    // Low courses retain damp staining; upper courses darken below the eaves.
+    const variation=.82+((row*7+col*13+s.home+22)%11)*.027;
+    const damp=1-.17*Math.exp(-h/.34),soot=1-.10*Math.exp(-(e-h)/.25);
+    box(px,h,pz,turn?.202:piece-.014,e/rows-.012,turn?piece-.014:.202,brick,0,0,variation*damp*soot);
+
    }}
   };
   wall(0,-d/2,w,false);wall(-w/2,0,d,true);wall(w/2,0,d,true);wall(0,d/2,w,false,true);
