@@ -1,12 +1,14 @@
 import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {brookWater,downstreamLine} from './brook-water';
-import { roads,brooks,baseGround,streamSurface,ground,streamWidth,streamDistance,nearestRoad,roundedLine,chainshopPosition,type Point,type Home } from './layout';
+import { roads,renderedRoads,brooks,baseGround,streamSurface,ground,streamWidth,streamDistance,nearestRoad,roundedLine,chainshopPosition,type Point,type Home } from './layout';
 const inside=(x:number,z:number)=>Math.pow(x/210,2)+Math.pow((z+60)/240,2)<.96;
 function samples(line:Point[],step=1):Point[]{const out:Point[]=[];for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/step));for(let j=0;j<n;j++)out.push([a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n]);}out.push(line[line.length-1]);return out;}
-const roadSamples=roads.map(r=>samples(roundedLine(r),.7));
+const roadSamples=renderedRoads.map(r=>samples(roundedLine(r),.7));
 export function paintLanes(ctx:CanvasRenderingContext2D,pixel:(p:Point)=>Point,rand:()=>number,paths:Point[][]=[]){
 const scale=ctx.canvas.width/460;
+// Damp earth and leaf litter blend the water into its banks.
+for(const line of brooks)for(const p of samples(line,1)){const q=pixel(p),r=(streamWidth(...p)*.5+2)*scale;const g=ctx.createRadialGradient(q[0],q[1],r*.2,q[0],q[1],r);g.addColorStop(0,'#655a40');g.addColorStop(.63,'#696347c0');g.addColorStop(1,'#69714a00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],r,0,Math.PI*2);ctx.fill();}
 // Paint the entire network in layers: no verge can cut across a junction.
 const networks=roadSamples.map(points=>points.map((p,i)=>{const a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)],len=Math.hypot(b[0]-a[0],b[1]-a[1])||1;return {p,nx:-(b[1]-a[1])/len,nz:(b[0]-a[0])/len};}));
 function stroke(points:Point[],width:number,color:string){ctx.beginPath();points.forEach((p,i)=>{const q=pixel(p);if(i)ctx.lineTo(...q);else ctx.moveTo(...q);});ctx.lineWidth=width*scale;ctx.strokeStyle=color;ctx.lineCap=ctx.lineJoin='round';ctx.stroke();}
@@ -27,9 +29,13 @@ for(const path of paths){
   const q=pixel([p[0]+(pathRandom()-.5)*1.05,p[1]+(pathRandom()-.5)*1.05]);ctx.fillStyle=k%2?'#c4a78335':'#53402e30';ctx.fillRect(q[0],q[1],.7+pathRandom(),.7+pathRandom());
  }
 }
-for(const frames of networks){
+let roadSeed=2571865;const roadRandom=()=>{roadSeed=(Math.imul(roadSeed,1664525)+1013904223)>>>0;return roadSeed/4294967296;};
+for(const [roadIndex,frames] of networks.entries()){
+ const random=roadIndex===4||roadIndex>=roads.length?roadRandom:rand;
+ // Consume the old stub's draws to preserve the rest of the scene seed.
+ if(roadIndex===4)for(let i=0;i<samples(roundedLine(roads[4]),.7).length*30*5;i++)rand();
  for(const side of [-1,1]){const track=frames.map(({p,nx,nz})=>[p[0]+nx*.87*side,p[1]+nz*.87*side] as Point);stroke(track,.58,'#79604770');stroke(track,.25,'#59463390');}
- for(const {p,nx,nz} of frames)for(let k=0;k<30;k++){const off=(rand()-.5)*4.3,q=pixel([p[0]+nx*off+(rand()-.5)*.7,p[1]+nz*off+(rand()-.5)*.7]);ctx.fillStyle=k%3?'#c4a78360':'#53402e65';ctx.fillRect(q[0],q[1],.04*scale+rand(),.035*scale+rand());}
+ for(const {p,nx,nz} of frames)for(let k=0;k<30;k++){const off=(random()-.5)*4.3,q=pixel([p[0]+nx*off+(random()-.5)*.7,p[1]+nz*off+(random()-.5)*.7]);ctx.fillStyle=k%3?'#c4a78360':'#53402e65';ctx.fillRect(q[0],q[1],.04*scale+random(),.035*scale+random());}
 }
 // Irregular damp patches follow wheel ruts and worn shoulders along the lane.
 for(const frames of networks)for(let i=3;i<frames.length;i+=7){
@@ -37,8 +43,6 @@ for(const frames of networks)for(let i=3;i<frames.length;i+=7){
  const r=(.6+.3*Math.sin(i*2.1))*scale,g=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],r);
  g.addColorStop(0,'#3e332654');g.addColorStop(1,'#3e332600');ctx.save();ctx.translate(...q);ctx.scale(1,1.8);ctx.translate(-q[0],-q[1]);ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],r,0,Math.PI*2);ctx.fill();ctx.restore();
 }
-// Damp earth and leaf litter blend the water into its banks.
-for(const line of brooks)for(const p of samples(line,1)){const q=pixel(p),r=(streamWidth(...p)*.5+2)*scale;const g=ctx.createRadialGradient(q[0],q[1],r*.2,q[0],q[1],r);g.addColorStop(0,'#655a40');g.addColorStop(.63,'#696347c0');g.addColorStop(1,'#69714a00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],r,0,Math.PI*2);ctx.fill();}
 const q=pixel(chainshopPosition);ctx.fillStyle='#665a42';ctx.beginPath();for(let i=0;i<32;i++){const a=i/32*Math.PI*2,r=.91+rand()*.13;const x=q[0]+Math.cos(a)*5.7*scale*r,y=q[1]+Math.sin(a)*7*scale*r;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.closePath();ctx.fill();
 }
 export function addLandscape(scene:T.Scene,homes:Home[],rand:()=>number,clearings:Point[]=[]){

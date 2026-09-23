@@ -1,0 +1,123 @@
+{
+  "name": "Outside road \u2014 historic Quarry Road approach",
+  "source": {
+    "url": "https://maps.nls.uk/geo/explore/#zoom=18&lat=52.4762&lon=-2.0925&layers=257&b=ESRIWorld&o=100",
+    "layer": "OS Six Inch, 1830s\u20131880s (county layers), NLS layer 257",
+    "attribution": "Historic map courtesy of the National Library of Scotland; CC-BY. Northern continuation aligned to saved OpenStreetMap ways in legacy/Map/map-11.osm, \u00a9 OpenStreetMap contributors.",
+    "method": "Approximate visual centreline trace, calibrated with two coordinate readouts. Northern bend checked visually at zoom 17.3. Exact sheet survey date unconfirmed; not a measured 1865 road survey.",
+    "controlPoints": [
+      {
+        "pixel": [
+          427,
+          423
+        ],
+        "latLon": [
+          52.476267,
+          -2.09214
+        ]
+      },
+      {
+        "pixel": [
+          452,
+          150
+        ],
+        "latLon": [
+          52.477661,
+          -2.09193
+        ]
+      }
+    ]
+  },
+  "junction": [
+    52.476267,
+    -2.09214
+  ],
+  "routes": [
+    {
+      "id": "quarry-north",
+      "polyline": [
+        [
+          52.476267,
+          -2.09214
+        ],
+        [
+          52.4767317,
+          -2.0920476
+        ],
+        [
+          52.4772678,
+          -2.091972
+        ],
+        [
+          52.4776775,
+          -2.0918798
+        ],
+        [
+          52.4777262,
+          -2.0919021
+        ],
+        [
+          52.4777561,
+          -2.0919269
+        ],
+        [
+          52.4777947,
+          -2.0920135
+        ],
+        [
+          52.4778153,
+          -2.0920724
+        ],
+        [
+          52.4778712,
+          -2.0922236
+        ],
+        [
+          52.4782196,
+          -2.0930856
+        ],
+        [
+          52.4784465,
+          -2.0934746
+        ],
+        [
+          52.478515,
+          -2.0935794
+        ]
+      ]
+    },
+    {
+      "id": "quarry-southeast",
+      "polyline": [
+        [
+          52.476267,
+          -2.09214
+        ],
+        [
+          52.4760934,
+          -2.0921484
+        ],
+        [
+          52.4759606,
+          -2.0920644
+        ],
+        [
+          52.4758891,
+          -2.091888
+        ],
+        [
+          52.4757615,
+          -2.0912916
+        ],
+        [
+          52.4756134,
+          -2.0905104
+        ],
+        [
+          52.4754551,
+          -2.0899308
+        ]
+      ]
+    }
+  ]
+}

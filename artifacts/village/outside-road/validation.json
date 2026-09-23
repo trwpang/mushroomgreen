@@ -1,0 +1,16 @@
+{
+  "source": "NLS layer 257 visual trace, northern continuation checked against saved OSM",
+  "sourceVillageLanes": 6,
+  "renderedRoutes": 8,
+  "edgeExits": 2,
+  "connectedJunction": true,
+  "householdSourceNetworkPreserved": true,
+  "interiorRoadSamples": 551,
+  "minHouseClearance": 16.6992738554624,
+  "minStreamClearance": 0.07717561694268803,
+  "supportedBrookCrossings": 1,
+  "bridgeTriangles": 8940,
+  "bridgeDrawCalls": 4,
+  "openArch": true,
+  "newTextures": 0
+}
