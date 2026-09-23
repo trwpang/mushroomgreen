@@ -1,13 +1,14 @@
 {
   "models": 121,
-  "bytes": 1385000,
-  "triangles": 179391,
-  "sha256": "f58dfc0ddfcf502bbb746fb30eeb261f26f6075730fa197219657b30cfb7c675",
+  "bytes": 1594096,
+  "triangles": 213723,
+  "sha256": "c94b22ab5805b17662562c42229a4db046b0f789c590b0a57a183f9d04b06dff",
   "compression": "EXT_meshopt_compression",
   "validationErrors": 0,
   "sourceHashes": {
     "src/scripts/village/interior-catalogue.ts": "f314bec32ba2f3b40fe001601a93cdad352bf9ef0f13bac4c705cecb05a9c30d",
-    "src/scripts/village/interior-objects.ts": "850cafec96a5a36020a854b71399914a3de6b63ff8f4b9d63341ce9b6cb302cd"
+    "src/scripts/village/interior-objects.ts": "dbb6b0ea27e5c3abbbaeb8e61a366cd43ff793e750419a2746f41d0cd1d7d829",
+    "src/scripts/village/interior-object-detail.ts": "903ea19abd7579f15b85542f5ba0b6cbfa65acf87f50dbc924eca0f75ab1985b"
   },
   "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
   "usage": "Same terms as this repository; no new third-party asset licence.",
@@ -19,7 +20,7 @@
       "name": "Open grate cooking range",
       "support": "core",
       "dimensions": [
-        0.9599999785423279,
+        0.962825357913971,
         1.1777942171692848,
         0.550000011920929
       ]
@@ -459,9 +460,9 @@
       "name": "Brown salt-glazed jug",
       "support": "surface",
       "dimensions": [
-        0.22300000488758087,
-        0.2199999988079071,
-        0.15000000596046448
+        0.21964195370674133,
+        0.22599999606609344,
+        0.17339999973773956
       ]
     },
     {
@@ -519,9 +520,9 @@
       "name": "Scored cottage loaf",
       "support": "surface",
       "dimensions": [
-        0.27000001072883606,
-        0.15000000894069676,
-        0.20000000298023224
+        0.2577722370624542,
+        0.17589999735355377,
+        0.24700000137090683
       ]
     },
     {
@@ -659,9 +660,9 @@
       "name": "Cut cheese wedge",
       "support": "surface",
       "dimensions": [
-        0.1905255913734436,
-        0.072999999076128,
-        0.16499999910593033
+        0.17112990468740463,
+        0.07000000029802322,
+        0.2376875802874565
       ]
     },
     {
@@ -669,9 +670,9 @@
       "name": "Tied flour sack",
       "support": "floor",
       "dimensions": [
-        0.2800000011920929,
-        0.3950000083446503,
-        0.2199999988079071
+        0.34754589200019836,
+        0.4000000059604645,
+        0.22420000284910202
       ]
     },
     {
@@ -679,9 +680,9 @@
       "name": "Hanging string of onions",
       "support": "wall",
       "dimensions": [
-        0.12999999523162842,
-        0.5500000178813935,
-        0.07000000029802322
+        0.15556082874536514,
+        0.5734403047244996,
+        0.1428770124912262
       ]
     },
     {
@@ -819,9 +820,9 @@
       "name": "Ticking pillow",
       "support": "bed",
       "dimensions": [
-        0.5199999809265137,
-        0.14000000089406966,
-        0.3199999928474426
+        0.5277942419052124,
+        0.12298564612865448,
+        0.32779422402381897
       ]
     },
     {
@@ -849,9 +850,9 @@
       "name": "Laced leather work boots",
       "support": "floor",
       "dimensions": [
-        0.3100000023841858,
-        0.23999999468028546,
-        0.28999999165534973
+        0.2701050043106079,
+        0.20100000511109828,
+        0.29439519345760345
       ]
     },
     {
@@ -859,9 +860,9 @@
       "name": "Wood-soled leather clogs",
       "support": "floor",
       "dimensions": [
-        0.3100000023841858,
-        0.1250000000447035,
-        0.28999999165534973
+        0.2693953812122345,
+        0.10691347169631626,
+        0.284460112452507
       ]
     },
     {
@@ -969,9 +970,9 @@
       "name": "Wooden scrubbing brush",
       "support": "shelf",
       "dimensions": [
-        0.15199999511241913,
-        0.07500000253319741,
-        0.07800000160932541
+        0.15000000596046448,
+        0.054036361863836646,
+        0.07199999690055847
       ]
     },
     {

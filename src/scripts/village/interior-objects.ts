@@ -2,6 +2,7 @@ import * as T from 'three';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {type InteriorObjectId} from './interior-catalogue';
+import {detailedObject} from './interior-object-detail';
 export type ObjectMaterial='oak'|'darkwood'|'iron'|'steel'|'copper'|'cream'|'blue'|'clay'|'cloth'|'green'|'coal'|'glass'|'paper'|'linen'|'tile'|'stone'|'lampglass';
 export interface ObjectPart {geometry:T.BufferGeometry;material:ObjectMaterial;}
 export interface ObjectSurface {x:number;y:number;z:number;width:number;depth:number;}
@@ -85,7 +86,9 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
   rod([.24,b+.19,0],[.27,b+.12,.06],.008);cyl(.09,b+.318,0,.021,.021,.055,'cream');rod([.09,b+.345,0],[-.15,b+.273,0],.0015,'cream');for(let i=0;i<5;i++)ring(-.08+i*.044,b+.26,.038,.009,.002,'copper');
   if(treadle){rod([.31,.31,.15],[.24,b+.19,.09],.0025,'darkwood');rod([.31,.31,-.15],[.24,b+.19,-.09],.0025,'darkwood');}
  };
- if(id==='spinning-wheel'){
+ // Second-pass models (interior-object-detail.ts) replace ten earlier primitive forms.
+ if(detailedObject(id,{put,surfaces})){
+ }else if(id==='spinning-wheel'){
   // Saxony form: wheel and flyer on a low bench, with a connected treadle and drive band.
   box(0,.32,0,.78,.065,.23,'darkwood');
   for(const [x,z]of [[-.32,-.085],[.32,-.085],[0,.13]])rod([x,.30,z],[x*1.17,.018,z*1.8],.025,'oak');
