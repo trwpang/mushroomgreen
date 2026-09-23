@@ -1,3 +1,4 @@
+import {addHenryStatue} from './henry-statue';
 import {textureDetail,type TextureDetail} from './texture-detail';
 import {domesticWear} from './domestic-wear';
 import {wearFloor} from './floor-wear';
@@ -14,11 +15,11 @@ import type {InteriorObjectId} from './interior-catalogue';
 export interface InteriorView {group:T.Group;plan:InteriorPlan;floor:number;floors:number;target:T.Vector3;camera:T.Vector3;}
 /** Shared room builder for isolated cutaways and furnished village shells. */
 export function createInteriors(scene:T.Object3D,embedded=false){
- let active:InteriorView|null=null,clock=0;
+ let active:InteriorView|null=null,clock=0;let removeStatue:(()=>void)|undefined;
  let flame:T.Mesh|null=null,glow:T.PointLight|null=null;let lampFlame:T.Mesh|null=null,lampGlow:T.PointLight|null=null;
  const resources=new Set<T.Material|T.Texture|T.BufferGeometry>();
  const own=<A extends T.Material|T.Texture|T.BufferGeometry>(r:A)=>{resources.add(r);return r;};
- function hide(){if(active)scene.remove(active.group);for(const r of resources)r.dispose();resources.clear();active=null;flame=null;glow=null;lampFlame=null;lampGlow=null;}
+ function hide(){removeStatue?.();removeStatue=undefined;if(active)scene.remove(active.group);for(const r of resources)r.dispose();resources.clear();active=null;flame=null;glow=null;lampFlame=null;lampGlow=null;}
  function show(home:Home,floor=0):InteriorView{
   hide();const plan=planInterior(home);floor=Math.max(0,Math.min(plan.floors.length-1,floor));
   const rand=seeded(plan.seed+floor*473),root=new T.Group();root.name=`House ${home.number} — interpreted interior — ${plan.floors[floor].name}`;
@@ -308,7 +309,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   if(!embedded){const ambient=new T.HemisphereLight('#e7dec7','#726049',1.15);root.add(ambient);}
   const targetPoint=localPoint(home,0,0),cameraPoint=localPoint(home,w*.924,d*1.152);
   active={group:root,plan,floor,floors:plan.floors.length,target:new T.Vector3(targetPoint[0],home.height+base+.8,targetPoint[1]),camera:new T.Vector3(cameraPoint[0],home.height+base+Math.max(w,d)*1.02+2.88,cameraPoint[1])};
-  root.userData.interiorPlan=plan;root.userData.home=home;return active;
+  root.userData.interiorPlan=plan;root.userData.home=home;if(home.number===22&&floor===0)removeStatue=addHenryStatue(root,base,woods[1]);return active;
  }
  return {show,hide,setFloor(floor:number){return active?show(active.group.userData.home as Home,floor):null;},get active(){return active;},update(time:number){clock=time;if(lampGlow)lampGlow.intensity=.55+.015*Math.sin(clock*3.7)+.008*Math.sin(clock*8.1);if(lampFlame)lampFlame.scale.y=.023+.001*Math.sin(clock*4.3);if(glow)glow.intensity=.85+.12*Math.sin(clock*4.7)+.06*Math.sin(clock*9.1);if(flame)flame.scale.y=.45+.10*Math.sin(clock*5.7);}};
 }

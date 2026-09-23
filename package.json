@@ -34,7 +34,8 @@
     "chainmaker:skeletal": "esbuild scripts/chainmaker/check-skeletal-rig.ts --bundle --platform=node --format=esm --outfile=/tmp/chainmaker-skeletal-check.mjs && node /tmp/chainmaker-skeletal-check.mjs",
     "village:workshop-props": "esbuild scripts/village/check-workshop-props.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-workshop-props-check.mjs && node /tmp/mushroom-workshop-props-check.mjs",
     "village:roads": "esbuild scripts/village/check-roads.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-roads-check.mjs && node /tmp/mushroom-roads-check.mjs",
-    "village:historic": "esbuild scripts/village/check-historic-landscape.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-historic-check.mjs && node /tmp/mushroom-historic-check.mjs"
+    "village:historic": "esbuild scripts/village/check-historic-landscape.ts --bundle --platform=node --format=esm --outfile=/tmp/mushroom-historic-check.mjs && node /tmp/mushroom-historic-check.mjs",
+    "henry-statue:pack": "node scripts/henry-statue/pack.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.0",

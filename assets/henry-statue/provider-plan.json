@@ -1,0 +1,38 @@
+{
+  "name": "henry-weaver-keepsake",
+  "sourceImage": "assets/henry-statue/reference.jpg",
+  "sourceSha256": "ebbf8270b07a0a94be8873f2d760b7bbd3ab36f585063bb62492a47ad76ae71c",
+  "provider": "Tripo Studio",
+  "status": "generated and downloaded",
+  "creditLimit": 60,
+  "proposedCreditLimit": 60,
+  "heightMetres": 0.4572,
+  "maxTriangles": 60000,
+  "maxTextureSize": 1024,
+  "maxRuntimeBytes": 2000000,
+  "rigging": false,
+  "animation": false,
+  "prompt": "Reconstruct the supplied photograph as one complete bronze statuette. Preserve the flat cap, neck scarf, waistcoat, long apron, boots, raised hand holding a long descending chain, lowered hand with hammer, and round shallow plinth with brick paving. Keep the dark brown bronze patina and reddish highlights. Preserve the photographed pose and proportions. The chain links have open holes, alternate direction and lie on the base. The unseen back is a conservative continuation of the sculpture. This is a solid static ornament, not a living person. Include the complete base.",
+  "negativePrompt": "Living skin, coloured cloth, new pose, animation rig, missing chain, solid chain ribbon, missing hammer, extra limbs, square pedestal, background plane, invented readable lettering",
+  "placement": {
+    "houseNumber": 22,
+    "floor": 0,
+    "location": "Small supported shelf on the kitchen side of the sleeping partition",
+    "proposedLocalPosition": [
+      1.25,
+      1.3,
+      -1.65
+    ],
+    "frontDirection": "toward kitchen (-X)",
+    "notes": "Verify dimensions against the generated base and check clearances in both embedded room and cutaway."
+  },
+  "observedGenerationCredits": 55,
+  "observedAccountCredits": 3120,
+  "providerModel": "H3.1",
+  "privacy": "Sharing Only",
+  "promptSubmission": "Image-only form; text prompt retained as local art direction, not submitted",
+  "providerModelId": "50a02249-33c2-47e3-80f4-92d20eefb4c9",
+  "creditsSpent": 55,
+  "remainingAccountCredits": 3065,
+  "download": "Original PBR preview GLB retrieved from observed page asset; browser export did not produce a local download."
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Henry Weaver commemorative bronze keepsake",
+  "providerModelId": "50a02249-33c2-47e3-80f4-92d20eefb4c9",
+  "sourceHashes": {
+    "assets/henry-statue/source.glb": "94676203b746d79e199bca263d57e01b0185643f0dba163317dbbd3a3b68c004",
+    "assets/henry-statue/reference.jpg": "ebbf8270b07a0a94be8873f2d760b7bbd3ab36f585063bb62492a47ad76ae71c",
+    "scripts/henry-statue/pack.mjs": "f6820607535ad4f58365e1a76ebce6df2844111e95522ca190c2aa8d4a129e19"
+  },
+  "originalTriangles": 1962856,
+  "triangles": 58000,
+  "heightMetres": 0.4572,
+  "bounds": {
+    "min": [
+      -0.09307390362254707,
+      -2.7755575615628914e-17,
+      -0.10886877040925322
+    ],
+    "max": [
+      0.09307390362254707,
+      0.45719999999999994,
+      0.10886877040925322
+    ]
+  },
+  "bytes": 663780,
+  "sha256": "7d274eb87b944347abdb9bc230c562c93dbf69457454b95809cbf0a7af8d8756",
+  "validationErrors": 0,
+  "compression": "EXT_meshopt_compression",
+  "provenance": "Tripo reconstruction of Tom’s photograph of his commissioned statue; unseen sides are generated interpretations. Modern easter egg, not a historical furnishing."
+}

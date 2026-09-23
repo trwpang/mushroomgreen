@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
-for(const [folder,file,budget]of [['forge','mushroom-green-forge.glb',12_000_000],['village','cottages.glb',16_000_000],['chainmaker','chainmaker.glb',4_000_000],['chainmaker-v2','chainmaker.glb',4_000_000],['interior-objects','catalogue.glb',6_000_000]]){
+for(const [folder,file,budget]of [['forge','mushroom-green-forge.glb',12_000_000],['village','cottages.glb',16_000_000],['chainmaker','chainmaker.glb',4_000_000],['chainmaker-v2','chainmaker.glb',4_000_000],['interior-objects','catalogue.glb',6_000_000],['henry-statue','henry.glb',2_000_000]]){
  const base=new URL(`../public/${folder}/`,import.meta.url);
  const manifest=JSON.parse(await readFile(new URL('asset-manifest.json',base),'utf8'));
  const bytes=await readFile(new URL(file,base));
