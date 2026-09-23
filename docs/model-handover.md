@@ -44,7 +44,7 @@ Useful review URLs:
 - Henry’s small workshop: `http://127.0.0.1:4326/village?house=22&inside=small`
 - Cottage cutaway: `http://127.0.0.1:4326/village?house=22&inside=home`
 
-The interface also has household selection, room/cutaway controls, floor selection where available, camera controls, labels and a compass. Use `still=1` for repeatable still views; inspect live motion too when relevant.
+The interface also has household selection, room/cutaway controls, floor selection where available, camera controls, labels and a compass. Use `still=1` for repeatable still views; inspect live motion too when relevant. `cam=x,y,z,tx,ty,tz` fixes an exact outdoor camera (see `docs/village/landscape-realism-pass.md`).
 
 ## Source map
 
@@ -73,7 +73,10 @@ Paths below are relative to the project root.
 | Backyard workshops and other outbuildings | `src/scripts/village/backyard-workshops.ts`, `outbuildings.ts` |
 | Yards, boundaries and object placement | `src/scripts/village/working-yards.ts`, `yard-details.ts`, `yard-plots.ts`, `prop-placement.ts`, `site-reservations.ts` |
 | Tools, cart and laundry | `src/scripts/village/working-props.ts`, `cart.ts`, `laundry.ts` |
-| Ground, roads and vegetation | `src/scripts/village/landscape.ts`, `conifers.ts`, `spring-flowers.ts` |
+| Ground, roads and vegetation | `src/scripts/village/landscape.ts`, `spring-flowers.ts`, `lane-verges.ts`, `woodland-floor.ts` |
+| Trees, shrubs, hedges, leaf atlas | `src/scripts/village/foliage.ts` |
+| Brook stones and rushes | `src/scripts/village/riverbank.ts` |
+| Sky, haze and far country beyond the model | `src/scripts/village/sky.ts` |
 | Map-derived industrial landscape | `src/scripts/village/historic-plan.ts`, `historic-landscape.ts`, `road-crossing.ts` |
 | Brook | `src/scripts/village/brook-water.ts` |
 | Animals | `src/scripts/village/village-life.ts` |

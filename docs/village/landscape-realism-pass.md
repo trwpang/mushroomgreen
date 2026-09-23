@@ -1,0 +1,74 @@
+# Landscape realism pass (23 September 2026)
+
+Five landscape improvements to `/village`, plus the garden hedges and vegetable beds Tom flagged during review. Before/after pairs (same camera, same `still=1` time) are in `artifacts/village/landscape-pass/`.
+
+All new placement uses **its own seeds**. Where an old generator was replaced, its draws from the shared RNG are still consumed, so every house, tree, rock, bush and reed stays where it was. Houses, records and historic numbering are unchanged.
+
+## 1. Trees: leaf-cluster crowns on branching trunks (`foliage.ts`)
+
+**Before:** each broadleaf crown was 1,500 loose folded triangles (≈6,000 tris per tree, ≈11 M in total). Close up it read as green confetti. Trunks were a 7-sided pole with four straight 90° sticks. Firs and pines were flat dark "flags".
+
+**Now:**
+- There is a procedural **leaf atlas** (a 2048×1024 canvas): oak-type and beech/ash-type sprays, hawthorn, bramble, fir shoots, pine brushes, and fresh and overwintered fern fronds. Custom mipmaps **preserve alpha coverage**, so distant crowns keep their density.
+- Crowns are **alpha-cut cards**, built as lumpy clumps at the branch tips. Each card has a volume normal (crown-plus-clump), so the canopy shades as masses. The AO is baked into vertex colour. There is a mild sun transmission term, a slow sway on the scene clock (still on `still=1` and when paused), and a fade for cards seen edge-on.
+- **Three broadleaf variants** with curved trunks and limbs, root flare, secondary twigs and bark UVs scaled by length. All stay inside the original crown envelope, so clearances and crown hiding are unchanged.
+- **Scots pine** (clean upper stem, flat brush clumps) and **fir/spruce** (drooping arms, flat sprays and hanging branchlets).
+- **Shrubs** use the same cards.
+- Crowns render on `FOLIAGE_LAYER` (2). The main, planar-reflection and environment cameras see this layer. The GTAO camera does not, because its override pass ignores alpha cut-outs.
+
+## 2. Brook banks: bedded stones and soft rush (`riverbank.ts`)
+
+- Four stone shapes: water-rounded cobbles and split sandstone with bedding faces. Displacement is position-based, with vertices merged for smooth normals, and the bottoms are flat so the stones bed into the bank. There are pebble LODs.
+- Moss grows on exposed tops, with a dark wet band and a damp sheen low down.
+- A separate seed breaks the old continuous "kerb" into irregular groups, with gravel gathered around the larger stones.
+- **Soft-rush clumps** (13 tapered, arching blades with dark bases and some spent tips, swaying at the tips) replace the two-triangle reeds.
+
+## 3. Woodland floor (`woodland-floor.ts`)
+
+Under the dense valley trees, and clear of roads, paths, yards, brook banks, workshops and fixed camera lines:
+- 460 **male-fern** colonies (1,767 shuttlecocks), with fresh and overwintered fronds.
+- 237 **bramble** mounds.
+- 120 **fallen limbs** and 80 **snapped stumps**. The bark shares the tree bark detail, and the cut ends are pale.
+- Russet leaf and dead-bracken **litter** painted onto the ground canvas.
+
+The season follows the existing bluebells and daffodils (spring).
+
+## 4. Sky, haze and the far country (`sky.ts`)
+
+- A **sky dome** with a graded zenith, smoke-stained horizon haze, sun glow and soft drifting cumulus. It follows the Daylight/dusk control. The fog takes the haze colour.
+- Fog changed from mist (fully fogged at camera distance + 145 m) to **haze** (distance + 520 m).
+- The model no longer ends at a cliff. A **far-country ring** (to 2.2 km) continues the ground: hedged, irregular parcels, mostly pasture with some hay and ploughed ground; hedgerow oaks; small copses; a brook valley carried on; and the two outside roads fading out. Near the seam it takes the village ground's grain and colour.
+- The same field function runs in GLSL and in JavaScript, so hedge bushes and hedgerow trees stand on the painted hedge lines.
+- **Interpretation:** the far country is generic enclosure landscape, not mapped fields. Only its rise toward the north-east (the Rowley Hills direction) echoes the real setting.
+
+## 5. Lane margins (`lane-verges.ts`)
+
+- An irregular grass edge is painted over the lane shoulders (footpath mouths stay clear).
+- Clustered verge tussocks, with bare gaps.
+- A sparse grassy crown between the ruts of the hamlet's own lanes (not the outside road, and not at junctions).
+- Grit and cinders in the wheel tracks. Cinder surfacing is plausible locally, but it is **not documented** for these lanes.
+- Spring dandelions on the verges.
+
+## Garden hedges and vegetable beds (`yard-plots.ts`, from Tom's review)
+
+- The plot-boundary hedges (stakes carrying faceted icosahedron blobs) are now dense leaf-card runs of clipped hedge, about 0.9–1.1 m high.
+- The plot vegetable beds (flat icosahedron "leaves") now hold instanced **cabbage** plants with cupped, veined outer leaves.
+- The earlier triangle-pyramid shrubs are replaced by item 1.
+
+## Checks
+
+- `npm run village:check` and `npm run build`: pass.
+- Layouts, objects, inhabited, navigation, roads, historic, surfaces, textures, workshop, workshop-props, props, outbuildings, cart, life: all pass. The historic check needed a DOM-free placeholder in `leafAtlas()`.
+- Browser (headless Chrome with a Metal GPU, 1600×1000): the preset views village, lane, brook, outside, workings, approach, washing and yard. Also Henry's room, the main-workshop cutaway and the cottage cutaway. Custom `?cam=` views: wood, bank, oblique, south and garden.
+- Relative frame time, same machine, headless (median ms): village 29.8 → 20.8, lane 31.5 → 20.5, brook 22.2 → 11.7, oblique 23.2 → 17.9. This is not a device benchmark.
+
+## Review hook
+
+`/village?cam=x,y,z,tx,ty,tz` fixes an exact outdoor camera for repeatable comparisons, for example `&still=1&clean&cam=-98,8,40,-104,5.5,26` for the brook bank.
+
+## Known limits and next steps
+
+- Needle and leaf textures are painted procedurally, not scanned. Close up they read as illustration-grade.
+- The pond and brook water surfaces are unchanged (water is still deferred).
+- Hedges in the far country appear only within about 190 m of the edge. Beyond that, the painted hedge lines carry them.
+- Possible next steps: bark moss and ivy on trunks, autumn and seasonal palettes, and far-country LOD for mobile.

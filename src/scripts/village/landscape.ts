@@ -3,6 +3,8 @@ import {industryClear} from './historic-plan';
 import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {brookWater,downstreamLine} from './brook-water';
+import {shrubGeometry,foliageMaterial,FOLIAGE_LAYER} from './foliage';
+import {stoneVariants,weatherStones,rushGeometry,swayRushes,bankRandom} from './riverbank';
 import { roads,renderedRoads,brooks,baseGround,streamSurface,ground,streamWidth,streamDistance,nearestRoad,roundedLine,chainshopPosition,type Point,type Home } from './layout';
 const inside=(x:number,z:number)=>Math.pow(x/210,2)+Math.pow((z+60)/240,2)<.96;
 function samples(line:Point[],step=1):Point[]{const out:Point[]=[];for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/step));for(let j=0;j<n;j++)out.push([a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n]);}out.push(line[line.length-1]);return out;}
@@ -54,7 +56,6 @@ for(const source of brooks){const line=downstreamLine(source),points=samples(lin
 for(let i=0;i<points.length;i++){const p=points[i],a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)];const len=Math.hypot(b[0]-a[0],b[1]-a[1])||1;const nx=-(b[1]-a[1])/len,nz=(b[0]-a[0])/len;if(i)distance+=Math.hypot(p[0]-points[i-1][0],p[1]-points[i-1][1]);const w=streamWidth(...p)*.53;for(const side of [-1,1]){verts.push(p[0]+nx*w*side,streamSurface(...p),p[1]+nz*w*side);uvs.push((side+1)/2,distance);tangents.push(nz,-nx);}if(i&&inside(...p)&&inside(...points[i-1])){const k=i*2;indices.push(k-2,k-1,k,k-1,k+1,k);}}
 const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(verts,3));g.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));g.setAttribute('flowTangent',new T.Float32BufferAttribute(tangents,2));g.setIndex(indices);g.computeVertexNormals();const mesh=new T.Mesh(g,waterMat);mesh.receiveShadow=true;scene.add(mesh);waterMeshes.push(mesh);
 }
-const stoneGeo=new T.IcosahedronGeometry(1,1);const positions=stoneGeo.attributes.position;for(let i=0;i<positions.count;i++){const x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i);const f=.94+.09*Math.sin(x*7+y*5+z*9);positions.setXYZ(i,x*f,y*f,z*f);}stoneGeo.computeVertexNormals();
 const wakes:{p:Point;tx:number;tz:number;s:number}[]=[];
 const rocks:{p:Point;s:number;wet:boolean;surface?:boolean}[]=[],shrubs:{p:Point;s:number}[]=[],reeds:Point[]=[];
 for(const source of brooks){const points=samples(downstreamLine(source),1.2);for(let i=1;i<points.length-1;i++){const p=points[i];if(!inside(...p))continue;const prev=points[i-1],next=points[i+1],len=Math.hypot(next[0]-prev[0],next[1]-prev[1])||1,nx=-(next[1]-prev[1])/len,nz=(next[0]-prev[0])/len;
@@ -87,9 +88,41 @@ rockMaterial.onBeforeCompile=shader=>{
  diffuseColor.rgb*=.75+grit*.4+vein*.055;
  diffuseColor.rgb*=mix(.57,1.,smoothstep(-.35,.55,stonePoint.y));`);
 };
-refineSurface(rockMaterial,'stone');
-const rockMesh=new T.InstancedMesh(stoneGeo,rockMaterial,rocks.length);
-rocks.forEach(({p,s,wet,surface},i)=>{d.position.set(p[0],surface?streamSurface(...p)-s*.16:ground(...p)+s*.33,p[1]);d.rotation.set(rand()*.3,rand()*6.28,rand()*.2);d.scale.set(s*1.3,s*.7,s);d.updateMatrix();rockMesh.setMatrixAt(i,d.matrix);rockMesh.setColorAt(i,new T.Color(wet?'#959188':'#a49879').multiplyScalar(.8+rand()*.35));});rockMesh.castShadow=rockMesh.receiveShadow=true;scene.add(rockMesh);
+weatherStones(rockMaterial);refineSurface(rockMaterial,'stone');
+// Stones: smooth, bedded shapes in eight instanced batches (four shapes × stone/pebble detail).
+// The landscape draws are consumed exactly as before; separate seeds thin the old continuous
+// kerb into irregular groups and scatter pebbles around the larger stones.
+const stoneRandom=bankRandom(6121865),stoneShapes=[stoneVariants(3),stoneVariants(1)];
+const stoneBatches=new Map<number,{matrix:T.Matrix4;color:T.Color;weather:[number,number]}[]>();
+const addStone=(shape:number,small:boolean,matrix:T.Matrix4,color:T.Color,weather:[number,number])=>{const key=shape*2+(small?1:0),list=stoneBatches.get(key)??[];list.push({matrix,color,weather});stoneBatches.set(key,list);};
+const stoneGroups=(p:Point)=>.5+.3*Math.sin(p[0]*.23+Math.sin(p[1]*.19)*2.1)+.2*Math.sin(p[1]*.61-p[0]*.37);
+let keptStones=0;
+rocks.forEach(({p,s,wet,surface})=>{
+ const tiltX=rand()*.3,turn=rand()*6.28,tiltZ=rand()*.2,tone=.8+rand()*.35;
+ const bank=wet&&!surface;
+ if(bank&&stoneRandom()>.3+.75*stoneGroups(p))return;
+ const shape=Math.floor(stoneRandom()*4),small=s<.2;
+ d.position.set(p[0],surface?streamSurface(...p)-s*.16:ground(...p)+s*.02,p[1]);d.rotation.set(tiltX,turn,tiltZ);d.scale.set(s*1.3,s*.95,s);d.updateMatrix();
+ const warm=stoneRandom()<.35;
+ const color=new T.Color(wet?(warm?'#9d8f7c':'#8f8c84'):'#a49879').multiplyScalar(tone);
+ addStone(shape,small,d.matrix.clone(),color,bank?[.45+stoneRandom()*.55,.85]:surface?[.12,1]:[0,0]);keptStones++;
+ // Gravel and pebbles gather around the larger bank stones.
+ if(bank&&s>.24)for(let k=0,n=1+Math.floor(stoneRandom()*3);k<n;k++){
+  const a=stoneRandom()*Math.PI*2,r=s*(1+stoneRandom()*1.2),q:Point=[p[0]+Math.cos(a)*r,p[1]+Math.sin(a)*r],ps=.05+stoneRandom()*.09;
+  if(siteIssue(q,.1))continue;
+  d.position.set(q[0],ground(...q)+ps*.02,q[1]);d.rotation.set(stoneRandom()*.3,stoneRandom()*6.28,0);d.scale.set(ps*1.3,ps*.95,ps);d.updateMatrix();
+  addStone(Math.floor(stoneRandom()*4),true,d.matrix.clone(),new T.Color(stoneRandom()<.5?'#8a8479':'#9c8f7a').multiplyScalar(.8+stoneRandom()*.3),[.1,.9]);keptStones++;
+ }
+});
+const rockMeshes:T.InstancedMesh[]=[];
+for(const [key,list] of stoneBatches){
+ const geometry=stoneShapes[key%2][Math.floor(key/2)].clone(),weather=new Float32Array(list.length*2);
+ list.forEach((stone,i)=>weather.set(stone.weather,i*2));
+ geometry.setAttribute('stoneWeather',new T.InstancedBufferAttribute(weather,2));
+ const mesh=new T.InstancedMesh(geometry,rockMaterial,list.length);
+ list.forEach((stone,i)=>{mesh.setMatrixAt(i,stone.matrix);mesh.setColorAt(i,stone.color);});
+ mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);rockMeshes.push(mesh);
+}
 const wakeVerts:number[]=[],wakeUvs:number[]=[];
 for(const {p,tx,tz,s} of wakes)for(const side of [-1,1])for(let j=0;j<12;j++){
  const vertex=(k:number,edge:number)=>{const t=k/12,along=.12+t*(1.7+s),cross=side*(s*.55+t*.6)+edge*.10;const x=p[0]+tx*along-tz*cross,z=p[1]+tz*along+tx*cross;wakeVerts.push(x,streamSurface(x,z)+.02,z);wakeUvs.push(edge,t);};
@@ -102,10 +135,16 @@ const wakeMat=new T.ShaderMaterial({uniforms:{time:waterTime},vertexShader:`vary
 // Shader directives must start on their own line.
 wakeMat.fragmentShader=wakeMat.fragmentShader.replace('; #include',';\n#include');
 const wakeMesh=new T.Mesh(wakeGeo,wakeMat);wakeMesh.renderOrder=2;wakeMesh.layers.set(1);scene.add(wakeMesh);
-const leaves:number[]=[],colors:number[]=[];for(let i=0;i<720;i++){const a=rand()*6.28,r=Math.sqrt(rand())*.72,y=.15+rand()*.95,x=Math.cos(a)*r,z=Math.sin(a)*r,s=.025+rand()*.045;leaves.push(x-s,y,z,x,y+.1,z+s*.5,x+s,y,z,x-s,y,z,x+s,y,z,x,y-.015,z-s*.5);const color=new T.Color().setHSL(.20+rand()*.045,.33,.12+rand()*.12);for(let j=0;j<6;j++)colors.push(color.r,color.g,color.b);}
-const bushGeo=new T.BufferGeometry();bushGeo.setAttribute('position',new T.Float32BufferAttribute(leaves,3));bushGeo.setAttribute('color',new T.Float32BufferAttribute(colors,3));bushGeo.computeVertexNormals();const bushes=new T.InstancedMesh(bushGeo,new T.MeshStandardMaterial({color:'#a9b58b',vertexColors:true,side:T.DoubleSide,roughness:1}),shrubs.length);
+// Shrubs share the leaf-card atlas with the broadleaf crowns. The old triangle
+// generator's 4,320 draws are consumed so rock, bush and reed variation is unchanged.
+for(let i=0;i<720*6;i++)rand();
+const bushes=new T.InstancedMesh(shrubGeometry(),foliageMaterial(waterTime,{color:'#c9ccb6',sway:0,transmission:.35}),shrubs.length);
+bushes.layers.set(FOLIAGE_LAYER);
+
 shrubs.forEach(({p,s},i)=>{d.position.set(p[0],ground(...p),p[1]);d.rotation.set(0,rand()*6.28,0);d.scale.set(s,s,s);d.updateMatrix();bushes.setMatrixAt(i,d.matrix);});bushes.castShadow=bushes.receiveShadow=true;scene.add(bushes);
-const reedGeo=new T.BufferGeometry();reedGeo.setAttribute('position',new T.Float32BufferAttribute([-.025,0,0,.10,1.1,.03,.025,0,0,0,0,-.025,-.04,.8,.17,0,0,.025],3));reedGeo.computeVertexNormals();const reedMesh=new T.InstancedMesh(reedGeo,new T.MeshStandardMaterial({color:'#8b9160',side:T.DoubleSide,roughness:1}),reeds.length);reeds.forEach((p,i)=>{d.position.set(p[0],ground(...p),p[1]);d.rotation.set(0,rand()*6.28,0);d.scale.setScalar(.65+rand()*.65);d.updateMatrix();reedMesh.setMatrixAt(i,d.matrix);});scene.add(reedMesh);
+// Soft-rush clumps replace the old two-triangle reeds; each placement keeps its original draws.
+const reedMesh=new T.InstancedMesh(rushGeometry(),swayRushes(new T.MeshStandardMaterial({vertexColors:true,side:T.DoubleSide,roughness:.9}),waterTime),reeds.length)
+reeds.forEach((p,i)=>{d.position.set(p[0],ground(...p),p[1]);d.rotation.set(0,rand()*6.28,0);d.scale.setScalar(.65+rand()*.65);d.updateMatrix();reedMesh.setMatrixAt(i,d.matrix);});scene.add(reedMesh);
 refineSurface(bushes.material,'leaf');refineSurface(reedMesh.material,'leaf');
-return {update:(time:number)=>{waterTime.value=time;},reflect:(renderer:T.WebGLRenderer,camera:T.Camera,target:T.Vector3,force=false)=>water.reflect(renderer,camera,target,[...waterMeshes,wakeMesh],force),waterMeshes,counts:{rocks:rocks.length,shrubs:shrubs.length,reeds:reeds.length},waterMaterial:waterMat};
+return {update:(time:number)=>{waterTime.value=time;},reflect:(renderer:T.WebGLRenderer,camera:T.Camera,target:T.Vector3,force=false)=>water.reflect(renderer,camera,target,[...waterMeshes,wakeMesh],force),waterMeshes,counts:{rocks:keptStones,shrubs:shrubs.length,reeds:reeds.length},waterMaterial:waterMat};
 }

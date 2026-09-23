@@ -1,3 +1,4 @@
+import {gardenHedgeGeometry,cabbageGeometry,foliageMaterial,FOLIAGE_LAYER} from './foliage';
 import * as T from 'three';
 import {DetailBatch} from './detail-batch';
 import {ground,localPoint,type Home,type Point} from './layout';
@@ -34,15 +35,19 @@ export function planYardPlots(homes:Home[],paths:Point[][],shops:BackyardShop[])
 }
 export function paintYardPlots(ctx:CanvasRenderingContext2D,pixel:(p:Point)=>Point,plots:YardPlot[]){for(const p of plots){ctx.beginPath();p.polygon.forEach((q,i)=>{const xy=pixel(q);if(i)ctx.lineTo(...xy);else ctx.moveTo(...xy);});ctx.closePath();ctx.fillStyle=['#72634818','#414b3312','#8d76541a'][p.home%3];ctx.fill();}}
 export function addYardPlots(scene:T.Scene,plots:YardPlot[]){const b=new DetailBatch();b.root.name='Irregular cottage plots';const wood=refineSurface(new T.MeshStandardMaterial({color:'#635740',roughness:1}),'wood'),brick=refineSurface(new T.MeshStandardMaterial({color:'#745b45',roughness:1}),'brick'),leaf=refineSurface(new T.MeshStandardMaterial({color:'#61703d',roughness:1}),'leaf'),soil=refineSurface(new T.MeshStandardMaterial({color:'#51432e',roughness:1}),'stone');
- const v=(p:Point,y:number)=>new T.Vector3(p[0],ground(...p)+y,p[1]);let sections=0,beds=0;
+ const v=(p:Point,y:number)=>new T.Vector3(p[0],ground(...p)+y,p[1]);let sections=0,beds=0;const hedges:T.Matrix4[]=[],cabbages:T.Matrix4[]=[];
  for(const plot of plots){for(const {a,b:end,kind}of plot.boundaries){const dx=end[0]-a[0],dz=end[1]-a[1],l=Math.hypot(dx,dz),angle=-Math.atan2(dz,dx),q=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),angle);sections++;
   if(kind===0){for(const p of [a,end])b.block(wood,v(p,.43),new T.Vector3(.07,.86,.07),q);for(const y of [.32,.69])b.beam(wood,v(a,y),v(end,y),.031);b.beam(wood,v(a,.30),v(end,.7),.022);}
   else if(kind===1){for(let row=0;row<4;row++)for(let j=0,n=Math.ceil(l/.25);j<n;j++){const t=(j+.5)/n,p:Point=[a[0]+dx*t,a[1]+dz*t];b.block(brick,v(p,.06+row*.12),new T.Vector3(l/n-.012,.11,.24),q,.76+((row*7+j*3+plot.home)%7)*.055);}}
-  else for(let j=0,n=Math.ceil(l/.3);j<=n;j++){const t=j/n,p:Point=[a[0]+dx*t,a[1]+dz*t];b.beam(wood,v(p,0),v(p,.62),.018);for(let k=0;k<3;k++)b.rock(leaf,v([p[0]+Math.sin(j+k)*.08,p[1]+Math.cos(j+k)*.08],.23+k*.15),new T.Vector3(.24,.22,.21),q,.83+((j+k)%5)*.05);}
+  // Garden hedges: overlapping leaf-card runs along the boundary, a little uneven in height and line.
+  else for(let j=0,n=Math.max(1,Math.round(l/.6));j<n;j++){const t=(j+.5)/n,p:Point=[a[0]+dx*t,a[1]+dz*t],wobble=Math.sin(j*2.3+plot.home)*.5+.5,m=new T.Matrix4().compose(v([p[0]-dz/l*(wobble-.5)*.06,p[1]+dx/l*(wobble-.5)*.06],-.03),q.clone().multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),(wobble-.5)*.12)),new T.Vector3(l/n*1.15,.9+wobble*.2,.9+wobble*.12));hedges.push(m);}
  }
  if(plot.bed){const s=plot.bed,q=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),s.angle),p=(x:number,z:number):Point=>[s.p[0]+Math.cos(s.angle)*x+Math.sin(s.angle)*z,s.p[1]-Math.sin(s.angle)*x+Math.cos(s.angle)*z];beds++;
-  b.block(soil,v(s.p,.045),new T.Vector3(1.2,.09,2),q);for(const side of [-1,1])b.block(wood,v(p(side*.62,0),.1),new T.Vector3(.045,.2,2.07),q);for(let row=0;row<2;row++)for(let j=0;j<5;j++)b.rock(leaf,v(p((row-.5)*.5,(j-2)*.35),.14),new T.Vector3(.13,.09,.14),q,.83+(j%3)*.06);
+  b.block(soil,v(s.p,.045),new T.Vector3(1.2,.09,2),q);for(const side of [-1,1])b.block(wood,v(p(side*.62,0),.1),new T.Vector3(.045,.2,2.07),q);for(let row=0;row<2;row++)for(let j=0;j<5;j++){const turn=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),row*1.7+j*2.3),size=.98+((j*3+row+plot.home)%5)*.07;cabbages.push(new T.Matrix4().compose(v(p((row-.5)*.5,(j-2)*.35),.085),q.clone().multiply(turn),new T.Vector3(size,size,size)));}
  }
  }
- const result=b.finish();scene.add(result.root);return {...result,plots:plots.length,sections,beds};
+ const result=b.finish();scene.add(result.root);
+ const hedgeMesh=new T.InstancedMesh(gardenHedgeGeometry(),refineSurface(foliageMaterial({value:0},{color:'#c9cdb6',sway:0,transmission:.3}),'leaf'),hedges.length);hedges.forEach((m,i)=>hedgeMesh.setMatrixAt(i,m));hedgeMesh.layers.set(FOLIAGE_LAYER);hedgeMesh.castShadow=hedgeMesh.receiveShadow=true;result.root.add(hedgeMesh);
+ const cabbageMesh=new T.InstancedMesh(cabbageGeometry(),refineSurface(new T.MeshStandardMaterial({vertexColors:true,roughness:.7,side:T.DoubleSide}),'leaf'),cabbages.length);cabbages.forEach((m,i)=>cabbageMesh.setMatrixAt(i,m));cabbageMesh.castShadow=cabbageMesh.receiveShadow=true;result.root.add(cabbageMesh);
+ void leaf;return {...result,plots:plots.length,sections,beds,hedgeRuns:hedges.length,cabbages:cabbages.length};
 }
