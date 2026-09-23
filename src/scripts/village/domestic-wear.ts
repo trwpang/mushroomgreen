@@ -9,7 +9,7 @@ export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,f
  material.onBeforeCompile=function(shader,renderer){
   previous.call(this,shader,renderer);
   shader.uniforms.dwHearth={value:new T.Vector2(hearth?.x??-100,hearth?.z??-100)};
-  shader.uniforms.dwBase={value:base};
+  shader.uniforms.dwBase={value:base};shader.uniforms.dwHouse={value:new T.Vector2(plan.number*.137,plan.number)};
   const bed=plan.floors[floor].items.find(p=>p.kind==='bed');
   shader.uniforms.dwBed={value:new T.Vector2(bed?.x??100,bed?.z??100)};
   shader.uniforms.dwEntry={value:new T.Vector2(0,plan.depth/2)};
@@ -20,7 +20,7 @@ export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,f
   shader.uniforms.dwTableAngle={value:table?.angle??0};
   shader.vertexShader='varying vec3 domesticNormal;varying vec2 domesticUV;varying vec3 domesticPoint;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ndomesticPoint=position;domesticNormal=normal;domesticUV=uv;');
-  shader.fragmentShader=`varying vec3 domesticNormal;varying vec2 domesticUV;varying vec3 domesticPoint;uniform sampler2D dwSoftAtlas;uniform float dwSoftReady;uniform vec2 dwHearth;uniform float dwBase;uniform vec2 dwBed;uniform vec2 dwEntry;uniform vec4 dwTable;uniform float dwTableAngle;uniform sampler2D dwAtlas;uniform float dwAtlasReady;
+  shader.fragmentShader=`varying vec3 domesticNormal;varying vec2 domesticUV;varying vec3 domesticPoint;uniform sampler2D dwSoftAtlas;uniform float dwSoftReady;uniform vec2 dwHearth;uniform float dwBase;uniform vec2 dwHouse;uniform vec2 dwBed;uniform vec2 dwEntry;uniform vec4 dwTable;uniform float dwTableAngle;uniform sampler2D dwAtlas;uniform float dwAtlasReady;
    vec2 dwMirror(vec2 p){return 1.-abs(mod(p,2.)-1.);}
    float dwHash(vec2 p){return fract(sin(dot(p,vec2(73.13,219.7)))*43758.5453);}
    float dwNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(dwHash(i),dwHash(i+vec2(1,0)),f.x),mix(dwHash(i+vec2(0,1)),dwHash(i+vec2(1,1)),f.x),f.y);}
@@ -35,7 +35,7 @@ export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,f
    float dwUse=0.;float dwRelief=0.;
    ${kind==='plaster'?`vec3 dwN=abs(domesticNormal);
     vec2 dwPlane=dwN.x>dwN.z?dwP.zy:dwP.xy;
-    vec2 dwWallUV=vec2(.009,.018)+dwMirror(dwPlane*.57+${(plan.number*.137).toFixed(3)})*vec2(.482,.964);
+    vec2 dwWallUV=vec2(.009,.018)+dwMirror(dwPlane*.57+dwHouse.x)*vec2(.482,.964);
     vec3 dwLime=texture2D(dwSoftAtlas,dwWallUV).rgb;
     float dwLimeValue=dot(dwLime,vec3(.2126,.7152,.0722));
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuse*dwLime*.98,dwSoftReady*.88);
@@ -60,7 +60,7 @@ export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,f
     float dwStart=dwPlank<.5?0.:dwPlank<1.5?.19:dwPlank<2.5?.405:dwPlank<3.5?.59:.795;
     float dwWidth=dwPlank<.5?.19:dwPlank<1.5?.215:dwPlank<2.5?.185:.205;
     float dwBoardU=(dwUnit.x-dwStart)/dwWidth;
-    float dwCut=dwHash(vec2(dwPlank,${plan.number.toFixed(1)}));
+    float dwCut=dwHash(vec2(dwPlank,dwHouse.y));
     vec2 dwUV=vec2(.51+(.06+dwCut*.49+dwBoardU*.32)*.48,.025+dwUnit.y*.94);
     vec3 dwOak=texture2D(dwAtlas,dwUV).rgb;
     float dwOakValue=dot(dwOak,vec3(.2126,.7152,.0722));
@@ -88,6 +88,7 @@ export function domesticWear(material:T.MeshStandardMaterial,plan:InteriorPlan,f
   `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor+dwUse*.2,.28,1.);`);
  };
- material.customProgramCacheKey=()=>key+'|domestic-wear-v4-'+kind+'-'+plan.number+'-'+floor;
+ // House and floor values are uniforms, so every cottage shares one program per material kind.
+ material.customProgramCacheKey=()=>key+'|domestic-wear-v5-'+kind;
  material.needsUpdate=true;return material;
 }

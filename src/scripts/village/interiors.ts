@@ -1,3 +1,4 @@
+import {requestLight,lightPoolInstalled,type PooledLight} from './light-pool';
 import {addHenryStatue} from './henry-statue';
 import {textureDetail,type TextureDetail} from './texture-detail';
 import {domesticWear} from './domestic-wear';
@@ -16,10 +17,17 @@ export interface InteriorView {group:T.Group;plan:InteriorPlan;floor:number;floo
 /** Shared room builder for isolated cutaways and furnished village shells. */
 export function createInteriors(scene:T.Object3D,embedded=false){
  let active:InteriorView|null=null,clock=0;let removeStatue:(()=>void)|undefined;
- let flame:T.Mesh|null=null,glow:T.PointLight|null=null;let lampFlame:T.Mesh|null=null,lampGlow:T.PointLight|null=null;
+ let flame:T.Mesh|null=null,glow:{intensity:number}|null=null;let lampFlame:T.Mesh|null=null,lampGlow:{intensity:number}|null=null;
+ // Room lights come from the shared pool in the village (constant light count, no shader recompiles);
+ // isolated studies without a pool keep real lights.
+ const pooled:PooledLight[]=[];
+ function roomLight(parent:T.Object3D,position:T.Vector3,color:string,intensity:number,distance:number){
+  if(lightPoolInstalled()){const anchor=new T.Object3D();anchor.position.copy(position);parent.add(anchor);const handle=requestLight(anchor,color,intensity,distance);pooled.push(handle);return handle;}
+  const light=new T.PointLight(color,intensity,distance,2);light.position.copy(position);parent.add(light);return light;
+ }
  const resources=new Set<T.Material|T.Texture|T.BufferGeometry>();
  const own=<A extends T.Material|T.Texture|T.BufferGeometry>(r:A)=>{resources.add(r);return r;};
- function hide(){removeStatue?.();removeStatue=undefined;if(active)scene.remove(active.group);for(const r of resources)r.dispose();resources.clear();active=null;flame=null;glow=null;lampFlame=null;lampGlow=null;}
+ function hide(){for(const handle of pooled)handle.release();pooled.length=0;removeStatue?.();removeStatue=undefined;if(active)scene.remove(active.group);for(const r of resources)r.dispose();resources.clear();active=null;flame=null;glow=null;lampFlame=null;lampGlow=null;}
  function show(home:Home,floor=0):InteriorView{
   hide();const plan=planInterior(home);floor=Math.max(0,Math.min(plan.floors.length-1,floor));
   const rand=seeded(plan.seed+floor*473),root=new T.Group();root.name=`House ${home.number} — interpreted interior — ${plan.floors[floor].name}`;
@@ -226,7 +234,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
     for(let i=0;i<5;i++)sphere(face-.18,.25,z+(rand()-.5)*dd*.5,.07,.035,.055,dark);
     const ember=own(new T.MeshStandardMaterial({color:'#a95319',emissive:'#e96117',emissiveIntensity:.7,roughness:1}));
     flame=new T.Mesh(own(new T.SphereGeometry(.085,8,5)),ember);flame.scale.set(.65,.50,2.1);flame.position.set(face-.16,base+.27,z);root.add(flame);
-    glow=new T.PointLight('#e7a15e',1.0,3.2,2);glow.position.set(face+.16,base+.55,z);root.add(glow);
+    glow=roomLight(root,new T.Vector3(face+.16,base+.55,z),'#e7a15e',1.0,3.2);
 
     for(let i=0;i<2;i++){rod(new T.Vector3(face-.08,.10,z+dd*.40-i*.09),new T.Vector3(face-.13,.94,z+dd*.43-i*.09),.012,iron);add(new T.TorusGeometry(.027,.008,5,10),iron,face-.13,.97,z+dd*.43-i*.09,0,Math.PI/2);}
     for(const side of [-1,1]){cylinder(face-.06,1.51,z+side*dd*.34,.026,.035,.09,ceramic);cylinder(face-.06,1.64,z+side*dd*.34,.018,.018,.18,cream);}
@@ -265,7 +273,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
    if(home.number===22&&floor===0&&p.id==='oil-lamp'&&p.anchor.includes('-table-')){
     lampFlame=new T.Mesh(own(new T.SphereGeometry(1,12,8)),own(new T.MeshBasicMaterial({color:'#ffe2a3'})));
     lampFlame.position.set(p.x,base+p.y+.03+.162*p.sy,p.z);lampFlame.scale.set(.008,.023,.008);root.add(lampFlame);
-    lampGlow=new T.PointLight('#ffbd70',.55,3.5,2);lampGlow.position.copy(lampFlame.position);root.add(lampGlow);
+    lampGlow=roomLight(lampFlame.parent??root,lampFlame.position.clone(),'#ffbd70',.55,3.5);
     root.userData.litOilLamp={anchor:p.anchor,position:lampFlame.position.toArray()};
    }
 

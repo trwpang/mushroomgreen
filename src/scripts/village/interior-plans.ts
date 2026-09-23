@@ -14,7 +14,18 @@ export function roomDimensions(h:Home,floor=0){
 export function overlaps(a:Furnishing,b:Furnishing,gap=.06){return Math.abs(a.x-b.x)<(a.w+b.w)/2+gap&&Math.abs(a.z-b.z)<(a.d+b.d)/2+gap;}
 // Furniture is in actual metres. Geometry is not stretched with the cottage asset.
 // The 1861 count informs crowding, never a claim about specific 1865 possessions.
+// Planning searches many trial layouts and validates each one; it is deterministic per house.
+// Streaming rooms re-planned the same cottage once per floor, so cache the result (callers get a copy).
+const planned=new Map<string,InteriorPlan>();
+const planKey=(h:Home)=>[h.number,h.style,h.sx,h.sz,h.occupants_1861].join('|');
+/** Plans computed elsewhere (the planning worker) are accepted into the same cache. */
+export function seedInteriorPlan(h:Home,plan:InteriorPlan){if(!planned.has(planKey(h)))planned.set(planKey(h),plan);}
 export function planInterior(h:Home):InteriorPlan{
+ const key=planKey(h);
+ let plan=planned.get(key);if(!plan){plan=planInteriorUncached(h);planned.set(key,plan);}
+ return structuredClone(plan);
+}
+export function planInteriorUncached(h:Home):InteriorPlan{
  const width=[6.4,7.2,9.2][h.style]*h.sx,depth=[4.6,4.8,4.5][h.style]*h.sz;
  const rand=seeded(h.number*1865+7301),count=h.occupants_1861||1;
  const plan:InteriorPlan={number:h.number,width,depth,wallHeight:h.style===1?2.15:2.5,chimneyX:-width/2+.55*h.sx,occupants:count,seed:h.number*1865+7301,floors:[],palette:h.number%6};

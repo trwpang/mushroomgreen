@@ -79,7 +79,11 @@ export function addShowcase(scene:T.Scene){
   const reflect=puddle.onBeforeRender.bind(puddle),lastPosition=new T.Vector3(Infinity,0,0),lastRotation=new T.Quaternion();let lastReflection=0;
   puddle.onBeforeRender=(renderer,scene,camera,geometry,material,group)=>{
     if(scene.overrideMaterial)return;const now=performance.now(),moved=lastPosition.distanceToSquared(camera.position)>.00001||lastRotation.angleTo(camera.quaternion)>.0001;
-    if(moved||now-lastReflection>180){reflect(renderer,scene,camera,geometry,material,group);lastPosition.copy(camera.position);lastRotation.copy(camera.quaternion);lastReflection=now;}
+    // A whole-scene reflection is only worth re-rendering every frame when the puddle is big on screen.
+    // Small on screen, its blurred reflection changes imperceptibly between refreshes.
+    const pixels=renderer.domElement.height*1.7/(Math.max(.1,camera.position.distanceTo(puddle.position))*Math.tan((camera as T.PerspectiveCamera).fov*Math.PI/360)*2);
+    const interval=pixels>160?0:pixels>60?120:pixels>20?400:1500;
+    if((moved&&now-lastReflection>=interval)||now-lastReflection>Math.max(180,interval)){reflect(renderer,scene,camera,geometry,material,group);lastPosition.copy(camera.position);lastRotation.copy(camera.quaternion);lastReflection=now;}
   };
   puddle.renderOrder=2;puddle.layers.set(1);scene.add(puddle);puddles.push(puddle);
   const materials=[new T.MeshStandardMaterial({color:'#655341',roughness:1}),new T.MeshStandardMaterial({color:'#3c3c35',roughness:.8}),new T.MeshStandardMaterial({color:'#75523e',roughness:.95}),new T.MeshStandardMaterial({color:'#848271',roughness:.9})];

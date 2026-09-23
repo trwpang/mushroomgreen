@@ -7,13 +7,16 @@ import {siteIssue} from './site-reservations';
 import {industryClear} from './historic-plan';
 import {createCompass} from './compass';
 import {addRoadCrossing,roadCrossing} from './road-crossing';
-import {roomDimensions} from './interior-plans';
+import {roomDimensions,planInterior,seedInteriorPlan} from './interior-plans';
+import {createInteriors} from './interiors';
 import {ageBuilding} from './building-age';
 import {paintWorkingYards} from './working-yards';
 import {addWorkingProps} from './prop-placement';
 import {addForgeCart} from './cart';
 import {panDestination,zoomDestination,turnDestination,containRoom} from './navigation';
 import {inhabitHouses} from './inhabited-houses';
+import {mergeByMaterial} from './merge-meshes';
+import {installLightPool,updateLightPool} from './light-pool';
 import {addSpringFlowers} from './spring-flowers';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
 import {addWorkingChainmaker} from '../chainmaker/worker';
@@ -63,7 +66,7 @@ addEventListener('pagehide',event=>{if(!event.persisted)disposeMaterialTextures(
 const scene=new T.Scene();scene.background=new T.Color('#c4c7b9');scene.fog=new T.Fog('#c4c7b9',850,1700);const sky=createSky(scene);
 const camera=new T.PerspectiveCamera(38,innerWidth/innerHeight,.2,2600);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=9;controls.maxDistance=1800;controls.maxPolarAngle=Math.PI*.48;controls.minPolarAngle=.04;controls.maxTargetRadius=300;controls.cursor.set(0,0,-60);controls.zoomSpeed=.8;
 const updateCompass=createCompass($('village-compass'));
-const hemi=new T.HemisphereLight('#e4e9de','#6e6045',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#ccd8e0',.8);fill.position.set(70,50,-90);scene.add(fill);
+const hemi=new T.HemisphereLight('#e4e9de','#6e6045',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#ccd8e0',.8);fill.position.set(70,50,-90);scene.add(fill);installLightPool(scene,6);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));camera.layers.enable(1);camera.layers.enable(FOLIAGE_LAYER);const aoCamera=camera.clone();aoCamera.layers.set(0);const ao=new GTAOPass(scene,aoCamera,innerWidth,innerHeight);ao.blendIntensity=.64;ao.updateGtaoMaterial({radius:.45,distanceExponent:1.7,thickness:1,scale:1});composer.addPass(ao);composer.addPass(cinematicOutput());
 const farRequest=Promise.all([fetch('/far-country/far-country.json').then(r=>r.json() as Promise<FarData>),new T.TextureLoader().loadAsync('/far-country/ground-1882.webp')]);
 const households:Household[]=await fetch('/households.json').then(r=>{if(!r.ok)throw Error('Household data unavailable');return r.json();});const [farData,farGround]=await farRequest;const homes=makeHomes(households);prepareGround(homes);const founder=homes.find(h=>h.number===22)!;const domesticShop=weaverWorkshop(founder);
@@ -114,6 +117,10 @@ const base=new T.Mesh(new T.PlaneGeometry(2400,2400),material('#bec3b0'));base.r
 $('load-label').textContent='Building cottages and working yards…';const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);const kit=await loader.loadAsync('/village/cottages.glb');const highTemplates:T.Object3D[]=[];for(let i=0;i<3;i++){const group=kit.scene.getObjectByName('cottage_'+i);if(!group)throw Error('Cottage kit missing type '+i);highTemplates.push(group);}
 const windowMaterials:T.MeshStandardMaterial[]=[glass];
 for(const root of highTemplates)root.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=o.receiveShadow=true;const ms=Array.isArray(o.material)?o.material:[o.material];for(const m of ms)if(m instanceof T.MeshStandardMaterial){if(m.map)m.map.anisotropy=8;if(m.name.includes('Small dark glass')){m.roughness=.16;m.metalness=.15;m.color.set('#91a6a0');m.transparent=true;m.opacity=.24;m.depthWrite=false;o.castShadow=false;windowMaterials.push(m);}}}});
+// One mesh per material in each cottage template (79 → ~24 draws). Door/frame and chimney meshes stay
+// separate because individualise() and the limewash treatment select them by name.
+const houseCategory=(o:T.Mesh)=>/door|frames/i.test(o.name)?'Door frames':/chimney|flue|stack/i.test(o.name)?'Chimney stack':'';
+const templateMerge=highTemplates.map(t=>mergeByMaterial(t,houseCategory));
 // Distant buildings retain brick courses and tile joints instead of flat colour blocks.
 function surface(kind:'brick'|'roof'|'lime'){
 const c=document.createElement('canvas');c.width=c.height=512;const p=c.getContext('2d')!;
@@ -123,12 +130,13 @@ p.fillStyle=kind==='brick'?`rgb(${102+v},${69+v*.7},${47+v*.55})`:`rgb(${61+v},$
 for(let i=0;i<16000;i++){p.fillStyle=i%2?'#191d1819':'#e6dcc013';p.fillRect(rand()*512,rand()*512,rand()*3+1,rand()*2+1);}
 const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;return new T.MeshStandardMaterial({map:t,roughness:1});}
 const distantBrick=surface('brick'),distantRoof=surface('roof'),distantLime=surface('lime');
-distantBrick.name='Wall brick';distantRoof.name='Roof tiles';distantLime.name='Wall limewash';
+// Double-sided so the open gable triangles can share the wall material and merge into one draw.
+distantBrick.side=distantLime.side=T.DoubleSide;distantBrick.name='Wall brick';distantRoof.name='Roof tiles';distantLime.name='Wall limewash';
 function lowHouse(style:number){const root=new T.Group(),w=[6.4,7.2,9.2][style],d=[4.6,4.8,4.5][style],e=[2.65,4.45,2.85][style],r=e+1.65;function add(g:T.BufferGeometry,m:T.Material,x:number,y:number,z:number){const o=new T.Mesh(g,m);o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;root.add(o);}
 add(new T.BoxGeometry(w,e,d),style===2?distantLime:distantBrick,0,e/2,0);const roof=new T.BufferGeometry();roof.setAttribute('position',new T.Float32BufferAttribute([-w/2-.2,e,d/2+.3,w/2+.2,e,d/2+.3,w/2+.2,r,0,-w/2-.2,e,d/2+.3,w/2+.2,r,0,-w/2-.2,r,0,-w/2-.2,r,0,w/2+.2,r,0,w/2+.2,e,-d/2-.3,-w/2-.2,r,0,w/2+.2,e,-d/2-.3,-w/2-.2,e,-d/2-.3],3));roof.setAttribute('uv',new T.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1,0,1,1,1,1,0,0,1,1,0,0,0],2));roof.computeVertexNormals();add(roof,distantRoof,0,0,0);
-for(const side of [-1,1]){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([side*w/2,e,-d/2,side*w/2,r,0,side*w/2,e,d/2],3));g.setAttribute('uv',new T.Float32BufferAttribute([0,0,.5,1,1,0],2));g.computeVertexNormals();const m=(style===2?distantLime:distantBrick).clone();m.side=T.DoubleSide;add(g,m,0,0,0);}openStack(root,-w/2+.55,r+.55,0,.65,1.5,.55,brick);
+for(const side of [-1,1]){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([side*w/2,e,-d/2,side*w/2,r,0,side*w/2,e,d/2],3));g.setAttribute('uv',new T.Float32BufferAttribute([0,0,.5,1,1,0],2));g.computeVertexNormals();add(g,style===2?distantLime:distantBrick,0,0,0);}openStack(root,-w/2+.55,r+.55,0,.65,1.5,.55,brick);
 for(const side of [-1,1])for(const x of [-w*.32,w*.32])for(const y of (style===1?[1.3,3.45]:[1.3])){add(new T.BoxGeometry(1.05,1,.045),timber,x,y,side*(d/2+.035));add(new T.BoxGeometry(.88,.82,.06),glass,x,y,side*(d/2+.055));}
-add(new T.BoxGeometry(.92,1.96,.06),timber,0,.98,d/2+.055);return root;}
+add(new T.BoxGeometry(.92,1.96,.06),timber,0,.98,d/2+.055);mergeByMaterial(root);return root;}
 const houseRoots:T.Group[]=[],highRoots:T.Object3D[]=[],lowRoots:T.Object3D[]=[];const pickTargets:T.Mesh[]=[];
 for(const s of backyardShops){const pick=new T.Mesh(new T.BoxGeometry(s.width,2.8,s.depth),new T.MeshBasicMaterial({visible:false}));pick.position.set(s.p[0],s.y+1.4,s.p[1]);pick.rotation.y=s.angle;pick.userData.home=homes.find(h=>h.number===s.home);smallShops.root.add(pick);pickTargets.push(pick);}
 for(const h of homes){const root=new T.Group();root.position.set(h.x,h.height,h.z);root.rotation.y=h.angle;root.scale.set(h.sx,1,h.sz);const low=lowHouse(h.style),high=highTemplates[h.style].clone(true);high.visible=false;root.add(low,high);individualise(h,root,low,high);root.visible=h.number!==chainshopReplacesHouse;scene.add(root);houseRoots.push(root);highRoots.push(high);lowRoots.push(low);
@@ -306,7 +314,27 @@ homes.forEach(h=>mapLine(h.polygon.map(project),(families[h.founder?'Founder':h.
 const updateHouseLabels=createHouseLabels(homes,$('map-labels'),h=>select(h));
 const selection=new T.Mesh(new T.RingGeometry(5.8,6.0,64),new T.MeshBasicMaterial({color:'#dfbc6f',side:T.DoubleSide,transparent:true,opacity:.8,depthTest:false}));selection.rotation.x=-Math.PI/2;selection.visible=false;selection.renderOrder=6;scene.add(selection);
 // Soft smoke lies outside the AO normal pass.
-const smokeCanvas=document.createElement('canvas');smokeCanvas.width=smokeCanvas.height=96;const sc=smokeCanvas.getContext('2d')!;for(let i=0;i<14;i++){const x=48+Math.sin(i*12.7)*20,y=48+Math.cos(i*8.3)*19;const grad=sc.createRadialGradient(x,y,0,x,y,24);grad.addColorStop(0,'rgba(115,114,104,.22)');grad.addColorStop(1,'rgba(140,138,125,0)');sc.fillStyle=grad;sc.fillRect(0,0,96,96);}const smokeTexture=new T.CanvasTexture(smokeCanvas);const chimneys=homes.filter(h=>h.number!==chainshopReplacesHouse&&(h.number%3===0||h.number===22)).map(h=>{const p=localPoint(h,(-[6.4,7.2,9.2][h.style]/2+.55)*h.sx,0);return new T.Vector3(p[0],h.height+[2.65,4.45,2.85][h.style]+3.35,p[1]);});for(const x of [-3,0,3])chimneys.push(forgeRoot.localToWorld(new T.Vector3(x,5.2,1.3)));chimneys.push(weaverShop.localToWorld(new T.Vector3(0,5.2,1.25)));const smoke=chimneys.flatMap((p,k)=>Array.from({length:8},(_,i)=>{const sprite=new T.Sprite(new T.SpriteMaterial({map:smokeTexture,transparent:true,depthWrite:false,opacity:.3,color:'#aca996'}));sprite.layers.set(1);scene.add(sprite);return {sprite,p,phase:i/8*8+k*.3};}));
+const smokeCanvas=document.createElement('canvas');smokeCanvas.width=smokeCanvas.height=96;const sc=smokeCanvas.getContext('2d')!;for(let i=0;i<14;i++){const x=48+Math.sin(i*12.7)*20,y=48+Math.cos(i*8.3)*19;const grad=sc.createRadialGradient(x,y,0,x,y,24);grad.addColorStop(0,'rgba(115,114,104,.22)');grad.addColorStop(1,'rgba(140,138,125,0)');sc.fillStyle=grad;sc.fillRect(0,0,96,96);}const smokeTexture=new T.CanvasTexture(smokeCanvas);const chimneys=homes.filter(h=>h.number!==chainshopReplacesHouse&&(h.number%3===0||h.number===22)).map(h=>{const p=localPoint(h,(-[6.4,7.2,9.2][h.style]/2+.55)*h.sx,0);return new T.Vector3(p[0],h.height+[2.65,4.45,2.85][h.style]+3.35,p[1]);});for(const x of [-3,0,3])chimneys.push(forgeRoot.localToWorld(new T.Vector3(x,5.2,1.3)));chimneys.push(weaverShop.localToWorld(new T.Vector3(0,5.2,1.25)));// Chimney smoke: one instanced billboard draw (was one sprite draw per puff), depth-sorted each frame.
+const smoke=chimneys.flatMap((p,k)=>Array.from({length:8},(_,i)=>({p,phase:i/8*8+k*.3})));
+const smokeGeometry=new T.InstancedBufferGeometry();smokeGeometry.setAttribute('position',new T.Float32BufferAttribute([-.5,-.5,0,.5,-.5,0,.5,.5,0,-.5,.5,0],3));smokeGeometry.setAttribute('uv',new T.Float32BufferAttribute([0,0,1,0,1,1,0,1],2));smokeGeometry.setIndex([0,1,2,0,2,3]);
+const smokeOffset=new T.InstancedBufferAttribute(new Float32Array(smoke.length*3),3),smokeShape=new T.InstancedBufferAttribute(new Float32Array(smoke.length*4),4);
+smokeOffset.setUsage(T.DynamicDrawUsage);smokeShape.setUsage(T.DynamicDrawUsage);smokeGeometry.setAttribute('smokeOffset',smokeOffset);smokeGeometry.setAttribute('smokeShape',smokeShape);smokeGeometry.instanceCount=smoke.length;
+const smokeMaterial=new T.ShaderMaterial({transparent:true,depthWrite:false,fog:true,uniforms:T.UniformsUtils.merge([T.UniformsLib.fog,{map:{value:smokeTexture},tint:{value:new T.Color('#aca996')}}]),
+ vertexShader:`attribute vec3 smokeOffset;attribute vec4 smokeShape;varying vec2 vUv;varying float vAlpha;
+  #include <fog_pars_vertex>
+  void main(){vUv=uv;vAlpha=smokeShape.w;vec4 mvPosition=viewMatrix*vec4(smokeOffset,1.);float c=cos(smokeShape.z),s=sin(smokeShape.z);vec2 corner=position.xy*smokeShape.xy;mvPosition.xy+=vec2(c*corner.x-s*corner.y,s*corner.x+c*corner.y);gl_Position=projectionMatrix*mvPosition;
+  #include <fog_vertex>
+  }`,
+ fragmentShader:`uniform sampler2D map;uniform vec3 tint;varying vec2 vUv;varying float vAlpha;
+  #include <fog_pars_fragment>
+  void main(){vec4 texel=texture2D(map,vUv);gl_FragColor=vec4(tint*texel.rgb,texel.a*vAlpha);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+  #include <fog_fragment>
+  }`});
+// The sprite version sampled this canvas without sRGB decoding; keep that exact look.
+const smokeMesh=new T.Mesh(smokeGeometry,smokeMaterial);smokeMesh.frustumCulled=false;smokeMesh.layers.set(1);smokeMesh.renderOrder=3;scene.add(smokeMesh);
+const smokeOrder=smoke.map((_,i)=>i),smokeDepth=new Float32Array(smoke.length),smokePoint=new T.Vector3();
 let savePicture=false;
 $('save-view').onclick=()=>{savePicture=true;};$('close-picture').onclick=()=>{$<HTMLDialogElement>('picture-preview').close();};
 const stillFrame=new URLSearchParams(location.search).has('still');
@@ -385,7 +413,20 @@ addEventListener('resize',()=>{const w=mount.clientWidth,h=mount.clientHeight;ca
 const inhabited=inhabitHouses(scene,homes);
 const initialPlace=new URLSearchParams(location.search),requestedView=initialPlace.get('view');view(requestedView&&['village','approach','forge','henry','brook','lane','washing','yard','outside','workings','workshops'].includes(requestedView)?requestedView:'village',true);
 // Review hook: ?cam=x,y,z,tx,ty,tz fixes an exact outdoor camera for repeatable comparisons.
+// Performance inspection: ?debug exposes the scene graph and renderer statistics.
+if(initialPlace.has('debug'))Object.assign(window,{__village:{scene,renderer,camera,controls}});
 const reviewCamera=initialPlace.get('cam')?.split(',').map(Number);if(reviewCamera?.length===6&&reviewCamera.every(Number.isFinite))move(new T.Vector3(...reviewCamera.slice(0,3)),new T.Vector3(...reviewCamera.slice(3)),true);
+// Room layouts for every cottage are planned in a worker and seeded into the cache as they arrive.
+{const planner=new Worker(new URL('./plan-worker.ts',import.meta.url),{type:'module'});let remaining=homes.length;
+ planner.onmessage=(event:MessageEvent<{number:number;plan:ReturnType<typeof planInterior>}>)=>{const home=homes.find(h=>h.number===event.data.number);if(home)seedInteriorPlan(home,event.data.plan);if(--remaining===0)planner.terminate();};
+ planner.onerror=()=>planner.terminate();planner.postMessage(homes.map(h=>({...h})));}
+// Compile every shader variant before the village is interactive, so panning never stalls on a first
+// appearance: detailed cottages of each style, one furnished room per style and all current materials.
+$('load-label').textContent='Preparing materials…';
+{const shown=highRoots.filter(o=>!o.visible);shown.forEach(o=>o.visible=true);
+ const samples=[0,1,2].map(style=>homes.find(h=>h.style===style&&h.number!==chainshopReplacesHouse)).filter((h):h is Home=>!!h).flatMap(h=>planInterior(h).floors.map((_,floor)=>{const room=createInteriors(scene,true);room.show(h,floor);return room;}));
+ try{await renderer.compileAsync(scene,camera);}catch(error){console.warn('Shader warm-up incomplete',error);}
+ samples.forEach(room=>room.hide());shown.forEach(o=>o.visible=false);}
 document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('button,select').forEach(el=>el.disabled=false);$('loading').hidden=true;$('village-status').textContent='Village loaded. All 59 households are available.';cleanView(new URLSearchParams(location.search).has('clean'));const initialHome=homes.find(h=>h.number===Number(initialPlace.get('house')));if(initialHome){select(initialHome);visit(initialHome,true);if(initialPlace.get('room')==='1')stepInside(initialHome,Number(initialPlace.get('floor')));if(initialPlace.has('inside')){inspection.enter(initialHome,initialPlace.get('inside')==='small'&&initialHome.number===22?'small':initialPlace.get('inside')==='main'||initialHome.number===5?'main':null);const floor=Number(initialPlace.get('floor'));if(floor===1)inspection.setFloor(floor);if(initialPlace.get('worker')==='1')inspection.watchWorker();}}document.documentElement.dataset.villageReady='true';mount.dataset.households=String(homes.length);mount.dataset.renderedCottages=String(houseRoots.filter(o=>o.visible).length);mount.dataset.forgeCount='1';mount.dataset.cottageTypes='3';const lastShadowTarget=new T.Vector3(Infinity,0,0);let shadowSpan=0;let last=performance.now(),frame=0,total=0,lodTimer=1;
 document.addEventListener('village-asset-ready',()=>{renderer.shadowMap.needsUpdate=true;});
 function animate(now:number){const real=(now-last)/1000,dt=Math.min(real,.05);last=now;if(!document.hidden){if(!paused)time+=dt;landscape.update(time);foliageTime.value=time;laundry.update(time);life.update(time);inspection.update(time);const workerVisible=forgeRoot.visible&&camera.position.distanceTo(forgeRoot.position)<80;if(worker.root.visible!==workerVisible)renderer.shadowMap.needsUpdate=true;worker.root.visible=workerVisible;if(workerVisible){worker.update(time);if(!paused)renderer.shadowMap.needsUpdate=true;}if(tween){tween.t+=dt;const r=Math.min(1,tween.t/tween.duration),t=r*r*(3-2*r);camera.position.lerpVectors(tween.from,tween.to,t);controls.target.lerpVectors(tween.fromTarget,tween.target,t);if(r===1)tween=null;}controls.update();updateCompass(camera.quaternion);if(roomHome){const bounded=containRoom(camera.position,controls.target,roomBounds());camera.position.copy(bounded.position);controls.target.copy(bounded.target);}if(!roomHome&&within(camera.position.x,camera.position.z))camera.position.y=Math.max(camera.position.y,ground(camera.position.x,camera.position.z)+1.2);if(inhabited.update(camera.position,time,inspection.active))renderer.shadowMap.needsUpdate=true;mount.dataset.inhabitedHomes=String(inhabited.loaded);mount.dataset.inhabitedFloors=String(inhabited.floors);lodTimer+=dt;if(lodTimer>.35){lodTimer=0;let visible=0,shadowDirty=false;const ranked=homes.map((h,i)=>({i,d:Math.hypot(h.x-controls.target.x,h.z-controls.target.z)})).sort((a,b)=>a.d-b.d);const near=new Set(ranked.filter(a=>a.d<85&&camera.position.distanceTo(controls.target)<160).slice(0,18).map(a=>a.i));homes.forEach((h,i)=>{const on=near.has(i)||camera.position.distanceTo(houseRoots[i].position)<20;if(highRoots[i].visible!==on)shadowDirty=true;highRoots[i].visible=on;lowRoots[i].visible=!on;if(on)visible++;});mount.dataset.detailedHomes=String(visible);
@@ -395,11 +436,20 @@ const sight=new T.Line3(camera.position,target),closest=new T.Vector3(),zero=new
 for(const tree of crownRecords){const t=sight.closestPointToPointParameter(tree.center,true);sight.at(t,closest);const hide=!inspection.active&&distance<80&&t>.03&&t<.94&&tree.center.distanceTo(closest)<tree.radius;
 if(hide!==tree.hidden){tree.hidden=hide;crownMeshes[tree.kind].setMatrixAt(tree.slot,hide?zero:tree.matrix);crownMeshes[tree.kind].instanceMatrix.needsUpdate=true;trunkMeshes[tree.trunkMesh].setMatrixAt(tree.trunk,hide?zero:tree.matrix);trunkMeshes[tree.trunkMesh].instanceMatrix.needsUpdate=true;if(tree.ivy){ivyMeshes[tree.ivy[0]].setMatrixAt(tree.ivy[1],hide?zero:tree.matrix);ivyMeshes[tree.ivy[0]].instanceMatrix.needsUpdate=true;}shadowDirty=true;}}
 // Industrial haze rather than mist: the subject stays clear and the far country fades over half a kilometre.
-(scene.fog as T.Fog).near=Math.max(40,distance+25);(scene.fog as T.Fog).far=Math.max(560,distance+520);sun.target.position.copy(target);sun.position.set(target.x+20,target.y+65,target.z+100);const span=camera.position.distanceTo(target)>140?200:38;Object.assign(sun.shadow.camera,{left:-span,right:span,top:span,bottom:-span});sun.shadow.camera.updateProjectionMatrix();if(shadowDirty||target.distanceToSquared(lastShadowTarget)>.01||shadowSpan!==span){renderer.shadowMap.needsUpdate=true;lastShadowTarget.copy(target);shadowSpan=span;}}
+(scene.fog as T.Fog).near=Math.max(40,distance+25);(scene.fog as T.Fog).far=Math.max(560,distance+520);// The shadow frustum moves in steps of span/16 (a whole number of shadow texels) and is widened by one
+// step, so it always covers the view. Re-rendering 4096² shadows only when a step is crossed removes
+// most panning hitches, and texel-aligned steps stop shadow edges shimmering while the camera moves.
+const span=camera.position.distanceTo(target)>140?200:38,step=span/16,texel=2*(span+step)/sun.shadow.mapSize.x;
+const snapped=new T.Vector3(Math.round(target.x/step)*step,Math.round(target.y/texel)*texel,Math.round(target.z/step)*step);
+sun.target.position.copy(snapped);sun.position.set(snapped.x+20,snapped.y+65,snapped.z+100);Object.assign(sun.shadow.camera,{left:-span-step,right:span+step,top:span+step,bottom:-span-step});sun.shadow.camera.updateProjectionMatrix();
+if(shadowDirty||snapped.distanceToSquared(lastShadowTarget)>1e-6||shadowSpan!==span){renderer.shadowMap.needsUpdate=true;lastShadowTarget.copy(snapped);shadowSpan=span;}}
 lightAmount=T.MathUtils.damp(lightAmount,dusk?1:0,3,dt);landscape.waterMaterial.envMapIntensity=.3*(1-.7*lightAmount);sun.color.set('#ffe2b9');sun.intensity=T.MathUtils.lerp(3.5,.35,lightAmount);hemi.intensity=T.MathUtils.lerp(1.48,.75,lightAmount);showcase.glow.intensity=18+Math.sin(time*8)*.7;for(const m of windowMaterials){m.emissive.set('#a16635');m.emissiveIntensity=.10+lightAmount*.65;}const haze=sky.update(camera,sun.position.clone().sub(sun.target.position),lightAmount,time);(scene.background as T.Color).copy(haze);(scene.fog as T.Fog).color.copy(haze);
-for(const {sprite,p,phase}of smoke){const age=(time*.45+phase)%8;const size=.22+age*.22+age*age*.025;const curl=Math.sin(age*1.6+phase)*.13*age;sprite.position.copy(p).add(new T.Vector3(age*.24+age*age*.024+curl,age*.48,-age*.13+Math.cos(age+phase)*age*.055));sprite.scale.set(size*(1+.12*Math.sin(age+phase)),size*.85,1);sprite.material.opacity=Math.min(1,age*3)*Math.pow(1-age/8,1.5)*.64;sprite.material.rotation=phase+age*.12;}
+{const positions:T.Vector3[]=[],shapes:number[][]=[];
+smoke.forEach(({p,phase},i)=>{const age=(time*.45+phase)%8;const size=.22+age*.22+age*age*.025;const curl=Math.sin(age*1.6+phase)*.13*age;const point=p.clone().add(new T.Vector3(age*.24+age*age*.024+curl,age*.48,-age*.13+Math.cos(age+phase)*age*.055));positions.push(point);shapes.push([size*(1+.12*Math.sin(age+phase)),size*.85,phase+age*.12,Math.min(1,age*3)*Math.pow(1-age/8,1.5)*.64]);smokeDepth[i]=smokePoint.copy(point).applyMatrix4(camera.matrixWorldInverse).z;});
+smokeOrder.sort((a,b)=>smokeDepth[a]-smokeDepth[b]);smokeOrder.forEach((index,slot)=>{const q=positions[index];smokeOffset.setXYZ(slot,q.x,q.y,q.z);smokeShape.setXYZW(slot,...shapes[index] as [number,number,number,number]);});
+smokeOffset.needsUpdate=smokeShape.needsUpdate=true;}
 updateHouseLabels(camera,namesOpen,mapOpen,inspection.active||!!roomHome||$('village-app').dataset.clean==='true',mount.clientWidth,mount.clientHeight);
-ao.enabled=!inspection.workshopActive&&camera.position.distanceTo(controls.target)<130;aoCamera.copy(camera);aoCamera.layers.set(0);if(!inspection.active)landscape.reflect(renderer,camera,controls.target);composer.render();renderer.shadowMap.autoUpdate=false;
+ao.enabled=!inspection.workshopActive&&camera.position.distanceTo(controls.target)<130;aoCamera.copy(camera);aoCamera.layers.set(0);updateLightPool(camera);if(!inspection.active)landscape.reflect(renderer,camera,controls.target);composer.render();renderer.shadowMap.autoUpdate=false;
 if(savePicture){
   savePicture=false;const aspect=camera.aspect,pixelRatio=renderer.getPixelRatio();
   camera.aspect=16/9;camera.updateProjectionMatrix();renderer.setPixelRatio(1);composer.setPixelRatio(1);renderer.setSize(1920,1080,false);composer.setSize(1920,1080);landscape.reflect(renderer,camera,controls.target,true);composer.render();

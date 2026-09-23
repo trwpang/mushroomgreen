@@ -105,3 +105,23 @@ Tom asked for three changes: less of an artificial rim, with the brook and roads
 - **Now:** style-2 cottages carry one continuous limewash coat over bricks and joints, applied after all colour layers. It uses the interior lime atlas (plaster half of `lime-linen-v1.webp`), projected on the wall planes. The brick coursing reads through the thin coat.
 - The coat has worn back to brick in the splash zone and in a few larger scaled areas. It has green damp at the foot and rain runs below the eaves.
 - Chimney stacks stay bare brick. The distant LOD already used a lime surface. No Blender rebuild was needed.
+
+## Performance pass: panning freezes (no visual change)
+
+Measured with headless Chrome (Metal), using CPU profiles and per-pass draw-call counts while panning. The main cause of the freezes was **shader compilation**, not draw load.
+
+- **Pooled room lights** (`light-pool.ts`): streamed rooms used to add and remove hearth and lamp point lights. Every change in the scene's light count made three.js recompile every visible material. One pan compiled 308 programs and stalled for up to 7.7 s. Rooms now request lights from a fixed pool of 6 point lights, assigned to the nearest visible requests.
+- **Shared room programs:** `domestic-wear` and `floor-wear` baked the house number and floor into shader text and cache keys. Those values are now uniforms, so all cottages share one program per material kind.
+- **Warm-up:** at load, the detailed cottages and one furnished room per house style are compiled with `renderer.compileAsync`. The same pan now compiles 2 programs, not 308.
+- **Planning:** `planInterior` is cached, because it was run once per floor. All 58 plans are computed in `plan-worker.ts` after load. Rooms within 24 m are prefetched in idle time, inside the existing cache of 8.
+- **Draw calls** (`merge-meshes.ts`):
+  - Cottage templates merge by material (79 → about 24 meshes); door, frame and chimney categories are kept so per-house rules still match. Distant houses merge into about 5 draws.
+  - Smoke is one instanced, depth-sorted draw instead of 192 sprites.
+  - Main-pass draws went from 2,293 to about 1,400 on the overview, and from 914 to 577–805 on the lane.
+- **Shadows** move in texel-aligned steps of span/16, with the frustum widened by one step. This means fewer 4096² re-renders and no shimmer while panning.
+- **Puddle reflection** refresh is throttled by the puddle's on-screen size.
+- **Result** (headless, relative):
+  - Lane pan: median frame 50 → 16.7 ms; worst frame 7.7 s → 0.3 s.
+  - Overview pan: median 67 → 16.7 ms; worst 150 → 133 ms.
+  - Pixel differences on fixed still views average under 1.3 grey levels (shadow texel alignment).
+- `?debug` exposes `window.__village` (scene, renderer, camera, controls) for inspection.

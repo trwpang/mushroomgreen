@@ -13,7 +13,7 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
  material.userData.floorWear={kind,routes:destinations.length,finish:'worn clay, swept routes, hearth ash and entrance transfer; protected sleeping zone'};
  material.onBeforeCompile=function(shader,renderer){
   previous.call(this,shader,renderer);
-  shader.uniforms.floorRoutes={value:routes};
+  shader.uniforms.floorRoutes={value:routes};shader.uniforms.fwHouse={value:new T.Vector2(Math.round(plan.number*.71*100)/100,floor?.04:.24)};
   shader.uniforms.floorEntry={value:entry};
   const bed=plan.floors[floor].items.find(a=>a.kind==='bed');
   shader.uniforms.floorBed={value:new T.Vector2(bed?.x??100,bed?.z??100)};
@@ -23,14 +23,14 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
   shader.uniforms.floorOrigin={value:new T.Vector2(plan.width/2-.10,plan.depth/2-.10)};
   shader.vertexShader='varying vec3 wornFloorPoint;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nwornFloorPoint=position;');
-  shader.fragmentShader=`varying vec3 wornFloorPoint;uniform vec4 floorRoutes[6];uniform vec2 floorOrigin;uniform vec2 floorHearth;uniform vec2 floorEntry;uniform vec2 floorBed;uniform sampler2D fwAtlas;uniform float fwAtlasReady;
+  shader.fragmentShader=`varying vec3 wornFloorPoint;uniform vec2 fwHouse;uniform vec4 floorRoutes[6];uniform vec2 floorOrigin;uniform vec2 floorHearth;uniform vec2 floorEntry;uniform vec2 floorBed;uniform sampler2D fwAtlas;uniform float fwAtlasReady;
    float fwHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
    float fwNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(fwHash(i),fwHash(i+vec2(1,0)),f.x),mix(fwHash(i+vec2(0,1)),fwHash(i+vec2(1,1)),f.x),f.y);}
    float fwSegment(vec2 p,vec4 route){vec2 v=route.zw-route.xy;float t=clamp(dot(p-route.xy,v)/max(dot(v,v),.001),0.,1.);return length(p-route.xy-v*t);}
   `+shader.fragmentShader;
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
    vec2 fwP=wornFloorPoint.xz;
-   float fwBroad=fwNoise(fwP*4.3+${(plan.number*.71).toFixed(2)})-.5;
+   float fwBroad=fwNoise(fwP*4.3+fwHouse.x)-.5;
    float fwMottle=fwNoise(fwP*23.7)-.5;
    float fwFilter=1.-smoothstep(.35,1.3,length(fwidth(fwP*170.)));
    float fwGrain=(fwNoise(fwP*170.)-.5)*fwFilter;
@@ -48,7 +48,7 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
    float fwKept=exp(-length(fwP-floorBed)*1.3);
    float fwTransfer=exp(-length((fwP-floorEntry)*vec2(1.35,.92))*1.8)*(.55+fwMottle);
    float fwSwept=1.-fwPolish*.60;
-   diffuseColor.rgb*=1.-fwDeposit*.23-fwSoot*.29-fwScuff*.08-fwTransfer*${floor?'.04':'.24'}*(1.-fwKept*.8)*fwSwept;
+   diffuseColor.rgb*=1.-fwDeposit*.23-fwSoot*.29-fwScuff*.08-fwTransfer*fwHouse.y*(1.-fwKept*.8)*fwSwept;
    vec2 fwIndex=floor((fwP+floorOrigin)/.2286);
    float fwRelief=0.;
    ${kind==='clay'?`// Random inset crops keep the two atlas panels and their mip borders separate.
@@ -82,6 +82,6 @@ export function wearFloor(material:T.MeshStandardMaterial,plan:InteriorPlan,floo
    normal=normalize(max(abs(fwDet),1e-9)*normal-fwGrad);
   `);
  };
- material.customProgramCacheKey=()=>previousKey+'|worked-floor-wear-v4-'+kind+'-'+plan.number;
+ material.customProgramCacheKey=()=>previousKey+'|worked-floor-wear-v5-'+kind;
  material.needsUpdate=true;return material;
 }
