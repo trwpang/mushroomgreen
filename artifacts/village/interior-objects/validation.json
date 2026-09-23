@@ -17482,7 +17482,7 @@
           "id": "coal-scuttle",
           "x": -3.74,
           "y": 0,
-          "z": -0.87,
+          "z": 0.87,
           "anchor": "22-0-fuelbucket-cooking",
           "role": "core",
           "angle": 1.5707963267948966,

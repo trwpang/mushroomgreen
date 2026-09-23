@@ -309,7 +309,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   if(!embedded){const ambient=new T.HemisphereLight('#e7dec7','#726049',1.15);root.add(ambient);}
   const targetPoint=localPoint(home,0,0),cameraPoint=localPoint(home,w*.924,d*1.152);
   active={group:root,plan,floor,floors:plan.floors.length,target:new T.Vector3(targetPoint[0],home.height+base+.8,targetPoint[1]),camera:new T.Vector3(cameraPoint[0],home.height+base+Math.max(w,d)*1.02+2.88,cameraPoint[1])};
-  root.userData.interiorPlan=plan;root.userData.home=home;if(home.number===22&&floor===0)removeStatue=addHenryStatue(root,base,woods[1]);return active;
+  root.userData.interiorPlan=plan;root.userData.home=home;if(home.number===22&&floor===0)removeStatue=addHenryStatue(root,base);return active;
  }
  return {show,hide,setFloor(floor:number){return active?show(active.group.userData.home as Home,floor):null;},get active(){return active;},update(time:number){clock=time;if(lampGlow)lampGlow.intensity=.55+.015*Math.sin(clock*3.7)+.008*Math.sin(clock*8.1);if(lampFlame)lampFlame.scale.y=.023+.001*Math.sin(clock*4.3);if(glow)glow.intensity=.85+.12*Math.sin(clock*4.7)+.06*Math.sin(clock*9.1);if(flame)flame.scale.y=.45+.10*Math.sin(clock*5.7);}};
 }

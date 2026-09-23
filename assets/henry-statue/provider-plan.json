@@ -17,14 +17,14 @@
   "placement": {
     "houseNumber": 22,
     "floor": 0,
-    "location": "Small supported shelf on the kitchen side of the sleeping partition",
-    "proposedLocalPosition": [
-      1.25,
-      1.3,
-      -1.65
+    "location": "Floor beside fireplace; coal bucket moved to opposite side",
+    "localPositionAboveRoomBase": [
+      -3.74,
+      0.03,
+      -0.87
     ],
-    "frontDirection": "toward kitchen (-X)",
-    "notes": "Verify dimensions against the generated base and check clearances in both embedded room and cutaway."
+    "frontDirection": "into room (+X)",
+    "notes": "457.2 mm including original plinth; 186 \u00d7 218 mm footprint. No shelf."
   },
   "observedGenerationCredits": 55,
   "observedAccountCredits": 3120,

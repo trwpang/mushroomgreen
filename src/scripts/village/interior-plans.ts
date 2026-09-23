@@ -135,7 +135,7 @@ function furnishLivingPlan(plan:InteriorPlan):InteriorPlan {
    item('stool',-2.30,-.22,.44,.42,'eating-back'),
    item('linenbench',-2.05,2.77,1.72,.44,'rest',Math.PI),
    item('armchair',-4.65,1.56,.66,.68,'rest',Math.PI/2),
-   item('fuelbucket',-3.74,-.87,.34,.34,'cooking'),
+   item('fuelbucket',-3.74,.87,.34,.34,'cooking'),
    item('fuelstore',-4.66,2.70,.60,.46,'fuel',Math.PI),
    item('waterstation',-1.34,-1.40,.50,.50,'cooking'),
    item('sewingtable',3.18,2.71,1.24,.58,'sewing',Math.PI),

@@ -4101,7 +4101,7 @@
               "id": "22-0-fuelbucket-cooking",
               "kind": "fuelbucket",
               "x": -3.74,
-              "z": -0.87,
+              "z": 0.87,
               "w": 0.34,
               "d": 0.34,
               "zone": "cooking",
