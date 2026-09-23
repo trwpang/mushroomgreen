@@ -17,12 +17,14 @@ export function individualise(home:Home, root:T.Group, low:T.Object3D, high:T.Ob
     if(!(o instanceof T.Mesh))return;
     const recolour=(source:T.Material)=>{
       if(!(source instanceof T.MeshStandardMaterial)||/glass/i.test(source.name))return source;
-      const key=source.uuid+(/door|frames/i.test(o.name)?'joinery':'body');
+      const chimney=/chimney|flue|stack/i.test(o.name),key=source.uuid+(/door|frames/i.test(o.name)?'joinery':'body')+(chimney?'-stack':'');
       if(cache.has(key))return cache.get(key)!;
       const m=source.clone(),name=source.name+' '+o.name;m.userData.surfaceDatum=home.height;
       if(/brick|limewash|wall/i.test(name)){
         m.color.multiply(wall).multiplyScalar(1.45);
-        if(home.number%5===0&&!/soot/i.test(name))m.color.lerp(new T.Color('#b3ad94'),.68);
+        // Style-2 cottages are limewashed: one continuous coat over the whole brick shell (building-age.ts),
+        // not individually painted bricks. Chimney stacks stay bare brick.
+        if(home.style===2&&!chimney)m.userData.limewash=/limewash/i.test(source.name)?'plaster':/mortar/i.test(source.name)?'mortar':'brick';
         if(home.number%7===0&&!/soot/i.test(name))m.color.lerp(new T.Color('#86867a'),.6);
       }
       else if(/slate|roof/i.test(name)){m.color.multiply(roof).multiplyScalar(1.8);if(home.number%3===0)m.color.multiply(new T.Color('#8caebc'));}

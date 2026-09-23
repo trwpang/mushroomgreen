@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {cloneSurface} from '../rendering/surfaces';
+import {bindMaterialAtlas,domesticAtlas} from './worked-materials';
 
 type Finish='masonry'|'roof'|'timber';
 /** Repairs belong to a building, not the world grid. No decals or extra texture sheets. */
@@ -19,15 +20,17 @@ export function ageBuilding(root:T.Object3D,number:number,workshop=false){
    const m=cloneSurface(source),previous=m.onBeforeCompile,key=m.customProgramCacheKey();
    const isStore=/Store|shed/i.test(name),profile=new T.Vector4(number*.731,workshop?1:0,isStore?1:0,number%5/4);
    m.userData.buildingAge={kind,number,workshop,interpretation:true};
+   const lime=kind==='masonry'?m.userData.limewash as 'plaster'|'brick'|'mortar'|undefined:undefined;
    m.onBeforeCompile=function(shader,renderer){
     previous.call(this,shader,renderer);
+    if(lime)bindMaterialAtlas(this,shader,'limeAtlas','limeReady',domesticAtlas('lime-linen'));
     shader.uniforms.ageInverse={value:inverse};shader.uniforms.ageProfile={value:profile};
     shader.vertexShader='uniform mat4 ageInverse;varying vec3 agePoint;varying vec3 ageNormal;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>
      agePoint=(ageInverse*modelMatrix*vec4(transformed,1.)).xyz;
      ageNormal=mat3(ageInverse*modelMatrix)*normal;
     `);
-    shader.fragmentShader=`varying vec3 agePoint;varying vec3 ageNormal;uniform vec4 ageProfile;
+    shader.fragmentShader=(lime?'uniform sampler2D limeAtlas;uniform float limeReady;\n':'')+`varying vec3 agePoint;varying vec3 ageNormal;uniform vec4 ageProfile;
      float agHash(vec2 p){return fract(sin(dot(p,vec2(171.13,319.71)))*43758.5453);}
      float agNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(agHash(i),agHash(i+vec2(1,0)),f.x),mix(agHash(i+vec2(0,1)),agHash(i+vec2(1,1)),f.x),f.y);}
     `+shader.fragmentShader;
@@ -37,6 +40,7 @@ export function ageBuilding(root:T.Object3D,number:number,workshop=false){
      float agSeed=ageProfile.x;
      float agBroad=agNoise(agPlane*1.7+agSeed);
      float agFine=agNoise(agPlane*37.+agSeed);
+
      float agWear=0.;float agRelief=0.;
      ${kind==='masonry'?`
       // Small lime repair campaigns follow irregular edges, rather than raised rectangular patches.
@@ -84,8 +88,31 @@ export function ageBuilding(root:T.Object3D,number:number,workshop=false){
       agRelief=-agSplit*.0009;
      `}
     `);
-    shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
+    // The coat goes on after every colour layer (including the brick detail atlas), so it hides the bricks' own colour.
+    shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`
+     ${lime?`
+      // Limewash: one continuous, much-renewed coat over brick and joints. The coursing reads through the
+      // thin coat; it has worn back to brick in the splash zone, at arrises and in scattered flakes, and
+      // carries green damp at the foot and grey soot and rain runs under the eaves.
+      vec2 lwCoord=1.-abs(mod(agPlane/1.35,2.)-1.);
+      vec3 lwSample=texture2D(limeAtlas,vec2(.009,.018)+lwCoord*vec2(.482,.964)).rgb;
+      vec3 lwRatio=mix(vec3(1.),clamp(lwSample/vec3(.5799,.5249,.4541),vec3(.55),vec3(1.5)),limeReady);
+      // Loss is mostly low down and in a few larger scaled areas; small flakes only at their edges.
+      float lwArea=agNoise(agPlane*1.3+agSeed*1.7)*.8+agNoise(agPlane*6.+agSeed)*.2;
+      float lwFlake=smoothstep(.74,.84,lwArea+agNoise(agPlane*29.+agSeed)*.08);
+      float lwFoot=1.-smoothstep(.08,.45+agBroad*.3,agP.y);
+      float lwWorn=clamp(lwFlake*.8+lwFoot*smoothstep(.4,.7,agNoise(agPlane*2.1+agSeed*3.))*.85,0.,1.);
+      vec3 lwBrick=${lime==='plaster'?'vec3(.36,.20,.13)*(.85+agFine*.3)':'diffuseColor.rgb'};
+      vec3 lwCoat=vec3(.74,.715,.63)*lwRatio*(.94+agBroad*.1);
+      lwCoat=mix(lwCoat,lwCoat*vec3(.86,.9,.8),lwFoot*.6);
+      float lwRun=smoothstep(.55,.85,agNoise(vec2(agPlane.x*6.,agP.y*.35)+agSeed))*smoothstep(1.2,2.6,agP.y);
+      lwCoat*=1.-lwRun*.16;
+      float lwThin=${lime==='mortar'?'.97':'.93'};
+      diffuseColor.rgb=mix(lwBrick,lwCoat,lwThin*(1.-lwWorn));
+     `:''}
+     #include <roughnessmap_fragment>
      roughnessFactor=clamp(roughnessFactor+agWear*.12,.32,1.);
+     ${lime?'roughnessFactor=max(roughnessFactor,.9);':''}
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
      vec3 agDx=dFdx(-vViewPosition),agDy=dFdy(-vViewPosition),agR1=cross(agDy,normal),agR2=cross(normal,agDx);
@@ -93,7 +120,7 @@ export function ageBuilding(root:T.Object3D,number:number,workshop=false){
      normal=normalize(max(abs(agDet),1e-9)*normal-agGrad);
     `);
    };
-   m.customProgramCacheKey=()=>key+'|building-age-v2-'+kind;
+   m.customProgramCacheKey=()=>key+'|building-age-v2-'+kind+(lime?'-lime-'+lime:'');
    cache.set(source,m);treated++;return m;
   };
   o.material=Array.isArray(o.material)?o.material.map(apply):apply(o.material);

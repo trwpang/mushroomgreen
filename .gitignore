@@ -65,3 +65,6 @@ assets/chainmaker/tripo-v2/*.blend1
 assets/chainmaker/tripo-v2/inspection.blend
 assets/chainmaker/tripo-v2/static-preview*.glb
 assets/chainmaker/tripo-v2/recovered-rig.glb
+
+# Far-country map tiles are a reproducible download cache
+artifacts/village/far-country/tiles/

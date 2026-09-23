@@ -97,106 +97,134 @@ vec3 fieldAt(vec2 p){
 }
 `;
 
-export type RoadExit={p:Point;dir:Point};
-export function addFarCountry(scene:T.Scene,edge:(angle:number)=>Point,exits:RoadExit[],streams:RoadExit[],nearTrees:(matrices:T.Matrix4[])=>void,nearHedges:(matrices:T.Matrix4[])=>void,weather:(material:T.MeshStandardMaterial)=>void){
- const random=seeded(8861865),angles=640,rings=52,position:number[]=[],field:number[]=[],index:number[]=[];
- const cx=0,cz=-60;
+export type FarData={extent:number;buildings:[number,number,number,number,number][];treeMarks:Point[];woodTrees:Point[];hedgerowTrees:Point[];hedges:[number,number,number][];brooks:{name:string;line:Point[]}[];
+ heights:{x0:number;z0:number;step:number;width:number;height:number;values:number[];weight:number[]}};
+export type FarHooks={nearTrees:(matrices:T.Matrix4[])=>void;nearHedges:(matrices:T.Matrix4[])=>void;weather:(material:T.MeshStandardMaterial)=>void;water:T.Material};
+
+/**
+ * Far country from the OS six-inch sheets surveyed 1881-82 (see scripts/village/build-far-country.py).
+ * A polar ring from just inside the modelled edge to 2.2 km carries: a ground texture painted from the
+ * map (parcels, hedges, lanes, water, woods), real EA DTM heights where they reach, mapped buildings,
+ * woodland and hedgerow trees, hedges near the model and the brooks continuing as water.
+ * Beyond the sheet extent the procedural parcels continue under the haze.
+ */
+export function addFarCountry(scene:T.Scene,edge:(angle:number)=>Point,data:FarData,groundMap:T.Texture,hooks:FarHooks){
+ const random=seeded(8861865),angles=720,rings=72,position:number[]=[],field:number[]=[],index:number[]=[];
+ const cx=0,cz=-60,E=data.extent,hg=data.heights;
  const hills=(x:number,z:number)=>{let h=0,a=1,f=1/420;for(let i=0;i<4;i++){h+=a*Math.sin(x*f+i*1.7+Math.sin(z*f*.7+i))*Math.cos(z*f*1.1-i*.9);f*=2.1;a*=.45;}return h;};
- // Edge heights, and a broad angular average of them: local cuts at the edge (lanes, the brook)
- // must not extrude outward as radial trenches.
- const samples=720,edgeHeight=Array.from({length:samples},(_,i)=>{const a=i/samples*Math.PI*2,e=edge(a),dx=e[0]-cx,dz=e[1]-cz,len=Math.hypot(dx,dz),ux=dx/len,uz=dz/len;return ground(e[0]-ux*6,e[1]-uz*6);});
+ const samples=720,edgeHeight=Array.from({length:samples},(_,i)=>{const a=i/samples*Math.PI*2,e=edge(a),dx=e[0]-cx,dz=e[1]-cz,len=Math.hypot(dx,dz);return ground(e[0]-dx/len*6,e[1]-dz/len*6);});
  const broad=edgeHeight.map((_,i)=>{let sum=0,weight=0;for(let k=-40;k<=40;k++){const w=Math.exp(-(k*k)/(2*18*18));sum+=edgeHeight[(i+k+samples)%samples]*w;weight+=w;}return sum/weight;});
- const place=(angle:number,reach:number)=>{
-  const e=edge(angle),dx=e[0]-cx,dz=e[1]-cz,len=Math.hypot(dx,dz),ux=dx/len,uz=dz/len;
-  const k=Math.round(angle/(Math.PI*2)*samples)%samples,settle=Math.min(1,Math.max(0,(reach-6)/140));
-  const x=e[0]+ux*(reach-6),z=e[1]+uz*(reach-6),exact=ground(x,z)-(reach<6?.05+(6-reach)*.04:.05*Math.max(0,1-(reach-6)/20)),base=exact+(broad[k]-exact)*settle*settle*(3-2*settle),blend=Math.min(1,Math.max(0,(reach-6)/260));
-  // Higher ground to the north-east, as around the Rowley Hills; lower toward the south-west.
+ // Real surveyed heights (EA DTM) with a confidence weight that fades where the survey ends.
+ const dtm=(x:number,z:number)=>{const u=Math.max(0,Math.min(hg.width-1.001,(x-hg.x0)/hg.step)),v=Math.max(0,Math.min(hg.height-1.001,(z-hg.z0)/hg.step)),i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j,k=j*hg.width+i;
+  const lerp=(f:number[])=>f[k]*(1-a)*(1-b)+f[k+1]*a*(1-b)+f[k+hg.width]*(1-a)*b+f[k+hg.width+1]*a*b;
+  const inside=x>=hg.x0&&z>=hg.z0&&x<=hg.x0+(hg.width-1)*hg.step&&z<=hg.z0+(hg.height-1)*hg.step;return {h:lerp(hg.values),w:inside?lerp(hg.weight):0};};
+ /** Height anywhere outside the model: the model's own ground at the seam, the DTM, then synthetic rolling ground. */
+ const reachOf=(x:number,z:number)=>{const q=Math.sqrt((x/210)**2+((z+60)/240)**2)/Math.sqrt(.95);return (q-1)*Math.hypot(x-cx,z-cz)/Math.max(q,1e-3);};
+ const heightAt=(x:number,z:number)=>{
+  const reach=reachOf(x,z)+6,angle=Math.atan2((z-cz)/240,x/210),k=((Math.round(angle/(Math.PI*2)*samples)%samples)+samples)%samples;
+  const settle=Math.min(1,Math.max(0,(reach-6)/140)),blend=Math.min(1,Math.max(0,(reach-6)/260));
   const regional=((x-cx)*.35-(z-cz)*.55)/2200*28;
-  // The brooks run on in shallow valleys.
-  let valley=0;for(const w of streams){const qx=x-w.p[0],qz=z-w.p[1],t=qx*w.dir[0]+qz*w.dir[1];if(t>0)valley=Math.max(valley,Math.exp(-((Math.hypot(qx-w.dir[0]*t,qz-w.dir[1]*t)/30)**2))*Math.min(1,t/60));}
-  return new T.Vector3(x,base+(hills(x,z)*9+regional*Math.min(1,reach/900))*blend*blend-valley*3.2*blend,z);
+  const synthetic=broad[k]+(hills(x,z)*9+regional*Math.min(1,reach/900))*blend*blend;
+  const real=dtm(x,z),far=synthetic+(real.h-synthetic)*real.w;
+  const exact=ground(x,z)-(reach<6?.05+(6-reach)*.04:.05*Math.max(0,1-(reach-6)/20));
+  return exact+(far-exact)*settle*settle*(3-2*settle);
  };
- const streamDistance=(x:number,z:number)=>Math.min(Infinity,...streams.map(w=>{const qx=x-w.p[0],qz=z-w.p[1],t=qx*w.dir[0]+qz*w.dir[1];return t<0?Infinity:Math.hypot(qx-w.dir[0]*t,qz-w.dir[1]*t);}));
  for(let j=0;j<=rings;j++){
   const reach=Math.pow(j/rings,1.9)*2200;
-  for(let i=0;i<angles;i++){const v=place(i/angles*Math.PI*2,reach);position.push(v.x,v.y,v.z);field.push(reach);}
+  for(let i=0;i<angles;i++){const e=edge(i/angles*Math.PI*2),dx=e[0]-cx,dz=e[1]-cz,len=Math.hypot(dx,dz),x=e[0]+dx/len*(reach-6),z=e[1]+dz/len*(reach-6);position.push(x,heightAt(x,z),z);field.push(reach);}
  }
  for(let j=0;j<rings;j++)for(let i=0;i<angles;i++){const a=j*angles+i,b=j*angles+(i+1)%angles,c=a+angles,d=b+angles;index.push(a,b,c,b,d,c);}
  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(position,3));g.setAttribute('reach',new T.Float32BufferAttribute(field,1));g.setIndex(index);g.computeVertexNormals();
- const rays=(list:RoadExit[])=>Array.from({length:4},(_,i)=>{const r=list[i];return r?new T.Vector4(r.p[0],r.p[1],r.dir[0],r.dir[1]):new T.Vector4(0,0,0,0);});
- const roads=rays(exits),brookRays=rays(streams);
- const material=new T.MeshStandardMaterial({color:'#4f572e',roughness:1,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:2});
- // The village ground's grain and ripple continue across the seam.
- weather(material);const grain=material.onBeforeCompile;
+ groundMap.colorSpace=T.SRGBColorSpace;groundMap.anisotropy=8;
+ // Same tint and grain as the village terrain, so the painted map meets the model's own ground.
+ const material=new T.MeshStandardMaterial({color:'#c1c3ab',roughness:1,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:2});
+ hooks.weather(material);const grain=material.onBeforeCompile;
  material.onBeforeCompile=(shader,renderer)=>{grain.call(material,shader,renderer);
-  shader.uniforms.farRoads={value:roads};shader.uniforms.farStreams={value:brookRays};
+  shader.uniforms.farMap={value:groundMap};shader.uniforms.farExtent={value:E};
   shader.vertexShader='attribute float reach;varying float farReach;varying vec2 farPoint;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nfarReach=reach;farPoint=position.xz;');
-  shader.fragmentShader='uniform vec4 farRoads[4];uniform vec4 farStreams[4];varying float farReach;varying vec2 farPoint;\n'+GLSL_NOISE+`
-  `+FIELD_GLSL+`
-  `+shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
-   // Hedged parcels: mostly rough pasture, some hay and ploughed ground, mottled like the village ground.
-   vec3 field=fieldAt(farPoint);
-   float tone=fract(field.y*7.31);
-   vec3 pasture=mix(vec3(.44,.51,.28),vec3(.58,.59,.35),tone);
-   pasture=mix(pasture,vec3(.63,.60,.38),step(.78,field.y));
-   pasture=mix(pasture,vec3(.52,.44,.31),step(.9,field.y));
-   pasture=mix(pasture,vec3(.40,.47,.26),step(.965,field.y));
-   float mottle=skyNoise(farPoint/23.)*.6+skyNoise(farPoint/6.)*.4;
-   pasture*=.84+mottle*.3;
-   // Ploughed parcels keep faint furrows.
-   pasture=mix(pasture,pasture*vec3(.88,.92,.84),step(.9,field.y)*step(.965,1.-field.y+.9)*step(.5,fract(dot(farPoint,vec2(.7,.7))/2.4)));
-   float hedgePx=fwidth(field.x)+.001,hedge=1.-smoothstep(.9,.9+hedgePx*1.5+.9,field.x);
-   vec3 farColour=mix(pasture,vec3(.22,.27,.15),hedge*.8);
-   // Brooks: a dark channel in a damp, rushy margin.
-   for(int i=0;i<4;i++){vec4 r=farStreams[i];if(dot(r.zw,r.zw)<.5)continue;vec2 q=farPoint-r.xy;float t=dot(q,r.zw);if(t<0.)continue;float across=length(q-r.zw*t)+(skyNoise(farPoint/9.)-.5)*3.;
-    farColour=mix(farColour,farColour*vec3(.78,.86,.74),(1.-smoothstep(3.,9.,across))*.8);farColour=mix(farColour,vec3(.16,.2,.15),(1.-smoothstep(.6,1.3,across))*.85);}
-   // The outside roads carry on beyond the model and fade into the fields.
-   for(int i=0;i<4;i++){vec4 r=farRoads[i];if(dot(r.zw,r.zw)<.5)continue;vec2 q=farPoint-r.xy;float t=dot(q,r.zw),across=length(q-r.zw*t);
-    float lane=(1.-smoothstep(1.7,2.6,across))*step(-4.,t)*(1.-smoothstep(350.,700.,t));farColour=mix(farColour,vec3(.55,.46,.34),lane*.9);}
-   // Albedo matches the painted village ground at the seam, then turns to fields.
-   float seamPatch=skyNoise(farPoint/5.3+3.1),seamDark=skyNoise(farPoint/7.9-8.);
-   vec3 seam=vec3(1.)*(.9+skyNoise(farPoint*1.3)*.2);
-   seam=mix(seam,vec3(1.18,1.06,.95),smoothstep(.62,.8,seamPatch)*.55);
-   seam=mix(seam,vec3(.78,.74,.72),smoothstep(.66,.84,seamDark)*.45);
-   diffuseColor.rgb*=mix(seam,farColour/vec3(.52,.55,.33),smoothstep(12.,110.,farReach));`);
+  shader.fragmentShader='uniform sampler2D farMap;uniform float farExtent;varying float farReach;varying vec2 farPoint;\n'+GLSL_NOISE+FIELD_GLSL+shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+   vec2 farUv=(farPoint+farExtent)/(2.*farExtent);farUv.y=1.-farUv.y;
+   vec3 mapped=texture2D(farMap,farUv).rgb;
+   // Beyond the sheets: procedural parcels in the same painted colour space.
+   vec3 field=fieldAt(farPoint);float tone=fract(field.y*7.31);
+   vec3 canvas=mix(vec3(106.,113.,70.),vec3(120.,125.,79.),tone)/255.;
+   canvas=mix(canvas,vec3(126.,122.,80.)/255.,step(.82,field.y));canvas=mix(canvas,vec3(112.,96.,70.)/255.,step(.92,field.y));
+   canvas=mix(canvas,vec3(66.,76.,44.)/255.,1.-smoothstep(.9,2.2,field.x));
+   canvas*=.9+skyNoise(farPoint/23.)*.2;
+   vec2 edgeDistance=farExtent-abs(farPoint);
+   float onSheet=smoothstep(0.,120.,min(edgeDistance.x,edgeDistance.y));
+   diffuseColor.rgb*=mix(pow(canvas,vec3(2.2)),mapped,onSheet);`);
  };
- material.customProgramCacheKey=()=>'far-country-v2';
+ material.customProgramCacheKey=()=>'far-country-v3';
  const mesh=new T.Mesh(g,material);mesh.receiveShadow=false;mesh.renderOrder=-1;scene.add(mesh);
 
- // Hedgerow and field trees. The first 170 m use the village's own tree models (handed back to
- // the caller); beyond that, smooth lobed clumps are enough under the haze.
- const clump=new T.IcosahedronGeometry(1,3),p=clump.attributes.position;
+ // Buildings from the map: brick walls with slate or tile roofs; large works get chimney stacks.
+ const cell=(x:number,z:number)=>Math.floor(x/24)+':'+Math.floor(z/24),built=new Map<string,number>();
+ for(const [x,z] of data.buildings){const k=cell(x,z);built.set(k,(built.get(k)??0)+1);}
+ const nearBuilding=(x:number,z:number)=>{for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)if(built.has((Math.floor(x/24)+i)+':'+(Math.floor(z/24)+j)))return true;return false;};
+ const wallGeo=new T.BoxGeometry(1,1,1);wallGeo.translate(0,.5,0);
+ const roofGeo=new T.BufferGeometry();roofGeo.setAttribute('position',new T.Float32BufferAttribute([-.5,0,-.5,.5,0,-.5,.5,1,0,-.5,0,-.5,.5,1,0,-.5,1,0, -.5,0,.5,-.5,1,0,.5,1,0,-.5,0,.5,.5,1,0,.5,0,.5, -.5,0,-.5,-.5,1,0,-.5,0,.5, .5,0,-.5,.5,0,.5,.5,1,0],3));roofGeo.computeVertexNormals();
+ const stackGeo=new T.CylinderGeometry(.55,.85,1,8);stackGeo.translate(0,.5,0);
+ const walls:T.Matrix4[]=[],roofs:T.Matrix4[]=[],stacks:T.Matrix4[]=[],wallTone:T.Color[]=[],roofTone:T.Color[]=[],q=new T.Quaternion(),up=new T.Vector3(0,1,0);
+ for(const [x,z,length,depth,angle] of data.buildings){
+  if(Math.abs(x)>E-30||Math.abs(z)>E-30)continue;
+  const area=length*depth,works=area>380,y=heightAt(x,z),wall=works?6.5+random()*2.5:Math.min(5.8,Math.max(2.4,Math.min(length,depth)*.85))+random()*.8,pitch=works?1.4:Math.min(2.6,depth*.42);
+  q.setFromAxisAngle(up,angle);
+  walls.push(new T.Matrix4().compose(new T.Vector3(x,y-1.5,z),q,new T.Vector3(Math.max(2.5,length),wall+1.5,Math.max(2.5,depth))));
+  roofs.push(new T.Matrix4().compose(new T.Vector3(x,y+wall,z),q,new T.Vector3(Math.max(2.5,length)+.3,pitch,Math.max(2.5,depth)+.4)));
+  wallTone.push(new T.Color(['#6e4331','#7a4a35','#65402f','#83553d','#5c3d2e'][Math.floor(random()*5)]).multiplyScalar(.85+random()*.25));
+  roofTone.push(new T.Color(random()<.6?'#3f4246':'#5e3f33').multiplyScalar(.85+random()*.3));
+  if(works&&area>650&&random()<.7){const along=new T.Vector3(Math.max(2.5,length)*.38,0,0).applyQuaternion(q);stacks.push(new T.Matrix4().compose(new T.Vector3(x+along.x,y,z+along.z),new T.Quaternion(),new T.Vector3(1.3,20+random()*10,1.3)));}
+ }
+ const addInstances=(geometry:T.BufferGeometry,material:T.Material,matrices:T.Matrix4[],tones?:T.Color[])=>{const m=new T.InstancedMesh(geometry,material,matrices.length);matrices.forEach((x,i)=>{m.setMatrixAt(i,x);if(tones)m.setColorAt(i,tones[i]);});scene.add(m);return m;};
+ addInstances(wallGeo,new T.MeshStandardMaterial({color:'#ffffff',roughness:.95}),walls,wallTone);
+ addInstances(roofGeo,new T.MeshStandardMaterial({color:'#ffffff',roughness:.8,side:T.DoubleSide}),roofs,roofTone);
+ addInstances(stackGeo,new T.MeshStandardMaterial({color:'#6d4636',roughness:.95}),stacks);
+
+ // Trees: woods from the map's tree marks, hedgerow trees along boundaries (not in streets).
+ const clump=new T.IcosahedronGeometry(1,2),p=clump.attributes.position;
  for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i),f=.82+.14*Math.sin(x*4.1+y*3.3+z*2.7)+.08*Math.sin(x*9.3-z*7.1+y*5.2);p.setXYZ(i,x*f,(y<-.1?-.1+(y+.1)*.3:y)*f*1.15+1.25,z*f);}
  clump.deleteAttribute('normal');clump.deleteAttribute('uv');
  const crown=mergeVertices(clump);clump.dispose();crown.computeVertexNormals();
- // A short trunk under each distant crown (unit tree ≈ 2.4 m tall before scaling).
  const stem=new T.CylinderGeometry(.07,.11,1.1,6,1,true);stem.translate(0,.5,0);stem.deleteAttribute('uv');
- const paint=(g:T.BufferGeometry,colour:string)=>{const c=new T.Color(colour),a=new Float32Array(g.attributes.position.count*3);for(let i=0;i<a.length;i+=3)a.set([c.r,c.g,c.b],i);g.setAttribute('color',new T.BufferAttribute(a,3));return g;};
+ const paint=(geometry:T.BufferGeometry,colour:string)=>{const c=new T.Color(colour),a=new Float32Array(geometry.attributes.position.count*3);for(let i=0;i<a.length;i+=3)a.set([c.r,c.g,c.b],i);geometry.setAttribute('color',new T.BufferAttribute(a,3));return geometry;};
  const smooth=mergeGeometries([paint(crown.toNonIndexed(),'#ffffff'),paint(stem.toNonIndexed(),'#6b5a44')]);
- const trees:T.Matrix4[]=[],near:T.Matrix4[]=[],hedges:T.Matrix4[]=[],d=new T.Object3D(),colours:T.Color[]=[];
- const nearRoad=(x:number,z:number,r:number)=>exits.some(e=>{const qx=x-e.p[0],qz=z-e.p[1],t=qx*e.dir[0]+qz*e.dir[1];return t>-10&&Math.hypot(qx-e.dir[0]*t,qz-e.dir[1]*t)<r;});
- for(let n=0;n<140000;n++){
-  const angle=random()*Math.PI*2,reach=8+Math.pow(random(),1.6)*950,v=place(angle,reach),field=fieldAt(v.x,v.z);
-  const brookside=streamDistance(v.x,v.z)<6;
-  if((field.edge>1.6&&!brookside)||nearRoad(v.x,v.z,6))continue;
-  // Hedgerow trees stand in the hedge line; a few parcels hold small copses.
-  if(random()<(brookside?.12:reach<170?.08:.06)){
-   if(reach<170){const s=.8+random()*.7;d.position.set(v.x,v.y-.05,v.z);d.rotation.set(0,random()*6.3,0);d.scale.set(s*(.94+random()*.2),s,s);d.updateMatrix();near.push(d.matrix.clone());}
-   else{const s=2.6+random()*2.2;d.position.set(v.x,v.y-.2,v.z);d.rotation.set(0,random()*6.3,0);d.scale.set(s*(.9+random()*.35),s*(1.05+random()*.3),s*(.9+random()*.35));d.updateMatrix();trees.push(d.matrix.clone());colours.push(new T.Color().setHSL(.2+random()*.05,.26,.14+random()*.07));}
-  }
- }
- // Near hedges: a dense pass so runs read as continuous, with occasional gaps and gates.
- for(let n=0;n<420000&&hedges.length<6200;n++){
-  const angle=random()*Math.PI*2,reach=8+random()*175,v=place(angle,reach),field=fieldAt(v.x,v.z);
-  if(field.edge>.8||random()<.55||nearRoad(v.x,v.z,5)||streamDistance(v.x,v.z)<3)continue;
-  if(Math.sin(v.x*.11+v.z*.07)*Math.sin(v.x*.05-v.z*.13)>.8)continue;
-  const s=1.05+random()*.4;d.position.set(v.x,v.y-.1,v.z);d.rotation.set(0,Math.atan2(-field.direction[1],field.direction[0])+(random()-.5)*.3,0);d.scale.set(s*(1+random()*.3),s*(.9+random()*.4),s*(.9+random()*.3));d.updateMatrix();hedges.push(d.matrix.clone());
- }
- for(let n=0;n<700;n++){const angle=random()*Math.PI*2,reach=200+random()*700,v=place(angle,reach);if(fieldAt(v.x,v.z).id<.965||nearRoad(v.x,v.z,20))continue;for(let k=0;k<14;k++){const x=v.x+(random()-.5)*40,z=v.z+(random()-.5)*40,s=2.8+random()*2;d.position.set(x,v.y-.2,z);d.rotation.set(0,random()*6.3,0);d.scale.set(s,s*1.15,s);d.updateMatrix();trees.push(d.matrix.clone());colours.push(new T.Color().setHSL(.21+random()*.04,.26,.13+random()*.06));}}
- nearHedges(hedges);
- nearTrees(near);
+ const trees:T.Matrix4[]=[],colours:T.Color[]=[],near:T.Matrix4[]=[],d=new T.Object3D();
+ const plant=([x,z]:Point,wood:boolean)=>{
+  const reach=reachOf(x,z);if(reach<4)return;
+  const y=heightAt(x,z);
+  if(reach<170&&near.length<2200){const s=(wood?1:.85)+random()*.6;d.position.set(x,y-.05,z);d.rotation.set(0,random()*6.3,0);d.scale.set(s*(.94+random()*.2),s,s);d.updateMatrix();near.push(d.matrix.clone());return;}
+  const s=(wood?2.9:2.5)+random()*2;d.position.set(x,y-.2,z);d.rotation.set(0,random()*6.3,0);d.scale.set(s*(.9+random()*.35),s*(1.05+random()*.3),s*(.9+random()*.35));d.updateMatrix();
+  trees.push(d.matrix.clone());colours.push(new T.Color().setHSL(.2+random()*.05,.26,(wood?.12:.14)+random()*.07));
+ };
+ for(const t of data.woodTrees)plant(t,true);
+ for(const t of data.treeMarks)plant(t,true);
+ for(const t of data.hedgerowTrees)if(random()<.5&&!nearBuilding(...t))plant(t,false);
  const woods=new T.InstancedMesh(smooth,new T.MeshStandardMaterial({color:'#8f9a70',roughness:1,vertexColors:true}),trees.length);
- trees.forEach((m,i)=>{woods.setMatrixAt(i,m);woods.setColorAt(i,colours[i]);});
- scene.add(woods);
- return {mesh,woods,counts:{farTrees:trees.length,farModelTrees:near.length,hedgeBushes:hedges.length}};
+ trees.forEach((m,i)=>{woods.setMatrixAt(i,m);woods.setColorAt(i,colours[i]);});scene.add(woods);
+ hooks.nearTrees(near);
+
+ // Hedges along the mapped boundaries near the model.
+ const hedges:T.Matrix4[]=[];
+ for(const [x,z,angle] of data.hedges){const reach=reachOf(x,z);if(reach<3||reach>200||nearBuilding(x,z)&&random()<.8||hedges.length>=16000)continue;
+  const s=1.05+random()*.35;d.position.set(x,heightAt(x,z)-.1,z);d.rotation.set(0,angle+(random()-.5)*.25,0);d.scale.set(s*(1.05+random()*.3),s*(.9+random()*.35),s*(.85+random()*.25));d.updateMatrix();hedges.push(d.matrix.clone());}
+ hooks.nearHedges(hedges);
+
+ // The brooks run on as water, oriented downstream by the ground's fall.
+ const ribbons:T.Mesh[]=[];
+ for(const brook of data.brooks){
+  let line=brook.line.filter(([x,z])=>reachOf(x,z)>-2);if(line.length<3)continue;
+  if(heightAt(...line[0])<heightAt(...line[line.length-1]))line=[...line].reverse();
+  const verts:number[]=[],uvs:number[]=[],tangents:number[]=[],ids:number[]=[];let distance=0;
+  line.forEach((pt,i)=>{const a=line[Math.max(0,i-1)],b=line[Math.min(line.length-1,i+1)],len=Math.hypot(b[0]-a[0],b[1]-a[1])||1,nx=-(b[1]-a[1])/len,nz=(b[0]-a[0])/len;
+   if(i)distance+=Math.hypot(pt[0]-line[i-1][0],pt[1]-line[i-1][1]);const w=1.1+.35*Math.sin(distance*.05);
+   // The far mesh is coarser than a brook channel: sit the water on the local rim, not the DTM thalweg.
+   let rim=-Infinity;for(let k=0;k<8;k++){const a=k/8*Math.PI*2;rim=Math.max(rim,heightAt(pt[0]+Math.cos(a)*3.5,pt[1]+Math.sin(a)*3.5));}
+   const level=Math.max(heightAt(pt[0],pt[1])+.15,rim-.25);
+   for(const side of [-1,1]){const x=pt[0]+nx*w*side,z=pt[1]+nz*w*side;verts.push(x,level,z);uvs.push((side+1)/2,distance);tangents.push(nz,-nx);}
+   if(i){const k=i*2;ids.push(k-2,k-1,k,k-1,k+1,k);}});
+  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(verts,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setAttribute('flowTangent',new T.Float32BufferAttribute(tangents,2));geometry.setIndex(ids);geometry.computeVertexNormals();
+  const ribbon=new T.Mesh(geometry,hooks.water);ribbon.renderOrder=1;scene.add(ribbon);ribbons.push(ribbon);
+ }
+ return {mesh,woods,ribbons,heightAt,counts:{buildings:walls.length,stacks:stacks.length,farTrees:trees.length,farModelTrees:near.length,hedgeBushes:hedges.length,brooks:ribbons.length}};
 }

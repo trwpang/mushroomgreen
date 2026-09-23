@@ -72,3 +72,36 @@ The season follows the existing bluebells and daffodils (spring).
 - The pond and brook water surfaces are unchanged (water is still deferred).
 - Hedges in the far country appear only within about 190 m of the edge. Beyond that, the painted hedge lines carry them.
 - Possible next steps: bark moss and ivy on trunks, autumn and seasonal palettes, and far-country LOD for mobile.
+
+## Follow-up (same day): mapped far country, trunk ivy and moss, continuous limewash
+
+Tom asked for three changes: less of an artificial rim, with the brook and roads continuing; ivy and moss on some trunks; and a more authentic limewash than the mixed white and red bricks. Comparisons are in `artifacts/village/landscape-pass-2/`.
+
+### Far country from the OS six-inch sheets (`scripts/village/build-far-country.py`, `sky.ts`)
+- **Source:** NLS georeferenced OS Six Inch county tiles (Worcestershire and Staffordshire, zoom 17, about 0.73 m per pixel; CC-BY NLS). These are the 1881–82 survey, **16–17 years after the 1865 scene**, so the result is an interpretation. The tiles are cached, and ignored by git, under `artifacts/village/far-country/tiles/`.
+- **Extraction:**
+  - Blue ink and pale reservoir wash become water. Rectangular solid ink becomes buildings; bold lettering is rejected because it has holes or is not rectangular.
+  - Long hairline ink becomes field and lane boundaries. Thick lettering strokes are removed, and sheet neatlines are dropped.
+  - Enclosed parcels are coloured as pasture, hay or ploughed ground, and narrow parcels as lanes.
+  - Dense ringed tree marks become woods (Saltwells Wood, the Coppice, Birchtree Coppice).
+- **Outputs** (`public/far-country/`): a 4096² ground texture (0.8 MB) and a JSON file (1.1 MB). The JSON holds 2,296 buildings, woodland, tree marks, hedgerow trees, hedge centre-lines with direction, four brook routes, and real ground heights from the EA 2 m DTM where the survey reaches (8 m grid with a confidence weight; about 70% coverage).
+- **Brook routes** are traced along the map's blue ink with a least-cost path: Black Brook north through Saltwells Wood, Mud Brook west, Black Brook south, and Mousesweet Brook east. They render as water ribbons.
+- **In the scene:**
+  - The ring mesh uses real DTM heights and settles into the model's own ground at the seam.
+  - The same map texture fades into the outer band of the village's painted ground canvas, from 74% to 97% of the ellipse. This removes the rim.
+  - Map buildings are brick boxes with slate or tile roofs; large works get stacks.
+  - Hedges within 200 m follow the mapped boundaries. Near trees reuse the village broadleaf models.
+- Beyond the sheet extent (±1.7 km), the procedural parcels continue under the haze.
+- The brook ribbons use the historic pools' water material. The brook's own material samples its planar reflection, which caused a framebuffer feedback loop.
+- To regenerate: `python3 scripts/village/build-far-country.py`. It needs numpy, scipy, scikit-image and Pillow, plus the local (untracked) `artifacts/village/terrain/ea-dtm-2m.tif`.
+
+### Ivy and moss (`foliage.ts`)
+- A new ivy cell in the leaf atlas: palmate, glossy, three-to-five-lobed leaves on wiry stems.
+- Ivy cards climb the curved stem of each broadleaf variant on one broad side, thinning with height, up to 2.2–4.4 m. About a third of woodland broadleaves carry ivy (199 trees). It uses its own seed, and it hides together with its trunk in close house views.
+- `mossyBark()` adds green moss on the damp north (−Z) side and upper surfaces, strongest low down, with pale lichen crusts higher up. It applies to all trunks and, through the shared bark, to fallen logs and stumps.
+
+### Limewash (`dwellings.ts`, `building-age.ts`)
+- **Cause:** the Blender cottage kit painted about 83% of individual bricks on style-2 cottages with "Old limewash" materials. Runtime tinting then made some houses pale. The result read as randomly white-painted bricks.
+- **Now:** style-2 cottages carry one continuous limewash coat over bricks and joints, applied after all colour layers. It uses the interior lime atlas (plaster half of `lime-linen-v1.webp`), projected on the wall planes. The brick coursing reads through the thin coat.
+- The coat has worn back to brick in the splash zone and in a few larger scaled areas. It has green damp at the foot and rain runs below the eaves.
+- Chimney stacks stay bare brick. The distant LOD already used a lime surface. No Blender rebuild was needed.

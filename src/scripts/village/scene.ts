@@ -26,9 +26,9 @@ import {rememberPlace} from './location';
 import {createInspection} from './inspection';
 import {addVillageLife} from './village-life';
 import {householdReader} from './household-reader';
-import {broadleafVariants,coniferVariant,hedgeGeometry,foliageMaterial,FOLIAGE_LAYER} from './foliage';
+import {broadleafVariants,coniferVariant,hedgeGeometry,foliageMaterial,mossyBark,FOLIAGE_LAYER} from './foliage';
 import {addWoodlandFloor,paintWoodlandLitter} from './woodland-floor';
-import {createSky,addFarCountry} from './sky';
+import {createSky,addFarCountry,type FarData} from './sky';
 import {addLaneVerges,paintLaneEdges} from './lane-verges';
 import {addYardDetails,openStack} from './yard-details';
 import * as T from 'three';
@@ -65,7 +65,8 @@ const camera=new T.PerspectiveCamera(38,innerWidth/innerHeight,.2,2600);const co
 const updateCompass=createCompass($('village-compass'));
 const hemi=new T.HemisphereLight('#e4e9de','#6e6045',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#ccd8e0',.8);fill.position.set(70,50,-90);scene.add(fill);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));camera.layers.enable(1);camera.layers.enable(FOLIAGE_LAYER);const aoCamera=camera.clone();aoCamera.layers.set(0);const ao=new GTAOPass(scene,aoCamera,innerWidth,innerHeight);ao.blendIntensity=.64;ao.updateGtaoMaterial({radius:.45,distanceExponent:1.7,thickness:1,scale:1});composer.addPass(ao);composer.addPass(cinematicOutput());
-const households:Household[]=await fetch('/households.json').then(r=>{if(!r.ok)throw Error('Household data unavailable');return r.json();});const homes=makeHomes(households);prepareGround(homes);const founder=homes.find(h=>h.number===22)!;const domesticShop=weaverWorkshop(founder);
+const farRequest=Promise.all([fetch('/far-country/far-country.json').then(r=>r.json() as Promise<FarData>),new T.TextureLoader().loadAsync('/far-country/ground-1882.webp')]);
+const households:Household[]=await fetch('/households.json').then(r=>{if(!r.ok)throw Error('Household data unavailable');return r.json();});const [farData,farGround]=await farRequest;const homes=makeHomes(households);prepareGround(homes);const founder=homes.find(h=>h.number===22)!;const domesticShop=weaverWorkshop(founder);
 const within=(x:number,z:number)=>Math.pow(x/210,2)+Math.pow((z+60)/240,2)<.97;
 // Paint an original terrain atlas in world coordinates. Roads follow the saved village map and the traced historic exit.
 const terrainCanvas=document.createElement('canvas');terrainCanvas.width=terrainCanvas.height=4096;const ctx=terrainCanvas.getContext('2d')!;const img=ctx.createImageData(4096,4096);
@@ -77,6 +78,13 @@ for(const polygon of greens){ctx.beginPath();polygon.forEach((p,i)=>{const q=pix
 let grassSeed=491865;const grassRandom=()=>{grassSeed=(Math.imul(grassSeed,1664525)+1013904223)>>>0;return grassSeed/4294967296;};
 const grassPatch=(x:number,z:number)=>.5+.23*Math.sin(x*.19+Math.sin(z*.13)*2)+.17*Math.sin(z*.31-x*.08)+.10*Math.sin(x*.83+z*.49);
 for(let i=0;i<2300;i++){const x=(grassRandom()-.5)*420,z=-60+(grassRandom()-.5)*480;if(!within(x,z))continue;const q=pixel([x,z]),r=(1.5+grassRandom()*5)*4096/460,g=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],r);g.addColorStop(0,i%3?'#8c795365':'#493e3055');g.addColorStop(1,i%3?'#8c795300':'#493e3000');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],r,0,Math.PI*2);ctx.fill();}
+// The mapped 1881-82 countryside (parcels, hedges, lanes) fades in across the outer band of the model,
+// so the modelled ground meets the far country without a visible rim.
+{const E=farData.extent,img=farGround.image as CanvasImageSource,band=document.createElement('canvas');band.width=band.height=4096;const b=band.getContext('2d')!;
+ const [x0,y0]=pixel([-E,-E]),[x1,y1]=pixel([E,E]);b.drawImage(img,x0,y0,x1-x0,y1-y0);
+ b.globalCompositeOperation='destination-in';const c=pixel([0,-60]);b.translate(c[0],c[1]);b.scale(210/460*4096,240/520*4096);
+ const fade=b.createRadialGradient(0,0,0,0,0,Math.sqrt(.97));fade.addColorStop(0,'rgba(0,0,0,0)');fade.addColorStop(.74,'rgba(0,0,0,0)');fade.addColorStop(.9,'rgba(0,0,0,.55)');fade.addColorStop(1,'rgba(0,0,0,.92)');
+ b.fillStyle=fade;b.fillRect(-2,-2,4,4);ctx.drawImage(band,0,0);}
 const paths:Point[][]=[];
 for(const h of homes.filter(h=>h.number!==chainshopReplacesHouse)){const w=[6.4,7.2,9.2][h.style]*h.sx,d=[4.6,4.8,4.5][h.style]*h.sz;const front=localPoint(h,0,d/2+.3);const road=nearestVillageRoad(front);let points:Point[]=[front,road];
 // Bend around intervening homes instead of cutting their footprints.
@@ -184,30 +192,22 @@ const trunkMaterial=timber.clone();
 // Trunk slots follow crown kinds: broadleaf variants 0/2/3, pine 1, fir 4.
 const trunkSlot=(k:number)=>k===0?0:k===3?2:k===4?3:k===1?1:4;
 const trunkMeshes=[broadleaf[0].trunk,pine.trunk,broadleaf[1].trunk,broadleaf[2].trunk,fir.trunk].map((g,t)=>{const count=species.filter(k=>trunkSlot(k)===t).length,mesh=new T.InstancedMesh(g,trunkMaterial,count);g.setAttribute('barkCoverage',new T.InstancedBufferAttribute(new Float32Array(count).fill(t===1||t===4?0:1),1));mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);return mesh;});
-// The modelled ground ends on the within() ellipse; the far country carries fields, hedges and the outside roads on into the haze.
-const farEdge=(a:number):Point=>[Math.cos(a)*210*Math.sqrt(.95),-60+Math.sin(a)*240*Math.sqrt(.95)];
-const roadExits=outsideRoads.map(route=>{const line=roundedLine(route),last=line.reduce((k,p,i)=>within(...p)?i:k,0),a=line[Math.max(0,last-1)],b=line[Math.min(line.length-1,last+1)],len=Math.hypot(b[0]-a[0],b[1]-a[1])||1;return {p:line[last],dir:[(b[0]-a[0])/len,(b[1]-a[1])/len] as Point};});
-const brookExits=brooks.flatMap(line=>{const out:{p:Point;dir:Point}[]=[];for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],ia=within(...a),ib=within(...b);if(ia===ib)continue;const inner=ia?a:b,outer=ia?b:a,len=Math.hypot(outer[0]-inner[0],outer[1]-inner[1])||1;out.push({p:inner,dir:[(outer[0]-inner[0])/len,(outer[1]-inner[1])/len]});}return out;});
-const farCountry=addFarCountry(scene,farEdge,roadExits,brookExits,matrices=>{
- // Near field trees reuse the three broadleaf models; they sit outside the house LOD and crown-hiding logic.
- broadleaf.forEach((variant,k)=>{const mine=matrices.filter((_,i)=>i%3===k),crowns=new T.InstancedMesh(variant.crown,canopyMat,mine.length),trunks=new T.InstancedMesh(variant.trunk.clone(),trunkMaterial,mine.length);
-  trunks.geometry.setAttribute('barkCoverage',new T.InstancedBufferAttribute(new Float32Array(mine.length).fill(1),1));
-  mine.forEach((m,i)=>{crowns.setMatrixAt(i,m);trunks.setMatrixAt(i,m);crowns.setColorAt(i,new T.Color().setHSL(.19+(i*.37%1)*.025,.22+(i*.61%1)*.08,.31+(i*.83%1)*.1));});
-  crowns.layers.set(FOLIAGE_LAYER);crowns.castShadow=trunks.castShadow=true;crowns.receiveShadow=trunks.receiveShadow=true;scene.add(crowns,trunks);});
-},matrices=>{
- // Hedge runs along the near field boundaries share the shrub leaf cards.
- const hedge=new T.InstancedMesh(hedgeGeometry(),foliageMaterial(foliageTime,{color:'#c6cab3',sway:0,transmission:.3}),matrices.length);
- matrices.forEach((m,i)=>hedge.setMatrixAt(i,m));hedge.layers.set(FOLIAGE_LAYER);hedge.castShadow=hedge.receiveShadow=true;scene.add(hedge);
-},weatherGround);mount.dataset.farTrees=JSON.stringify(farCountry.counts);
-const crownRecords:{trunk:number;trunkMesh:number;kind:number;slot:number;matrix:T.Matrix4;center:T.Vector3;radius:number;hidden:boolean}[]=[];
+
+const crownRecords:{trunk:number;trunkMesh:number;kind:number;slot:number;matrix:T.Matrix4;center:T.Vector3;radius:number;hidden:boolean;ivy?:[number,number]}[]=[];
+// Ivy climbs about a third of the woodland broadleaves; it has its own seed so no other draw moves.
+let ivySeed=6121866;const ivyRandom=()=>{ivySeed=(Math.imul(ivySeed,1664525)+1013904223)>>>0;return ivySeed/4294967296;};const ivyRecords:{tree:number;variant:number;matrix:T.Matrix4}[]=[];
 const crownIndex=[0,0,0,0,0],trunkIndex=[0,0,0,0,0];mount.dataset.treeSpecies=JSON.stringify({broadleaf:species.filter(broadKind).length,pine:species.filter(s=>s===1).length,fir:species.filter(s=>s===2).length});
 treePositions.forEach((p,i)=>{
  const wooded=streamDistance(...p)<55||greenDistance(p)<32;
  const scale=wooded?.95+woodlandRandom()*.85:.7+woodlandRandom()*.8;
- dummy.position.set(p[0],ground(...p),p[1]);dummy.rotation.set(0,woodlandRandom()*Math.PI*2,0);dummy.scale.set(scale*(.94+woodlandRandom()*.22),scale,scale);dummy.updateMatrix();const kind=species[i],treeLeaves=crownMeshes[kind],slot=crownIndex[kind]++;treeLeaves.setMatrixAt(slot,dummy.matrix);const trunkMesh=trunkSlot(kind),trunk=trunkIndex[trunkMesh]++;trunkMeshes[trunkMesh].setMatrixAt(trunk,dummy.matrix);crownRecords.push({trunk,trunkMesh,kind,slot,matrix:dummy.matrix.clone(),center:new T.Vector3(p[0],ground(...p)+4.6*scale,p[1]),radius:3.3*scale,hidden:false});treeLeaves.setColorAt(slot,new T.Color().setHSL(.19+woodlandRandom()*.025,.20+woodlandRandom()*.10,.30+woodlandRandom()*.13));
+ dummy.position.set(p[0],ground(...p),p[1]);dummy.rotation.set(0,woodlandRandom()*Math.PI*2,0);dummy.scale.set(scale*(.94+woodlandRandom()*.22),scale,scale);dummy.updateMatrix();const kind=species[i],treeLeaves=crownMeshes[kind],slot=crownIndex[kind]++;treeLeaves.setMatrixAt(slot,dummy.matrix);const trunkMesh=trunkSlot(kind),trunk=trunkIndex[trunkMesh]++;trunkMeshes[trunkMesh].setMatrixAt(trunk,dummy.matrix);if(broadKind(kind)&&wooded&&ivyRandom()<.32){const v=kind===0?0:kind===3?1:2;ivyRecords.push({tree:crownRecords.length,variant:v,matrix:dummy.matrix.clone()});}
+ crownRecords.push({trunk,trunkMesh,kind,slot,matrix:dummy.matrix.clone(),center:new T.Vector3(p[0],ground(...p)+4.6*scale,p[1]),radius:3.3*scale,hidden:false});treeLeaves.setColorAt(slot,new T.Color().setHSL(.19+woodlandRandom()*.025,.20+woodlandRandom()*.10,.30+woodlandRandom()*.13));
  // Muted leaf litter beneath the canopy makes the woods read as connected ground.
  const q=pixel(p),radius=2.6*scale/460*4096,g=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],radius);g.addColorStop(0,'#454b2d45');g.addColorStop(1,'#454b2d00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],radius,0,Math.PI*2);ctx.fill();
 });groundTexture.needsUpdate=true;
+const ivyMeshes=broadleaf.map((variant,v)=>{const mine=ivyRecords.filter(r=>r.variant===v),mesh=new T.InstancedMesh(variant.ivy!,foliageMaterial(foliageTime,{color:'#d3dcc0',sway:.15,transmission:.2}),mine.length);
+ mine.forEach((r,i)=>{mesh.setMatrixAt(i,r.matrix);crownRecords[r.tree].ivy=[v,i];});mesh.castShadow=mesh.receiveShadow=true;mesh.layers.set(FOLIAGE_LAYER);scene.add(mesh);return mesh;});
+mount.dataset.ivyTrees=String(ivyRecords.length);
 mount.dataset.flowers=JSON.stringify(addSpringFlowers(scene,homes,paths,treePositions));
 // Sparse meadow grass, denser on the margins; no blades through lanes or buildings.
 const grassVertices:number[]=[];
@@ -258,12 +258,27 @@ let cartOak:T.MeshStandardMaterial|undefined;highTemplates[0].traverse(o=>{if(o 
 const yardCart=addForgeCart(scene,cartOak);mount.dataset.carts='1';
 const workingProps=addWorkingProps(scene,homes,cartOak,paths,treePositions);mount.dataset.workingProps=JSON.stringify(workingProps.counts);
 let landscapeSeed=9321865;const landscapeRandom=()=>{landscapeSeed=(Math.imul(landscapeSeed,1664525)+1013904223)>>>0;return landscapeSeed/4294967296;};
-const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)]);mount.dataset.shrubs=String(landscape.counts.shrubs);mount.dataset.forgePosition=forgePos.join(',');
+const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)]);mount.dataset.shrubs=String(landscape.counts.shrubs);
+// The modelled ground ends on the within() ellipse. The far country continues it from the OS six-inch sheets
+// (surveyed 1881-82): mapped parcels, hedges, lanes, woods, buildings and the brooks, on real DTM heights.
+const farEdge=(a:number):Point=>[Math.cos(a)*210*Math.sqrt(.95),-60+Math.sin(a)*240*Math.sqrt(.95)];
+const farCountry=addFarCountry(scene,farEdge,farData,farGround,{nearTrees:matrices=>{
+ // Near field trees reuse the three broadleaf models; they sit outside the house LOD and crown-hiding logic.
+ broadleaf.forEach((variant,k)=>{const mine=matrices.filter((_,i)=>i%3===k),crowns=new T.InstancedMesh(variant.crown,canopyMat,mine.length),trunks=new T.InstancedMesh(variant.trunk.clone(),trunkMaterial,mine.length);
+  trunks.geometry.setAttribute('barkCoverage',new T.InstancedBufferAttribute(new Float32Array(mine.length).fill(1),1));
+  mine.forEach((m,i)=>{crowns.setMatrixAt(i,m);trunks.setMatrixAt(i,m);crowns.setColorAt(i,new T.Color().setHSL(.19+(i*.37%1)*.025,.22+(i*.61%1)*.08,.31+(i*.83%1)*.1));});
+  crowns.layers.set(FOLIAGE_LAYER);crowns.castShadow=trunks.castShadow=true;crowns.receiveShadow=trunks.receiveShadow=true;scene.add(crowns,trunks);});
+},nearHedges:matrices=>{
+ // Hedge runs along the near field boundaries share the shrub leaf cards.
+ const hedge=new T.InstancedMesh(hedgeGeometry(),foliageMaterial(foliageTime,{color:'#c6cab3',sway:0,transmission:.3}),matrices.length);
+ matrices.forEach((m,i)=>hedge.setMatrixAt(i,m));hedge.layers.set(FOLIAGE_LAYER);hedge.castShadow=hedge.receiveShadow=true;scene.add(hedge);
+},weather:weatherGround,water:historic.waterMaterial});mount.dataset.farCountry=JSON.stringify(farCountry.counts);
+mount.dataset.forgePosition=forgePos.join(',');
 weatherArchitecture(forgeRoot,forgeRoot.position.y);weatherArchitecture(weaverShop,weaverShop.position.y);
 refineSurface(timber,'wood');refineSurface(iron,'iron');refineSurface(stone,'stone');refineSurface(brick,'brick');refineSurface(lime,'plaster');refineSurface(glass,'glass');
 refineSurface(meadow.material,'leaf');refineSurface(trunkMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);wearWorkshop(forgeRoot);wearWorkshop(weaverShop);detailArchitecture(scene);
 let agedBuildings=0;for(let i=0;i<homes.length;i++)if(homes[i].number!==chainshopReplacesHouse){ageBuilding(houseRoots[i],homes[i].number);agedBuildings++;}ageBuilding(forgeRoot,5,true);ageBuilding(weaverShop,22,true);mount.dataset.researchBuildingPass=String(agedBuildings+2);
-textureDetail(trunkMaterial,'broadleaf-bark');
+textureDetail(trunkMaterial,'broadleaf-bark');mossyBark(trunkMaterial);
 // Woodland ground flora and deadwood keep to the trees, clear of routes, yards, banks, workshops and fixed views.
 const floorClear=(p:Point,r:number)=>{
  if(!within(...p)||streamDistance(...p)<streamWidth(...p)*.5+1.6+r||!clearOfYards(...p))return false;
@@ -378,7 +393,7 @@ const target=controls.target;const distance=camera.position.distanceTo(target);
 // Remove only foreground crowns from close house views; restore them when the camera moves.
 const sight=new T.Line3(camera.position,target),closest=new T.Vector3(),zero=new T.Matrix4().makeScale(0,0,0);
 for(const tree of crownRecords){const t=sight.closestPointToPointParameter(tree.center,true);sight.at(t,closest);const hide=!inspection.active&&distance<80&&t>.03&&t<.94&&tree.center.distanceTo(closest)<tree.radius;
-if(hide!==tree.hidden){tree.hidden=hide;crownMeshes[tree.kind].setMatrixAt(tree.slot,hide?zero:tree.matrix);crownMeshes[tree.kind].instanceMatrix.needsUpdate=true;trunkMeshes[tree.trunkMesh].setMatrixAt(tree.trunk,hide?zero:tree.matrix);trunkMeshes[tree.trunkMesh].instanceMatrix.needsUpdate=true;shadowDirty=true;}}
+if(hide!==tree.hidden){tree.hidden=hide;crownMeshes[tree.kind].setMatrixAt(tree.slot,hide?zero:tree.matrix);crownMeshes[tree.kind].instanceMatrix.needsUpdate=true;trunkMeshes[tree.trunkMesh].setMatrixAt(tree.trunk,hide?zero:tree.matrix);trunkMeshes[tree.trunkMesh].instanceMatrix.needsUpdate=true;if(tree.ivy){ivyMeshes[tree.ivy[0]].setMatrixAt(tree.ivy[1],hide?zero:tree.matrix);ivyMeshes[tree.ivy[0]].instanceMatrix.needsUpdate=true;}shadowDirty=true;}}
 // Industrial haze rather than mist: the subject stays clear and the far country fades over half a kilometre.
 (scene.fog as T.Fog).near=Math.max(40,distance+25);(scene.fog as T.Fog).far=Math.max(560,distance+520);sun.target.position.copy(target);sun.position.set(target.x+20,target.y+65,target.z+100);const span=camera.position.distanceTo(target)>140?200:38;Object.assign(sun.shadow.camera,{left:-span,right:span,top:span,bottom:-span});sun.shadow.camera.updateProjectionMatrix();if(shadowDirty||target.distanceToSquared(lastShadowTarget)>.01||shadowSpan!==span){renderer.shadowMap.needsUpdate=true;lastShadowTarget.copy(target);shadowSpan=span;}}
 lightAmount=T.MathUtils.damp(lightAmount,dusk?1:0,3,dt);landscape.waterMaterial.envMapIntensity=.3*(1-.7*lightAmount);sun.color.set('#ffe2b9');sun.intensity=T.MathUtils.lerp(3.5,.35,lightAmount);hemi.intensity=T.MathUtils.lerp(1.48,.75,lightAmount);showcase.glow.intensity=18+Math.sin(time*8)*.7;for(const m of windowMaterials){m.emissive.set('#a16635');m.emissiveIntensity=.10+lightAmount*.65;}const haze=sky.update(camera,sun.position.clone().sub(sun.target.position),lightAmount,time);(scene.background as T.Color).copy(haze);(scene.fog as T.Fog).color.copy(haze);
