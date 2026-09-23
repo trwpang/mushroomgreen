@@ -2,6 +2,7 @@ import {readFileSync} from 'node:fs';
 import {makeHomes} from '../../src/scripts/village/layout';
 import {roomDimensions} from '../../src/scripts/village/interior-plans';
 import assert from 'node:assert/strict';
+import {northRotation} from '../../src/scripts/village/compass';
 import * as T from 'three';
 import {panDestination,zoomDestination,turnDestination,containRoom} from '../../src/scripts/village/navigation';
 for(const azimuth of [0,.8,Math.PI,4.2])for(const height of [2,30,650]){
@@ -53,3 +54,12 @@ for(const home of makeHomes(JSON.parse(readFileSync('dist/households.json','utf8
  assert(containRoom(eye,target,room).position.distanceTo(eye)<1e-9,'Floor entry must not be clamped to another level');
 }
 console.log('Floor navigation matches the scaled room geometry for every home.');
+
+// North must stay meaningful during orbit, indoor turning, and top-down views.
+for(const [azimuth,expected]of [[0,0],[Math.PI/2,90],[Math.PI,180],[-Math.PI/2,-90]])for(const height of [0,30,650]){
+ const camera=new T.PerspectiveCamera();camera.position.set(Math.sin(azimuth)*20,height,Math.cos(azimuth)*20);camera.lookAt(0,0,0);
+ const angle=northRotation(camera.quaternion),difference=((angle-expected+540)%360)-180;
+ assert(Math.abs(difference)<1e-8,'Compass north must agree with geographic axes');
+}
+const overhead=new T.PerspectiveCamera();overhead.position.set(0,100,0);overhead.lookAt(0,0,0);assert(Number.isFinite(northRotation(overhead.quaternion)));
+console.log('Compass follows all four headings, indoor height and overhead views.');

@@ -1,10 +1,10 @@
 {
-  "name": "Outside road \u2014 historic Quarry Road approach",
+  "name": "Outside road — historic Quarry Road approach",
   "source": {
     "url": "https://maps.nls.uk/geo/explore/#zoom=18&lat=52.4762&lon=-2.0925&layers=257&b=ESRIWorld&o=100",
-    "layer": "OS Six Inch, 1830s\u20131880s (county layers), NLS layer 257",
-    "attribution": "Historic map courtesy of the National Library of Scotland; CC-BY. Northern continuation aligned to saved OpenStreetMap ways in legacy/Map/map-11.osm, \u00a9 OpenStreetMap contributors.",
-    "method": "Approximate visual centreline trace, calibrated with two coordinate readouts. Northern bend checked visually at zoom 17.3. Exact sheet survey date unconfirmed; not a measured 1865 road survey.",
+    "layer": "OS Six Inch, 1830s–1880s (county layers), NLS layer 257",
+    "attribution": "Historic map courtesy of the National Library of Scotland; CC-BY. Northern continuation aligned to saved OpenStreetMap ways in legacy/Map/map-11.osm, © OpenStreetMap contributors.",
+    "method": "Approximate visual centreline trace, calibrated with two coordinate readouts. Northern bend checked visually at zoom 17.3. NLS lists the local Worcestershire IV.NE sheet as surveyed 1881–1882, published 1887; not a measured 1865 road survey.",
     "controlPoints": [
       {
         "pixel": [
@@ -26,7 +26,13 @@
           -2.09193
         ]
       }
-    ]
+    ],
+    "sheet": {
+      "url": "https://maps.nls.uk/view/101585833",
+      "name": "Worcestershire IV.NE",
+      "surveyed": "1881–1882",
+      "published": 1887
+    }
   },
   "junction": [
     52.476267,

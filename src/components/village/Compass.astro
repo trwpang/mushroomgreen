@@ -1,0 +1,30 @@
+<div id="village-compass" class="village-compass" role="img" aria-label="Compass. North points up." title="North follows the map as you turn the view">
+  <svg viewBox="0 0 100 100" aria-hidden="true">
+    <circle class="compass-paper" cx="50" cy="50" r="47"/>
+    <circle class="compass-ring" cx="50" cy="50" r="31"/>
+    <g class="compass-card">
+      <path class="compass-axis" d="M50 22V78M22 50H78M30 30L70 70M30 70L70 30"/>
+      <path class="compass-south" d="M50 75L44 50L50 43L56 50Z"/>
+      <path class="compass-north" d="M50 24L43 50L50 45L57 50Z"/>
+      <circle class="compass-centre" cx="50" cy="50" r="2.4"/>
+      <text class="compass-label compass-n" x="50" y="15">N</text>
+      <text class="compass-label" x="87" y="52">E</text>
+      <text class="compass-label" x="50" y="89">S</text>
+      <text class="compass-label" x="13" y="52">W</text>
+    </g>
+  </svg>
+</div>
+<style is:global>
+.village-compass{--compass-angle:0deg;position:absolute;top:75px;right:37px;width:86px;height:86px;z-index:2;pointer-events:none;color:#53604b}
+.village-compass svg{display:block;width:100%;height:100%;overflow:visible}
+.compass-paper{fill:#f4f0e4;fill-opacity:.91;stroke:#ffffff;stroke-opacity:.45;stroke-width:1}
+.compass-ring{fill:none;stroke:#6c775c;stroke-opacity:.3;stroke-width:.7}
+.compass-card{transform-origin:50px 50px;transform:rotate(var(--compass-angle))}
+.compass-axis{fill:none;stroke:#657254;stroke-opacity:.45;stroke-width:.6}
+.compass-north{fill:#96603e}.compass-south{fill:#738069;fill-opacity:.65}.compass-centre{fill:#465440}
+.compass-label{font:11px Georgia,serif;fill:currentColor;text-anchor:middle;dominant-baseline:central;transform-box:fill-box;transform-origin:center;transform:rotate(calc(-1 * var(--compass-angle)))}
+.compass-n{fill:#864f32;font-weight:bold}
+#village-app[data-clean=true] .village-compass{display:none}
+#village-app[data-interior] .village-compass{top:auto;bottom:24px;right:24px}
+@media(max-width:640px){.village-compass{width:60px;height:60px;top:14px;right:12px}#village-app:not([data-interior]) header{max-width:calc(100% - 88px)}#village-app:not([data-interior]) header h1{font-size:32px;letter-spacing:-1.5px}#village-app[data-interior] .village-compass{right:12px;top:14px;bottom:auto}}
+</style>

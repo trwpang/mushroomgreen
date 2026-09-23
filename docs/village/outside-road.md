@@ -9,8 +9,9 @@ village lanes are in `src/data/roads.json`. The saved modern survey in
 
 Tom supplied the [NLS historic OS overlay](https://maps.nls.uk/geo/explore/#zoom=17.3&lat=52.47692&lon=-2.09059&layers=257&b=ESRIWorld&o=100).
 The viewer identifies layer 257 as **OS Six Inch, 1830s–1880s (county layers)**.
-The exact sheet survey date was not established. This is not proof of its exact
-appearance in 1865.
+Subsequent NLS Map Finder inspection identifies the local sheet as
+[Worcestershire IV.NE](https://maps.nls.uk/view/101585833), surveyed 1881–1882
+and published in 1887. This is not proof of its exact appearance in 1865.
 
 Visual inspection shows a north/southeast road east of the hamlet, with a bend
 closer to the houses than the saved modern route. We use an approximate trace
