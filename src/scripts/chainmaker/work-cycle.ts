@@ -5,6 +5,8 @@ export const WORK_PERIOD=4.2;
 export const WORK_POSES={strike:.736,raised:.552};
 const durations=[.92,.86,1.02];
 const smooth=(t:number)=>t*t*(3-2*t);
+/** Moments within each period when the hammer meets the link (80% through each blow). */
+export const WORK_STRIKES=durations.map((d,n)=>durations.slice(0,n).reduce((a,b)=>a+b,0)+d*.8);
 export function workingStroke(time:number){
  const t=((time%WORK_PERIOD)+WORK_PERIOD)%WORK_PERIOD;
  let start=0;
