@@ -51,9 +51,12 @@ for(const floor of [0,.125]){
    const across=root.worldToLocal(getBone(name+'Index1').getWorldPosition(new T.Vector3())).sub(root.worldToLocal(getBone(name+'Pinky1').getWorldPosition(new T.Vector3())));
    const facing=new T.Vector3().crossVectors(across,palm).normalize().multiplyScalar(palmSigns[k]);
    if(k===0)assert.ok(facing.y<-.2,'The tong hand must hold from above');
-   else assert.ok(across.normalize().dot(arm.tool.x)>.95,'Hammer handle must run across the knuckles, with the thumb towards the head');
+   // Tom's references (24 Sept): a smith's overhand power grip. Knuckles up, the handle running diagonally
+   // across the palm with the thumb side towards the head, and the fist closed around it.
+   else{assert.ok(across.normalize().dot(arm.tool.x)>.8,'Hammer handle must run diagonally across the palm, thumb side towards the head');assert.ok(facing.y<-.2,'Hammer hand must grip overhand, knuckles up');}
    const bend=T.MathUtils.radToDeg(palm.angleTo(fore));maxWristBend=Math.max(maxWristBend,bend);
-   assert.ok(bend<22,`Wrist bend must stay below 22 degrees; got ${bend}`);
+   // The hammer wrist cocks (ulnar deviation) through the stroke, as a smith's does; the tong wrist stays steady.
+   const limit=k===1?32:22;assert.ok(bend<limit,`Wrist bend must stay below ${limit} degrees; got ${bend}`);
    for(const joint of [name,name.replace('Hand','ForeArm'),name.replace('Hand','Arm')]){
     const q=getBone(joint).quaternion.clone(),prior=previous.get(joint);
     if(prior){const step=T.MathUtils.radToDeg(q.angleTo(prior));maxJointStep=Math.max(maxJointStep,step);assert.ok(step<6,`No sudden arm rotation: ${joint} moved ${step} degrees in 10 ms`);}

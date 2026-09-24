@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {poseAt} from './rig';
 import {workingStroke} from './work-cycle';
+export const hammerGrip={yaw:.75,trayWeight:3,fingerDrop:-.1,rake:.9,pole:[.6,-.5,.4] as [number,number,number]};
 /** Skeletal adapter for the recovered continuous mesh. All targets use figure-local metres. */
 export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
  const bones:T.Bone[]=[];root.traverse(o=>{if(o instanceof T.Bone)bones.push(o);});
@@ -42,10 +43,17 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
   p.phase=motion.phase;p.lift=motion.lift;
   // Compact shoulder/elbow stroke. The older tall lift read like a repeated salute.
   const angle=-.10+motion.lift*.64;
-  const axis=new T.Vector3(0,Math.sin(angle),Math.cos(angle));
+  // The handle comes in across the body from the hammer side (yaw), as a smith holds it, so the
+  // forearm meets the handle near a right angle and the fist closes around it. The striking
+  // face keeps the original contact point on the link.
+  const straight=new T.Vector3(0,Math.sin(angle),Math.cos(angle)),straightUp=new T.Vector3(0,1,0).addScaledVector(straight,-straight.y).normalize();
+  const face=p.grip.clone().addScaledVector(straight,.32).addScaledVector(straightUp,-.063);
+  const yaw=hammerGrip.yaw;
+  const axis=new T.Vector3(-Math.sin(yaw)*Math.cos(angle),Math.sin(angle),Math.cos(yaw)*Math.cos(angle)).normalize();
   const up=new T.Vector3(0,1,0).addScaledVector(axis,-axis.y).normalize();
   const across=new T.Vector3().crossVectors(axis,up);
   p.hammer={x:axis,y:up,z:across,q:new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(axis,up,across))};
+  p.grip.copy(face).addScaledVector(axis,-.32).addScaledVector(up,.063);
   p.grip.y+=motion.lift*.11;p.grip.z-=motion.lift*.022;
   p.arms[1].tool=p.hammer;
   p.hammerFace.copy(p.grip).addScaledVector(axis,.32).addScaledVector(up,-.063);
@@ -69,16 +77,20 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
    const shoulder=position(r.upper),shaft=a.tool.x.clone();
    const solve=(roll:number)=>{
     const y=a.tool.y.clone().applyAxisAngle(shaft,roll),z=new T.Vector3().crossVectors(shaft,y);
-    const rake=i===1?.3:.9; // Recovered hands have different knuckle-row angles.
+    const rake=i===1?hammerGrip.rake:.9; // Recovered hands have different knuckle-row angles.
     const forward=y.clone().multiplyScalar(-Math.cos(rake)).addScaledVector(shaft,Math.sin(rake));
     const wrist=a.grip.clone().addScaledVector(forward,i===1?-.085:-.095).addScaledVector(z,gripSide*(i===1?.028:.034));
     const delta=wrist.clone().sub(shoulder),distance=delta.length(),axis=delta.normalize();
-    const pole=i===1?new T.Vector3(.6,-.5,.4):new T.Vector3(r.side*.55,-.8,-.28);pole.addScaledVector(axis,-pole.dot(axis)).normalize();
+    const pole=i===1?new T.Vector3(...hammerGrip.pole):new T.Vector3(r.side*.55,-.8,-.28);pole.addScaledVector(axis,-pole.dot(axis)).normalize();
     const along=(r.upperLength**2-r.lowerLength**2+distance**2)/(2*distance);
     const height=Math.sqrt(Math.max(0,r.upperLength**2-along**2));
     const elbow=shoulder.clone().addScaledVector(axis,along).addScaledVector(pole,height);
     const foreDirection=wrist.clone().sub(elbow).normalize();
-    const cost=1-forward.dot(foreDirection)+Math.max(0,distance-r.upperLength-r.lowerLength+.015)*50;
+    // Hammer power grip: knuckles up and the palm facing down/inwards, fingers wrapping over and round the
+    // handle, as smiths hold a hammer. A palm-up "tray" hold is penalised even if the wrist is straighter.
+    const facing=new T.Vector3().crossVectors(shaft,forward).multiplyScalar(gripSide);
+    const tray=i===1?hammerGrip.trayWeight*Math.max(0,facing.y+hammerGrip.fingerDrop):0;
+    const cost=1-forward.dot(foreDirection)+tray+Math.max(0,distance-r.upperLength-r.lowerLength+.015)*50;
     return {y,z,forward,wrist,elbow,foreDirection,cost};
    };
    let roll=0,best=Infinity;
