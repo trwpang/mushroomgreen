@@ -13,6 +13,9 @@ export function paintLanes(ctx:CanvasRenderingContext2D,pixel:(p:Point)=>Point,r
 const scale=ctx.canvas.width/460;
 // Damp earth and leaf litter blend the water into its banks.
 for(const line of brooks)for(const p of samples(line,1)){const q=pixel(p),r=(streamWidth(...p)*.5+2)*scale;const g=ctx.createRadialGradient(q[0],q[1],r*.2,q[0],q[1],r);g.addColorStop(0,'#655a40');g.addColorStop(.63,'#696347c0');g.addColorStop(1,'#69714a00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],r,0,Math.PI*2);ctx.fill();}
+// Wet margin: a narrow dark, glossy band right at the waterline (the ground shader reads it as damp).
+for(const line of brooks)for(const p of samples(line,.6)){const q=pixel(p),inner=streamWidth(...p)*.5*scale,outer=inner+.55*scale,g=ctx.createRadialGradient(q[0],q[1],inner*.85,q[0],q[1],outer);
+ g.addColorStop(0,'rgba(52,44,30,.75)');g.addColorStop(.6,'rgba(58,52,34,.45)');g.addColorStop(1,'rgba(60,56,36,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],outer,0,Math.PI*2);ctx.fill();}
 // Paint the entire network in layers: no verge can cut across a junction.
 const networks=roadSamples.map(points=>points.map((p,i)=>{const a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)],len=Math.hypot(b[0]-a[0],b[1]-a[1])||1;return {p,nx:-(b[1]-a[1])/len,nz:(b[0]-a[0])/len};}));
 function stroke(points:Point[],width:number,color:string){ctx.beginPath();points.forEach((p,i)=>{const q=pixel(p);if(i)ctx.lineTo(...q);else ctx.moveTo(...q);});ctx.lineWidth=width*scale;ctx.strokeStyle=color;ctx.lineCap=ctx.lineJoin='round';ctx.stroke();}

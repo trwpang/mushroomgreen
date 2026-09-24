@@ -12,8 +12,8 @@ export function cinematicOutput(){
   gl_FragColor.rgb=mix(vec3(printLuma),gl_FragColor.rgb,1.04);
   // Gentle filmic S-curve for depth separation between dark materials, then a soft lens vignette.
   vec3 printC=clamp(gl_FragColor.rgb,0.,1.);
-  gl_FragColor.rgb=mix(gl_FragColor.rgb,printC*printC*(3.-2.*printC),.18);
-  vec2 printV=vUv-.5;gl_FragColor.rgb*=1.-dot(printV,printV)*.32;
+  gl_FragColor.rgb=mix(gl_FragColor.rgb,printC*printC*(3.-2.*printC),.07);
+  vec2 printV=vUv-.5;gl_FragColor.rgb*=1.-dot(printV,printV)*.22;
   // color space`);
  return pass;
 }

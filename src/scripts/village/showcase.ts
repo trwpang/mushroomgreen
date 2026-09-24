@@ -146,19 +146,33 @@ float grain=mix(.5,earthNoise(earthPoint.xz*25.0),grainFilter);
 float clods=earthNoise(earthPoint.xz*3.2);
 float patches=earthNoise(earthPoint.xz*.38);
 diffuseColor.rgb*=.77+grain*.20+clods*.20;
-diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.83,.87,.78),smoothstep(.40,.72,patches)*.34);`);
+diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.83,.87,.78),smoothstep(.40,.72,patches)*.34);
+// Ground structure at separate scales: tufted grass with sun-bleached tips on green ground,
+// gravel and small stones speckling bare soil. Filtered with distance so it never shimmers.
+float earthNear=1.-smoothstep(12.,60.,length(vViewPosition));
+float greenGround=smoothstep(.0,.035,diffuseColor.g-diffuseColor.r);
+float tuftField=earthNoise(earthPoint.xz*7.3);
+float tuft=smoothstep(.5,.82,earthNoise(earthPoint.xz*21.+vec2(tuftField*3.1)))*grainFilter;
+float bleached=smoothstep(.55,.8,earthNoise(earthPoint.xz*1.1+7.))*smoothstep(.4,.9,tuftField);
+diffuseColor.rgb*=mix(1.,.8+tuft*.34,greenGround*earthNear);
+diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.22,1.1,.82),bleached*greenGround*.45);
+vec2 pebbleCell=floor(earthPoint.xz*14.),pebbleOff=vec2(earthHash(pebbleCell),earthHash(pebbleCell+3.7));
+float pebbleSize=.18+.22*earthHash(pebbleCell+9.1);
+float bareSoil=smoothstep(.012,.05,diffuseColor.r-diffuseColor.g);
+float pebble=(1.-smoothstep(pebbleSize*.55,pebbleSize*.8,length(fract(earthPoint.xz*14.)-pebbleOff*.6-.2)))*step(.7,earthHash(pebbleCell+1.3))*bareSoil*earthNear*grainFilter;
+diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.12,1.1,1.06)*(.85+earthHash(pebbleCell+5.)*.3),pebble*.6);`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
 float bareEarth=smoothstep(.002,.025,diffuseColor.r-diffuseColor.g);
 float damp=bareEarth*smoothstep(.52,.75,earthNoise(earthPoint.xz*.62));
 roughnessFactor=mix(roughnessFactor,.31,damp*.77);`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
 vec3 earthRipple=vec3((earthNoise(earthPoint.xz*16.0)-.5)*.23,0.,(earthNoise(earthPoint.zx*16.0+9.0)-.5)*.23);
-float gritHeight=(earthNoise(earthPoint.xz*32.)-.5)*.006*grainFilter;
+float gritHeight=(earthNoise(earthPoint.xz*32.)-.5)*.006*grainFilter+pebble*.0035-tuft*greenGround*.002;
 vec3 groundDx=dFdx(-vViewPosition),groundDy=dFdy(-vViewPosition);
 vec3 groundR1=cross(groundDy,normal),groundR2=cross(normal,groundDx);
 float groundDet=dot(groundDx,groundR1);
 normal=normalize(max(abs(groundDet),1e-9)*normal-sign(groundDet)*(dFdx(gritHeight)*groundR1+dFdy(gritHeight)*groundR2));
 normal=normalize(normal+mat3(viewMatrix)*earthRipple*.65);`);
   };
-  material.customProgramCacheKey=()=> 'earth-detail-v3';
+  material.customProgramCacheKey=()=> 'earth-detail-v5';
 }

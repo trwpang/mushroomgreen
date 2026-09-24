@@ -177,7 +177,17 @@ export function addFarCountry(scene:T.Scene,edge:(angle:number)=>Point,data:FarD
   if(works&&area>650&&random()<.7){const along=new T.Vector3(Math.max(2.5,length)*.38,0,0).applyQuaternion(q);stacks.push(new T.Matrix4().compose(new T.Vector3(x+along.x,y,z+along.z),new T.Quaternion(),new T.Vector3(1.3,20+random()*10,1.3)));}
  }
  const addInstances=(geometry:T.BufferGeometry,material:T.Material,matrices:T.Matrix4[],tones?:T.Color[])=>{const m=new T.InstancedMesh(geometry,material,matrices.length);matrices.forEach((x,i)=>{m.setMatrixAt(i,x);if(tones)m.setColorAt(i,tones[i]);});scene.add(m);return m;};
- addInstances(wallGeo,new T.MeshStandardMaterial({color:'#ffffff',roughness:.95}),walls,wallTone);
+ const wallMaterial=new T.MeshStandardMaterial({color:'#ffffff',roughness:.95});
+ // Doors and window rows on the far buildings' walls, laid out per face in world metres.
+ wallMaterial.onBeforeCompile=shader=>{shader.vertexShader='varying vec3 farWall;varying vec3 farNormal;varying float farBase;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvec4 fw=modelMatrix*instanceMatrix*vec4(transformed,1.);farWall=fw.xyz;farNormal=normalize(mat3(modelMatrix*instanceMatrix)*objectNormal);farBase=(modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).y+1.5;');
+  shader.fragmentShader='varying vec3 farWall;varying vec3 farNormal;varying float farBase;\n'+shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+   if(abs(farNormal.y)<.5){float u=abs(farNormal.x)>abs(farNormal.z)?farWall.z:farWall.x;float h=farWall.y-farBase;
+    float bay=fract(u/2.6),row=h<2.6?1.25:3.35;float win=step(.36,bay)*step(bay,.64)*step(abs(h-row),.48)*step(.4,h);
+    float door=step(.44,fract(u/7.8+.3))*step(fract(u/7.8+.3),.53)*step(h,1.9);
+    diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.06,.07,.075),max(win,door)*.9);
+    diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.52,.46),step(.34,bay)*step(bay,.66)*step(abs(h-row+.52),.04)*step(.4,h)*.8);}`);};
+ wallMaterial.customProgramCacheKey=()=>'far-walls-v1';
+ addInstances(wallGeo,wallMaterial,walls,wallTone);
  addInstances(roofGeo,new T.MeshStandardMaterial({color:'#ffffff',roughness:.8,side:T.DoubleSide}),roofs,roofTone);
  addInstances(stackGeo,new T.MeshStandardMaterial({color:'#6d4636',roughness:.95}),stacks);
 
