@@ -17,7 +17,7 @@ float skyFbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*skyNoise(p);p=p*2
 `;
 
 export const skyPalette={
- day:{zenith:new T.Color('#8ea3b6'),horizon:new T.Color('#cdcbbb'),ground:new T.Color('#c4c3b3')},
+ day:{zenith:new T.Color('#7b9bbd'),horizon:new T.Color('#d3d3c6'),ground:new T.Color('#c6c8bd')},
  dusk:{zenith:new T.Color('#34414d'),horizon:new T.Color('#6a6e6c'),ground:new T.Color('#58656b')},
 };
 

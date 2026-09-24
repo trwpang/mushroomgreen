@@ -94,21 +94,25 @@ export function ageBuilding(root:T.Object3D,number:number,workshop=false){
       // Limewash: one continuous, much-renewed coat over brick and joints. The coursing reads through the
       // thin coat; it has worn back to brick in the splash zone, at arrises and in scattered flakes, and
       // carries green damp at the foot and grey soot and rain runs under the eaves.
-      vec2 lwCoord=1.-abs(mod(agPlane/1.35,2.)-1.);
+      vec2 lwCoord=1.-abs(mod(agPlane/2.4,2.)-1.);
       vec3 lwSample=texture2D(limeAtlas,vec2(.009,.018)+lwCoord*vec2(.482,.964)).rgb;
-      vec3 lwRatio=mix(vec3(1.),clamp(lwSample/vec3(.5799,.5249,.4541),vec3(.55),vec3(1.5)),limeReady);
+      vec3 lwRatio=mix(vec3(1.),mix(vec3(1.),clamp(lwSample/vec3(.5799,.5249,.4541),vec3(.55),vec3(1.5)),.4),limeReady);
       // Loss is mostly low down and in a few larger scaled areas; small flakes only at their edges.
+      // A mostly intact coat: loss is concentrated in the damp splash zone and at arrises/openings,
+      // with only rare small flakes elsewhere.
       float lwArea=agNoise(agPlane*1.3+agSeed*1.7)*.8+agNoise(agPlane*6.+agSeed)*.2;
-      float lwFlake=smoothstep(.74,.84,lwArea+agNoise(agPlane*29.+agSeed)*.08);
-      float lwFoot=1.-smoothstep(.08,.45+agBroad*.3,agP.y);
-      float lwWorn=clamp(lwFlake*.8+lwFoot*smoothstep(.4,.7,agNoise(agPlane*2.1+agSeed*3.))*.85,0.,1.);
+      float lwFlake=smoothstep(.86,.92,lwArea+agNoise(agPlane*29.+agSeed)*.06);
+      float lwFoot=1.-smoothstep(.05,.32+agBroad*.22,agP.y);
+      float lwWorn=clamp(lwFlake*.7+lwFoot*smoothstep(.45,.72,agNoise(agPlane*3.1+agSeed*3.))*.8,0.,1.);
       vec3 lwBrick=${lime==='plaster'?'vec3(.36,.20,.13)*(.85+agFine*.3)':'diffuseColor.rgb'};
       vec3 lwCoat=vec3(.74,.715,.63)*lwRatio*(.94+agBroad*.1);
+      // Several coats fill the mortar joints: the coursing reads only as a faint relief.
+      float lwJoint=1.-smoothstep(.06,.12,abs(fract(agP.y/.086)-.5));float lwHead=1.-smoothstep(.05,.1,abs(fract(agPlane.x/.23+floor(agP.y/.086)*.5)-.5));lwCoat*=1.-(lwJoint*.1+lwHead*(1.-lwJoint)*.05);
       lwCoat=mix(lwCoat,lwCoat*vec3(.86,.9,.8),lwFoot*.6);
       float lwRun=smoothstep(.55,.85,agNoise(vec2(agPlane.x*6.,agP.y*.35)+agSeed))*smoothstep(1.2,2.6,agP.y);
       lwCoat*=1.-lwRun*.16;
       float lwThin=${lime==='mortar'?'.97':'.93'};
-      diffuseColor.rgb=mix(lwBrick,lwCoat,lwThin*(1.-lwWorn));
+      diffuseColor.rgb=mix(lwBrick,lwCoat,mix(1.,lwThin,lwWorn*.5)*(1.-lwWorn));
      `:''}
      #include <roughnessmap_fragment>
      roughnessFactor=clamp(roughnessFactor+agWear*.12,.32,1.);

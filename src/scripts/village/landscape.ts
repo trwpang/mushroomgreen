@@ -38,7 +38,12 @@ for(const [roadIndex,frames] of networks.entries()){
  const random=roadIndex===4||roadIndex>=roads.length?roadRandom:rand;
  // Consume the old stub's draws to preserve the rest of the scene seed.
  if(roadIndex===4)for(let i=0;i<samples(roundedLine(roads[4]),.7).length*30*5;i++)rand();
- for(const side of [-1,1]){const track=frames.map(({p,nx,nz})=>[p[0]+nx*.87*side,p[1]+nz*.87*side] as Point);stroke(track,.58,'#79604770');stroke(track,.25,'#59463390');}
+ for(const side of [-1,1]){
+  // Wheel ruts: broken, uneven depressions rather than a continuous painted stripe.
+  frames.forEach(({p,nx,nz},i)=>{const wander=Math.sin(i*.37+side*2.1)*.09+Math.sin(i*1.9)*.035,q=pixel([p[0]+nx*(.87+wander)*side,p[1]+nz*(.87+wander)*side]);
+   const wear=.5+.5*Math.sin(i*.23+side*1.3+Math.sin(i*.071)*3),r=(.24+.16*wear)*scale,g=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],r);
+   g.addColorStop(0,`rgba(78,62,45,${(.14+.42*wear*wear).toFixed(3)})`);g.addColorStop(1,'rgba(83,66,48,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],r,0,Math.PI*2);ctx.fill();});
+ }
  for(const {p,nx,nz} of frames)for(let k=0;k<30;k++){const off=(random()-.5)*4.3,q=pixel([p[0]+nx*off+(random()-.5)*.7,p[1]+nz*off+(random()-.5)*.7]);ctx.fillStyle=k%3?'#c4a78360':'#53402e65';ctx.fillRect(q[0],q[1],.04*scale+random(),.035*scale+random());}
 }
 // Irregular damp patches follow wheel ruts and worn shoulders along the lane.

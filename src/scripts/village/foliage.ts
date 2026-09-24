@@ -312,8 +312,10 @@ export function coniferVariant(pine:boolean):Broadleaf{
 /** Shrub envelope matches the original bush (≈0.72 m radius, 0.15–1.1 m high). */
 export function shrubGeometry(){
  const random=seeded(8421865),clumps:Clump[]=[];
- for(let i=0;i<5;i++){const a=i*2.4+random()*.5,r=i?.34+random()*.12:0;clumps.push({centre:new T.Vector3(Math.cos(a)*r,i?.5+random()*.2:.72,Math.sin(a)*r),radius:.38+random()*.12,density:150});}
- clumps.push({centre:new T.Vector3(0,.42,0),radius:.5,density:150,inner:true});
+ for(let i=0;i<5;i++){const a=i*2.4+random()*.5,r=i?.34+random()*.12:0;clumps.push({centre:new T.Vector3(Math.cos(a)*r,i?.38+random()*.16:.62,Math.sin(a)*r),radius:.38+random()*.12,density:150});}
+ clumps.push({centre:new T.Vector3(0,.34,0),radius:.5,density:150,inner:true});
+ // A low skirt of leaves meets the ground so the shrub never floats on its stems.
+ for(let i=0;i<6;i++){const a=i*1.05+random()*.4;clumps.push({centre:new T.Vector3(Math.cos(a)*.42,.12,Math.sin(a)*.42),radius:.24+random()*.06,density:150,flat:.6});}
  return fillClumps(clumps,new T.Vector3(0,.6,0),.8,.1,1.15,[2,2,2,3],[.5,.68],random);
 }
 
