@@ -9,7 +9,7 @@
   "minHouseClearance": 16.6992738554624,
   "minStreamClearance": 0.07717561694268803,
   "supportedBrookCrossings": 1,
-  "bridgeTriangles": 8940,
+  "bridgeTriangles": 8256,
   "bridgeDrawCalls": 4,
   "openArch": true,
   "newTextures": 0
