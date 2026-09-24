@@ -139,7 +139,8 @@ async function start() {
   sparks.layers.set(1);
   scene.add(sparks);
 
-  let paused = reducedMotion;
+  // Always start in play; reduced motion runs at half speed (as in the village). Pause stops it.
+  let paused = false;
   let dusk = false;
   let lightAmount = 0;
   let activeView = 'overview';
@@ -221,7 +222,7 @@ async function start() {
     const dt = Math.min(realDelta, .05);
     last = now;
     if (!document.hidden) {
-      if (!paused) time += dt;
+      if (!paused) time += dt * (reducedMotion ? .5 : 1);
       if (tween) {
         tween.elapsed += dt;
         const raw = Math.min(tween.elapsed / 1.25, 1); const t = raw * raw * (3 - 2 * raw);

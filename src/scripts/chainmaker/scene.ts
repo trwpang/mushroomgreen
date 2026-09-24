@@ -32,7 +32,8 @@ for(let i=0;i<9;i++){const o=new T.Mesh(new T.TorusGeometry(.029,.006,8,24),chai
 const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 let rig:ReturnType<typeof createChainmakerRig>|undefined;let ready=false;
 const loading=document.getElementById('loading')!;
-const query=new URLSearchParams(location.search);const reduce=matchMedia('(prefers-reduced-motion: reduce)');let paused=query.has('still')||reduce.matches;const requestedTime=Number(query.get('t')??1.97);let time=Number.isFinite(requestedTime)?requestedTime:1.97;let last=performance.now();
+const query=new URLSearchParams(location.search);const reduce=matchMedia('(prefers-reduced-motion: reduce)');// Start in play (still captures excepted); reduced motion runs at half speed rather than pausing.
+let paused=query.has('still');const requestedTime=Number(query.get('t')??1.97);let time=Number.isFinite(requestedTime)?requestedTime:1.97;let last=performance.now();
 const motion=document.getElementById('motion') as HTMLButtonElement;
 function setPause(value:boolean){paused=value;motion.textContent=paused?'Play':'Pause';motion.setAttribute('aria-pressed',String(paused));}setPause(paused);
 const views={hands:{eye:[.7,1.4,1.3],target:[0,1.13,.42]},hammerhand:{eye:[.75,1.3,.95],target:[.22,1.12,.3]},hammerunder:{eye:[.55,.95,.9],target:[.22,1.12,.3]},hammerback:{eye:[.3,1.6,-.2],target:[.22,1.12,.3]},back:{eye:[-1.8,1.6,-3],target:[0,.92,.14]},work:{eye:[2.25,1.95,3.7],target:[.13,1.04,.30]},portrait:{eye:[.95,1.8,2.2],target:[0,1.48,.10]},side:{eye:[-3.5,1.95,1.25],target:[0,1.03,.45]}};
@@ -49,4 +50,4 @@ Promise.all([loader.loadAsync(query.get('asset')==='legacy'?'/chainmaker/chainma
  refineObject(scene);ready=true;loading.hidden=true;rig.update(time);
 }).catch(error=>{console.error(error);loading.textContent='The study could not load. Reload to try again.';});
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-renderer.setAnimationLoop(now=>{const dt=Math.min((now-last)/1000,.05);last=now;if(!paused&&ready)time+=dt;if(rig)rig.update(time);fire.intensity=2.5+Math.sin(time*7)*.2;controls.update();renderer.render(scene,camera);});
+renderer.setAnimationLoop(now=>{const dt=Math.min((now-last)/1000,.05);last=now;if(!paused&&ready)time+=dt*(reduce.matches?.5:1);if(rig)rig.update(time);fire.intensity=2.5+Math.sin(time*7)*.2;controls.update();renderer.render(scene,camera);});
