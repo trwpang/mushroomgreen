@@ -3,6 +3,7 @@ import {industryClear} from './historic-plan';
 import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
 import {brookWater,downstreamLine} from './brook-water';
+import {buildBrookFlow,type BrookObstacle} from './brook-flow';
 import {shrubGeometry,foliageMaterial,FOLIAGE_LAYER} from './foliage';
 import {stoneVariants,weatherStones,rushGeometry,swayRushes,bankRandom} from './riverbank';
 import { roads,renderedRoads,brooks,baseGround,streamSurface,ground,streamWidth,streamDistance,nearestRoad,roundedLine,chainshopPosition,type Point,type Home } from './layout';
@@ -60,10 +61,6 @@ const q=pixel(chainshopPosition);ctx.fillStyle='#665a42';ctx.beginPath();for(let
 export function addLandscape(scene:T.Scene,homes:Home[],rand:()=>number,clearings:Point[]=[]){
 const water=brookWater(scene),waterTime=water.time,waterMat=water.material;
 const waterMeshes:T.Mesh[]=[];
-for(const source of brooks){const line=downstreamLine(source),points=samples(line,.7);const verts:number[]=[],uvs:number[]=[],tangents:number[]=[],indices:number[]=[];let distance=0;
-for(let i=0;i<points.length;i++){const p=points[i],a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)];const len=Math.hypot(b[0]-a[0],b[1]-a[1])||1;const nx=-(b[1]-a[1])/len,nz=(b[0]-a[0])/len;if(i)distance+=Math.hypot(p[0]-points[i-1][0],p[1]-points[i-1][1]);const w=streamWidth(...p)*.53;for(const side of [-1,1]){verts.push(p[0]+nx*w*side,streamSurface(...p),p[1]+nz*w*side);uvs.push((side+1)/2,distance);tangents.push(nz,-nx);}if(i&&inside(...p)&&inside(...points[i-1])){const k=i*2;indices.push(k-2,k-1,k,k-1,k+1,k);}}
-const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(verts,3));g.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));g.setAttribute('flowTangent',new T.Float32BufferAttribute(tangents,2));g.setIndex(indices);g.computeVertexNormals();const mesh=new T.Mesh(g,waterMat);mesh.receiveShadow=true;scene.add(mesh);waterMeshes.push(mesh);
-}
 const wakes:{p:Point;tx:number;tz:number;s:number}[]=[];
 const rocks:{p:Point;s:number;wet:boolean;surface?:boolean}[]=[],shrubs:{p:Point;s:number}[]=[],reeds:Point[]=[];
 for(const source of brooks){const points=samples(downstreamLine(source),1.2);for(let i=1;i<points.length-1;i++){const p=points[i];if(!inside(...p))continue;const prev=points[i-1],next=points[i+1],len=Math.hypot(next[0]-prev[0],next[1]-prev[1])||1,nx=-(next[1]-prev[1])/len,nz=(next[0]-prev[0])/len;
@@ -104,16 +101,23 @@ const stoneRandom=bankRandom(6121865),stoneShapes=[stoneVariants(3),stoneVariant
 const stoneBatches=new Map<number,{matrix:T.Matrix4;color:T.Color;weather:[number,number]}[]>();
 const addStone=(shape:number,small:boolean,matrix:T.Matrix4,color:T.Color,weather:[number,number])=>{const key=shape*2+(small?1:0),list=stoneBatches.get(key)??[];list.push({matrix,color,weather});stoneBatches.set(key,list);};
 const stoneGroups=(p:Point)=>.5+.3*Math.sin(p[0]*.23+Math.sin(p[1]*.19)*2.1)+.2*Math.sin(p[1]*.61-p[0]*.37);
-let keptStones=0;
+let keptStones=0;const obstacles:BrookObstacle[]=[];
+// Bank stones keep their old seat unless a slope falls away beneath them; then they drop until
+// their underside meets the lowest ground under the footprint, so none overhangs. (Height only.)
+const bedded=(p:Point,s:number)=>{let low=ground(...p);for(let k=0;k<6;k++){const a=k/6*Math.PI*2;low=Math.min(low,ground(p[0]+Math.cos(a)*s*.9,p[1]+Math.sin(a)*s*.9));}return Math.min(ground(...p)+s*.02,low+s*.62);};
+const placedStones:{p:Point;r:number}[]=[];
 rocks.forEach(({p,s,wet,surface})=>{
  const tiltX=rand()*.3,turn=rand()*6.28,tiltZ=rand()*.2,tone=.8+rand()*.35;
  const bank=wet&&!surface;
  if(bank&&stoneRandom()>.3+.75*stoneGroups(p))return;
  const shape=Math.floor(stoneRandom()*4),small=s<.2;
- d.position.set(p[0],surface?streamSurface(...p)-s*.16:ground(...p)+s*.02,p[1]);d.rotation.set(tiltX,turn,tiltZ);d.scale.set(s*1.3,s*.95,s);d.updateMatrix();
+ d.position.set(p[0],surface?streamSurface(...p)-s*.16:bedded(p,s),p[1]);d.rotation.set(tiltX,turn,tiltZ);d.scale.set(s*1.3,s*.95,s);d.updateMatrix();
  const warm=stoneRandom()<.35;
  const color=new T.Color(wet?(warm?'#9d8f7c':'#8f8c84'):'#a49879').multiplyScalar(tone);
- addStone(shape,small,d.matrix.clone(),color,bank?[.45+stoneRandom()*.55,.85]:surface?[.12,1]:[0,0]);keptStones++;
+ addStone(shape,small,d.matrix.clone(),color,bank?[.45+stoneRandom()*.55,.85]:surface?[.12,1]:[0,0]);keptStones++;placedStones.push({p,r:s*1.1});
+ // Stones in the channel become obstacles in the brook's flow field: waterline radius and height of top above the surface.
+ if(wet&&streamDistance(...p)<streamWidth(...p)*.53+s){const water=streamSurface(...p),centre=d.position.y,top=centre+s*.95-water,dy=(water-centre)/(s*.95);
+  obstacles.push({p,top,radius:s*1.12*Math.sqrt(Math.max(.15,1-Math.min(1,dy*dy)))});}
  // Gravel and pebbles gather around the larger bank stones.
  if(bank&&s>.24)for(let k=0,n=1+Math.floor(stoneRandom()*3);k<n;k++){
   const a=stoneRandom()*Math.PI*2,r=s*(1+stoneRandom()*1.2),q:Point=[p[0]+Math.cos(a)*r,p[1]+Math.sin(a)*r],ps=.05+stoneRandom()*.09;
@@ -131,18 +135,10 @@ for(const [key,list] of stoneBatches){
  list.forEach((stone,i)=>{mesh.setMatrixAt(i,stone.matrix);mesh.setColorAt(i,stone.color);});
  mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);rockMeshes.push(mesh);
 }
-const wakeVerts:number[]=[],wakeUvs:number[]=[];
-for(const {p,tx,tz,s} of wakes)for(const side of [-1,1])for(let j=0;j<12;j++){
- const vertex=(k:number,edge:number)=>{const t=k/12,along=.12+t*(1.7+s),cross=side*(s*.55+t*.6)+edge*.10;const x=p[0]+tx*along-tz*cross,z=p[1]+tz*along+tx*cross;wakeVerts.push(x,streamSurface(x,z)+.02,z);wakeUvs.push(edge,t);};
- vertex(j,-1);vertex(j+1,-1);vertex(j,1);vertex(j,1);vertex(j+1,-1);vertex(j+1,1);
-}
-const wakeGeo=new T.BufferGeometry();wakeGeo.setAttribute('position',new T.Float32BufferAttribute(wakeVerts,3));wakeGeo.setAttribute('uv',new T.Float32BufferAttribute(wakeUvs,2));
-const wakeMat=new T.ShaderMaterial({uniforms:{time:waterTime},vertexShader:`varying vec2 wakeUv;void main(){wakeUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`uniform float time;varying vec2 wakeUv;void main(){float edge=1.-abs(wakeUv.x);float pulse=.3+.7*pow(.5+.5*sin(wakeUv.y*32.-time*6.),3.);float alpha=edge*(1.-wakeUv.y)*pulse*.16;gl_FragColor=vec4(.63,.66,.54,alpha); #include <tonemapping_fragment>
-#include <colorspace_fragment>
-}`,transparent:true,depthWrite:false,side:T.DoubleSide});
-// Shader directives must start on their own line.
-wakeMat.fragmentShader=wakeMat.fragmentShader.replace('; #include',';\n#include');
-const wakeMesh=new T.Mesh(wakeGeo,wakeMat);wakeMesh.renderOrder=2;wakeMesh.layers.set(1);scene.add(wakeMesh);
+// Flow ribbons are built after the stones so the current can part round them. (The old pulsing
+// wake strips are gone: wakes, V-arms and foam now come from the flow field itself.)
+for(const source of brooks){const {geometry}=buildBrookFlow(samples(downstreamLine(source),.3),obstacles,inside);
+ const mesh=new T.Mesh(geometry,waterMat);mesh.receiveShadow=true;scene.add(mesh);waterMeshes.push(mesh);}
 // Shrubs share the leaf-card atlas with the broadleaf crowns. The old triangle
 // generator's 4,320 draws are consumed so rock, bush and reed variation is unchanged.
 for(let i=0;i<720*6;i++)rand();
@@ -152,7 +148,8 @@ bushes.layers.set(FOLIAGE_LAYER);
 shrubs.forEach(({p,s},i)=>{d.position.set(p[0],ground(...p),p[1]);d.rotation.set(0,rand()*6.28,0);d.scale.set(s,s,s);d.updateMatrix();bushes.setMatrixAt(i,d.matrix);});bushes.castShadow=bushes.receiveShadow=true;scene.add(bushes);
 // Soft-rush clumps replace the old two-triangle reeds; each placement keeps its original draws.
 const reedMesh=new T.InstancedMesh(rushGeometry(),swayRushes(new T.MeshStandardMaterial({vertexColors:true,side:T.DoubleSide,roughness:.9}),waterTime),reeds.length)
-reeds.forEach((p,i)=>{d.position.set(p[0],ground(...p),p[1]);d.rotation.set(0,rand()*6.28,0);d.scale.setScalar(.65+rand()*.65);d.updateMatrix();reedMesh.setMatrixAt(i,d.matrix);});scene.add(reedMesh);
+// Rushes never grow through a stone: those clumps are hidden (their draws are still consumed).
+reeds.forEach((p,i)=>{d.position.set(p[0],ground(...p),p[1]);d.rotation.set(0,rand()*6.28,0);d.scale.setScalar((.65+rand()*.65)*(placedStones.some(q=>Math.hypot(q.p[0]-p[0],q.p[1]-p[1])<q.r+.08)?0:1));d.updateMatrix();reedMesh.setMatrixAt(i,d.matrix);});scene.add(reedMesh);
 refineSurface(bushes.material,'leaf');refineSurface(reedMesh.material,'leaf');
-return {update:(time:number)=>{waterTime.value=time;},reflect:(renderer:T.WebGLRenderer,camera:T.Camera,target:T.Vector3,force=false)=>water.reflect(renderer,camera,target,[...waterMeshes,wakeMesh],force),waterMeshes,counts:{rocks:keptStones,shrubs:shrubs.length,reeds:reeds.length},waterMaterial:waterMat};
+return {update:(time:number)=>{waterTime.value=time;water.step(time);},reflect:(renderer:T.WebGLRenderer,camera:T.Camera,target:T.Vector3,force=false)=>water.reflect(renderer,camera,target,waterMeshes,force),waterMeshes,counts:{rocks:keptStones,shrubs:shrubs.length,reeds:reeds.length},waterMaterial:waterMat};
 }

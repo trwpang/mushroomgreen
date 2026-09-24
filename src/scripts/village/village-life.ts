@@ -1,6 +1,7 @@
 import {siteIssue} from './site-reservations';
 import {industryClear} from './historic-plan';
 import * as T from 'three';
+import {createCat} from './cat';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {ground,localPoint,nearestRoad,nearestSegment,streamDistance,weaverWorkshop,chainshopPosition,chainshopReplacesHouse,type Home,type Point} from './layout';
 
@@ -76,7 +77,7 @@ function henLoft(sections:number[][],vertical=false){
 export function addVillageLife(scene:T.Scene,homes:Home[],paths:Point[][]=[]){
  const placements=planVillageLife(homes,paths),root=new T.Group();root.name='Village yard animals';scene.add(root);
  const feathers=[material('#795039'),material('#b7996d'),material('#46413a')],dark=material('#302e29'),ochre=material('#a9874f'),comb=material('#884331'),eye=material('#171814',.4),cream=material('#b7a88b');
- const animations:{root:T.Group;neck?:T.Group;tail:T.Group;body:T.Group;seed:number;angle:number;kind:'hen'|'cat'}[]=[];
+ const animations:{root:T.Group;neck?:T.Group;tail:T.Group;body:T.Group;seed:number;angle:number;kind:'hen'|'cat';update?:(time:number)=>void}[]=[];
  for(const a of placements){const animal=new T.Group();animal.name=`${a.kind} at household ${a.home}`;animal.position.set(a.p[0],ground(...a.p)+.025,a.p[1]);animal.rotation.y=a.angle;root.add(animal);
   const body=new T.Group(),tail=new T.Group();animal.add(body,tail);
   if(a.kind==='hen'){
@@ -101,25 +102,9 @@ export function addVillageLife(scene:T.Scene,homes:Home[],paths:Point[][]=[]){
    for(let i=0;i<4;i++)n.oval(comb,[0,.257+Math.sin(i*.9)*.008,.015+i*.025],[.013,.022+i%2*.009,.019]);n.finish();
    animations.push({root:animal,neck,tail,body,seed:a.seed,angle:a.angle,kind:a.kind});
   }else{
-   const fur=material('#666157'),stripe=material('#373a34'),b=partBuilder(body);
-   // A crouched, resting tabby: folded hocks, narrow forelegs, muzzle, triangular ears and curved tail.
-   b.oval(fur,[0,.17,-.025],[.15,.17,.285],[.12,0,0]);
-   for(const side of [-1,1]){
-    b.oval(fur,[side*.115,.1,-.13],[.08,.10,.12]);b.oval(cream,[side*.069,.047,.215],[.052,.04,.092]);
-    b.oval(fur,[side*.075,.108,.15],[.044,.086,.075],[.15,0,0]);
-    for(let i=0;i<4;i++)b.oval(stripe,[side*.139,.19+i*.014,-.16+i*.075],[.012,.055,.018],[0,0,side*.15]);
-   }
-   b.oval(fur,[0,.235,.23],[.107,.092,.092],[.1,0,0]);
-   for(const side of [-1,1]){
-    const g=new T.ConeGeometry(.047,.095,3);b.put(g,fur,[side*.072,.325,.21],[1,1,.65],[0,side*.3,-side*.18]);
-    b.oval(cream,[side*.028,.216,.31],[.037,.025,.027]);
-    b.rod(dark,[side*.026,.252,.308],[side*.076,.247,.29],.006,.004);
-    for(let i=0;i<3;i++)b.rod(cream,[side*.035,.221,.327],[side*.13,.207+i*.013,.32-i*.012],.0017,.0008);
-   }
-   b.oval(dark,[0,.226,.337],[.014,.009,.01]);b.finish();
-   const t=partBuilder(tail);const points=[new T.Vector3(-.09,.095,-.24),new T.Vector3(-.22,.055,-.24),new T.Vector3(-.235,.045,-.03),new T.Vector3(-.19,.045,.15),new T.Vector3(-.10,.047,.19)];
-   t.put(new T.TubeGeometry(new T.CatmullRomCurve3(points),20,.028,6,false),fur,[0,0,0]);
-   t.oval(stripe,[-.10,.047,.19],[.03,.028,.034]);t.finish();animations.push({root:animal,tail,body,seed:a.seed,angle:a.angle,kind:a.kind});
+   // A sculpted, furred tabby (cat.ts) sitting by the chainshop wall.
+   const cat=createCat();animal.add(cat.root);animal.position.y-=.025;
+   animations.push({root:animal,tail,body,seed:a.seed,angle:a.angle,kind:a.kind,update:cat.update});
   }
  }
  const stats={hens:placements.filter(p=>p.kind==='hen').length,cats:placements.filter(p=>p.kind==='cat').length,henYards:new Set(placements.filter(p=>p.kind==='hen').map(p=>p.home)).size};
@@ -127,6 +112,6 @@ export function addVillageLife(scene:T.Scene,homes:Home[],paths:Point[][]=[]){
    // A still pose remains deterministic. No private clock or frame-dependent drift.
    const cycle=((t*.38)%1+1)%1,peck=cycle>.48&&cycle<.86?Math.sin((cycle-.48)/.38*Math.PI)**2:0;
    a.neck!.rotation.x=peck*1.82;a.neck!.position.y=.35-peck*.13;a.body.rotation.x=peck*.08;a.tail.rotation.x=.035*Math.sin(t*1.7);a.root.rotation.y=a.angle+Math.sin(t*.27)*.08;
-  }else{a.body.scale.y=1+Math.sin(t*.85)*.008;a.tail.rotation.y=Math.sin(t*.24)*.035;}}};
+  }else a.update?.(t);}};
  update(0);return {update,stats,placements,root};
 }

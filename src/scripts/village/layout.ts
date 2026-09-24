@@ -48,7 +48,9 @@ const channels=brooks.map(line=>{let level=Infinity;return line.map(p=>{level=Ma
 // Segment boxes skip channel segments strictly farther than the best so far (same result as a full scan).
 const channelBoxes=channels.flatMap(line=>line.slice(1).map((b,i)=>{const a=line[i];return [Math.min(a.p[0],b.p[0]),Math.min(a.p[1],b.p[1]),Math.max(a.p[0],b.p[0]),Math.max(a.p[1],b.p[1])];}));
 export function streamSurface(x:number,z:number){let distance=Infinity,height=baseGround(x,z)-.35;
- let k=0;for(const line of channels)for(let i=1;i<line.length;i++,k++){const box=channelBoxes[k],bx=Math.max(box[0]-x,0,x-box[2]),bz=Math.max(box[1]-z,0,z-box[3]),bound=distance+1e-9;if(bx*bx+bz*bz>bound*bound)continue;const a=line[i-1],b=line[i],p=nearestSegment([x,z],a.p,b.p),d=Math.hypot(x-p[0],z-p[1]);if(d<distance){distance=d;const length=Math.hypot(b.p[0]-a.p[0],b.p[1]-a.p[1]);const t=length?Math.hypot(p[0]-a.p[0],p[1]-a.p[1])/length:0;height=a.h+(b.h-a.h)*t;}}
+ // The nearest segment in this grid cell bounds the search (the true nearest can only be closer).
+ const seed=streamDistance(x,z);
+ let k=0;for(const line of channels)for(let i=1;i<line.length;i++,k++){const box=channelBoxes[k],bx=Math.max(box[0]-x,0,x-box[2]),bz=Math.max(box[1]-z,0,z-box[3]),bound=Math.min(distance,seed)+1e-9;if(bx*bx+bz*bz>bound*bound)continue;const a=line[i-1],b=line[i],p=nearestSegment([x,z],a.p,b.p),d=Math.hypot(x-p[0],z-p[1]);if(d<distance){distance=d;const length=Math.hypot(b.p[0]-a.p[0],b.p[1]-a.p[1]);const t=length?Math.hypot(p[0]-a.p[0],p[1]-a.p[1])/length:0;height=a.h+(b.h-a.h)*t;}}
  return height;
 }
 type Platform={x:number;z:number;angle:number;w:number;d:number;y:number};
@@ -66,7 +68,13 @@ export function prepareGround(homes:Home[]){
 export function addGroundPlatforms(items:Platform[]){platforms.unshift(...items);}
 export function ground(x:number,z:number){
  const roadDistance=laneDistance(x,z);let y=historicGround(x,z,baseGround(x,z),roadDistance);const d=streamDistance(x,z),w=streamWidth(x,z)*.5;
- if(d<w+12){const bed=streamSurface(x,z)-.48;const blend=d<w?1:Math.max(0,1-(d-w)/12)**2;y=Math.min(y,y+(bed-y)*blend);}
+ // Brook channel: a rounded bed 0.48 m deep climbing through the waterline, then a bank rising
+ // ~0.35 m/m (steepening) to the natural ground. The wetted edge wanders ±30% over 3–8 m (bays and
+ // points), so the water meets real ground along an irregular shoreline. Where the land beside
+ // the brook lies below its surface, a low natural levee contains it.
+ if(d<w*1.35+6.5){const s=streamSurface(x,z),wb=w*(1+.17*Math.sin(x*.83+z*.37)*Math.sin(z*.69-x*.29)+.1*Math.sin(x*1.73-z*1.21)),e=d-wb,t=Math.min(1,d/wb);
+  const carve=d<wb?s-.03-.45*(1-t*t):s-.03+.34*e+.13*e*e;y=Math.min(y,carve);
+  const u=Math.max(0,Math.min(1,(e-1.2)/2.3)),levee=Math.min(carve,s+.12);if(y<levee)y+=(levee-y)*(1-u*u*(3-2*u));}
  if(roadDistance<2.8){const shoulder=Math.max(0,Math.min(1,(2.8-roadDistance)/.7));y-=shoulder*(.15+.18*Math.exp(-(((roadDistance-.87)/.43)**2)));}
  let strongest=0,level=y;
  for(const p of platforms){if(Math.abs(x-p.x)>18||Math.abs(z-p.z)>18)continue;const dx=x-p.x,dz=z-p.z,c=Math.cos(p.angle),s=Math.sin(p.angle);const edge=Math.max(Math.abs(dx*c-dz*s)-p.w,Math.abs(dx*s+dz*c)-p.d);const t=Math.max(0,Math.min(1,1-edge/3));const weight=t*t*(3-2*t);if(weight>strongest){strongest=weight;level=p.y;}}

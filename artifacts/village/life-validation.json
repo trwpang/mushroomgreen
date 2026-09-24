@@ -2,8 +2,8 @@
   "hens": 9,
   "cats": 1,
   "henYards": 3,
-  "meshes": 29,
-  "triangles": 51540,
+  "meshes": 39,
+  "triangles": 114512,
   "placements": [
     {
       "kind": "hen",
