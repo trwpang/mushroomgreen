@@ -1,0 +1,1712 @@
+[
+  {
+    "tag": "HEADER",
+    "id": "",
+    "text": "THE BOOK OF WEAVER / 1865Mushroom Green.A village of small homes. A world of shared lives.The villageThe approachHenry’s homeAlong the laneThe brookChainshopOld workingsBackyard shops",
+    "rect": [
+      23,
+      27,
+      302,
+      181
+    ],
+    "display": "block",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "A",
+    "id": "",
+    "text": "THE BOOK OF WEAVER / 1865",
+    "rect": [
+      23,
+      34,
+      180.296875,
+      9
+    ],
+    "display": "inline",
+    "font": "600 8px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "SPAN",
+    "id": "",
+    "text": "/",
+    "rect": [
+      146.03125,
+      34,
+      29.734375,
+      9
+    ],
+    "display": "inline",
+    "font": "600 8px Arial, Helvetica, sans-serif",
+    "padding": "0px 13px",
+    "gap": "normal"
+  },
+  {
+    "tag": "H1",
+    "id": "",
+    "text": "Mushroom Green.",
+    "rect": [
+      23,
+      63,
+      302,
+      32
+    ],
+    "display": "block",
+    "font": "32px / 32px Georgia, serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "SPAN",
+    "id": "",
+    "text": ".",
+    "rect": [
+      252.203125,
+      61,
+      7.125,
+      36
+    ],
+    "display": "inline",
+    "font": "32px / 32px Georgia, serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "P",
+    "id": "",
+    "text": "A village of small homes. A world of shared lives.",
+    "rect": [
+      23,
+      107,
+      302,
+      11
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "text": "The villageThe approachHenry’s homeAlong the laneThe brookChainshopOld workingsBackyard shops",
+    "rect": [
+      23,
+      138,
+      302,
+      70
+    ],
+    "display": "flex",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "12px"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "text": "The village",
+    "rect": [
+      23,
+      138,
+      52.359375,
+      29
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "8px 2px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "text": "The approach",
+    "rect": [
+      87.359375,
+      138,
+      65.71875,
+      29
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "8px 2px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "text": "Henry’s home",
+    "rect": [
+      165.078125,
+      138,
+      65.515625,
+      29
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "8px 2px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "text": "Along the lane",
+    "rect": [
+      242.59375,
+      138,
+      67.953125,
+      29
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "8px 2px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "text": "The brook",
+    "rect": [
+      23,
+      179,
+      49.03125,
+      29
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "8px 2px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "text": "Chainshop",
+    "rect": [
+      84.03125,
+      179,
+      51.8125,
+      29
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "8px 2px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "text": "Old workings",
+    "rect": [
+      147.84375,
+      179,
+      61.8125,
+      29
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "8px 2px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "text": "Backyard shops",
+    "rect": [
+      221.65625,
+      179,
+      75.15625,
+      29
+    ],
+    "display": "block",
+    "font": "10px Arial, Helvetica, sans-serif",
+    "padding": "8px 2px",
+    "gap": "normal"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "text": "Turn↑↶↷↓Move↑←→↓+−",
+    "rect": [
+      270,
+      413,
+      108,
+      281
+    ],
+    "display": "flex",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "4px",
+    "gap": "1px"
+  },
+  {
+    "tag": "SPAN",
+    "id": "",
+    "text": "Turn",
+    "rect": [
+      308.109375,
+      418,
+      31.78125,
+      11
+    ],
+    "display": "block",
+    "font": "10px Arial, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "text": "↑↶↷↓",
+    "rect": [
+      275,
+      430,
+      98,
+      101
+    ],
+    "display": "grid",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "0px 0px 5px",
+    "gap": "1px"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "turn-up",
+    "text": "↑",
+    "rect": [
+      308,
+      430,
+      32,
+      31
+    ],
+    "display": "block",
+    "font": "20px Arial",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "turn-left",
+    "text": "↶",
+    "rect": [
+      275,
+      462,
+      32,
+      31
+    ],
+    "display": "block",
+    "font": "20px Arial",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "turn-right",
+    "text": "↷",
+    "rect": [
+      341,
+      462,
+      32,
+      31
+    ],
+    "display": "block",
+    "font": "20px Arial",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "turn-down",
+    "text": "↓",
+    "rect": [
+      308,
+      494,
+      32,
+      31
+    ],
+    "display": "block",
+    "font": "20px Arial",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "SPAN",
+    "id": "",
+    "text": "Move",
+    "rect": [
+      307.265625,
+      532,
+      33.453125,
+      11
+    ],
+    "display": "block",
+    "font": "10px Arial, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "text": "↑←→↓",
+    "rect": [
+      275,
+      544,
+      98,
+      95
+    ],
+    "display": "grid",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "1px"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "pan-up",
+    "text": "↑",
+    "rect": [
+      308,
+      544,
+      32,
+      31
+    ],
+    "display": "block",
+    "font": "20px Arial",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "pan-left",
+    "text": "←",
+    "rect": [
+      275,
+      576,
+      32,
+      31
+    ],
+    "display": "block",
+    "font": "20px Arial",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "pan-right",
+    "text": "→",
+    "rect": [
+      341,
+      576,
+      32,
+      31
+    ],
+    "display": "block",
+    "font": "20px Arial",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "pan-down",
+    "text": "↓",
+    "rect": [
+      308,
+      608,
+      32,
+      31
+    ],
+    "display": "block",
+    "font": "20px Arial",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "text": "+−",
+    "rect": [
+      275,
+      640,
+      98,
+      49
+    ],
+    "display": "flex",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "4px 0px 0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "zoom-in",
+    "text": "+",
+    "rect": [
+      280,
+      645,
+      44,
+      44
+    ],
+    "display": "block",
+    "font": "26px Georgia, serif",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "zoom-out",
+    "text": "−",
+    "rect": [
+      324,
+      645,
+      44,
+      44
+    ],
+    "display": "block",
+    "font": "26px Georgia, serif",
+    "padding": "1px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "FOOTER",
+    "id": "",
+    "text": "Mushroom Green, Black Country59 households · an interpretation of 1865Find a householdFind a household…1. Frost2. Roberts3. Coley4. Heath5. Coley6. Henry Weaver 18277. Kendrick8. Peakes9. Kendrick10. Benj Billingham11. Susannah Round12. Kendrick13. Pearson14. Dimmock15. Yardley16. Jos Dimmock 183017. Billingham18. Stanton19. Foley20. Jos. Weaver 181121. Amb Weaver 181422. Henry Weaver 178923. Bradley24. Jas Weaver 181425. Thos Weaver 182126. Hannah Weaver (Tromans) 181327. Hancox28. John Homer 181929. Dimmock30. Pearson31. Raybould32. Griffiths33. Marsh34. Pearson35. John Homer 180336. Henry Weaver 183737. Samuel Weaver 181838. Yardley / Mariah Weaver 178939. Billingham40. Dimmock41. Heathcock42. Geo Billingham 179343. John Billingham 182344. Homer45. Round46. Sidaway47. Hancox48. Pearson49. Homer50. Cox51. Wm Round / Isaac Billingham52. Thos Homer 180353. Hannah Nicklin 189754. Coates55. Pearson56. Hancox57. Hancox58. Kendrick / Dimmock59. Sml Billingham 1826House labelsMap overlayDaylightPlay↓◱iDRAG TO EXPLORE · SCROLL TO MOVE CLOSER · SELECT A HOME",
+    "rect": [
+      0,
+      729,
+      390,
+      115
+    ],
+    "display": "block",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "text": "Mushroom Green, Black Country59 households · an interpretation of 1865",
+    "rect": [
+      24,
+      712,
+      226.796875,
+      34
+    ],
+    "display": "flex",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "13px"
+  },
+  {
+    "tag": "I",
+    "id": "",
+    "text": "",
+    "rect": [
+      24,
+      728.5,
+      24,
+      1
+    ],
+    "display": "block",
+    "font": "italic 16px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "text": "Mushroom Green, Black Country59 households · an interpretation of 1865",
+    "rect": [
+      61,
+      712,
+      189.796875,
+      34
+    ],
+    "display": "block",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "STRONG",
+    "id": "place-label",
+    "text": "Mushroom Green, Black Country",
+    "rect": [
+      61,
+      714,
+      189.796875,
+      15
+    ],
+    "display": "inline",
+    "font": "13px Georgia, serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "SMALL",
+    "id": "",
+    "text": "59 households · an interpretation of 1865",
+    "rect": [
+      61,
+      736,
+      189.796875,
+      10
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "NAV",
+    "id": "",
+    "text": "Find a householdFind a household…1. Frost2. Roberts3. Coley4. Heath5. Coley6. Henry Weaver 18277. Kendrick8. Peakes9. Kendrick10. Benj Billingham11. Susannah Round12. Kendrick13. Pearson14. Dimmock15. Yardley16. Jos Dimmock 183017. Billingham18. Stanton19. Foley20. Jos. Weaver 181121. Amb Weaver 181422. Henry Weaver 178923. Bradley24. Jas Weaver 181425. Thos Weaver 182126. Hannah Weaver (Tromans) 181327. Hancox28. John Homer 181929. Dimmock30. Pearson31. Raybould32. Griffiths33. Marsh34. Pearson35. John Homer 180336. Henry Weaver 183737. Samuel Weaver 181838. Yardley / Mariah Weaver 178939. Billingham40. Dimmock41. Heathcock42. Geo Billingham 179343. John Billingham 182344. Homer45. Round46. Sidaway47. Hancox48. Pearson49. Homer50. Cox51. Wm Round / Isaac Billingham52. Thos Homer 180353. Hannah Nicklin 189754. Coates55. Pearson56. Hancox57. Hancox58. Kendrick / Dimmock59. Sml Billingham 1826House labelsMap overlayDaylightPlay↓◱i",
+    "rect": [
+      12,
+      724,
+      366,
+      86
+    ],
+    "display": "flex",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "5px",
+    "gap": "0px"
+  },
+  {
+    "tag": "LABEL",
+    "id": "",
+    "text": "Find a household",
+    "rect": [
+      194.5,
+      766.5,
+      1,
+      1
+    ],
+    "display": "block",
+    "font": "16px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "SELECT",
+    "id": "house-select",
+    "text": "Find a household…1. Frost2. Roberts3. Coley4. Heath5. Coley6. Henry Weaver 18277. Kendrick8. Peakes9. Kendrick10. Benj Billingham11. Susannah Round12. Kendrick13. Pearson14. Dimmock15. Yardley16. Jos Dimmock 183017. Billingham18. Stanton19. Foley20. Jos. Weaver 181121. Amb Weaver 181422. Henry Weaver 178923. Bradley24. Jas Weaver 181425. Thos Weaver 182126. Hannah Weaver (Tromans) 181327. Hancox28. John Homer 181929. Dimmock30. Pearson31. Raybould32. Griffiths33. Marsh34. Pearson35. John Homer 180336. Henry Weaver 183737. Samuel Weaver 181838. Yardley / Mariah Weaver 178939. Billingham40. Dimmock41. Heathcock42. Geo Billingham 179343. John Billingham 182344. Homer45. Round46. Sidaway47. Hancox48. Pearson49. Homer50. Cox51. Wm Round / Isaac Billingham52. Thos Homer 180353. Hannah Nicklin 189754. Coates55. Pearson56. Hancox57. Hancox58. Kendrick / Dimmock59. Sml Billingham 1826",
+    "rect": [
+      22.953125,
+      730,
+      145,
+      36
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "9px 4px",
+    "gap": "normal"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "Find a household…",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "1. Frost",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "2. Roberts",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "3. Coley",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "4. Heath",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "5. Coley",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "6. Henry Weaver 1827",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "7. Kendrick",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "8. Peakes",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "9. Kendrick",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "10. Benj Billingham",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "11. Susannah Round",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "12. Kendrick",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "13. Pearson",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "14. Dimmock",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "15. Yardley",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "16. Jos Dimmock 1830",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "17. Billingham",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "18. Stanton",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "19. Foley",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "20. Jos. Weaver 1811",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "21. Amb Weaver 1814",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "22. Henry Weaver 1789",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "23. Bradley",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "24. Jas Weaver 1814",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "25. Thos Weaver 1821",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "26. Hannah Weaver (Tromans) 1813",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "27. Hancox",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "28. John Homer 1819",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "29. Dimmock",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "30. Pearson",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "31. Raybould",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "32. Griffiths",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "33. Marsh",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "34. Pearson",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "35. John Homer 1803",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "36. Henry Weaver 1837",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "37. Samuel Weaver 1818",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "38. Yardley / Mariah Weaver 1789",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "39. Billingham",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "40. Dimmock",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "41. Heathcock",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "42. Geo Billingham 1793",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "43. John Billingham 1823",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "44. Homer",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "45. Round",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "46. Sidaway",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "47. Hancox",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "48. Pearson",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "49. Homer",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "50. Cox",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "51. Wm Round / Isaac Billingham",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "52. Thos Homer 1803",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "53. Hannah Nicklin 1897",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "54. Coates",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "55. Pearson",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "56. Hancox",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "57. Hancox",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "58. Kendrick / Dimmock",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "OPTION",
+    "id": "",
+    "text": "59. Sml Billingham 1826",
+    "rect": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px 2px 1px",
+    "gap": "4.5px"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "labels-toggle",
+    "text": "House labels",
+    "rect": [
+      167.953125,
+      730,
+      64.03125,
+      36
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "9px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "map-toggle",
+    "text": "Map overlay",
+    "rect": [
+      231.984375,
+      730,
+      61.03125,
+      36
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "9px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "light",
+    "text": "Daylight",
+    "rect": [
+      293.015625,
+      730,
+      44.515625,
+      36
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "9px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "motion",
+    "text": "Play",
+    "rect": [
+      337.53125,
+      730,
+      29.515625,
+      36
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "9px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "sound",
+    "text": "",
+    "rect": [
+      140.53125,
+      767,
+      42,
+      36
+    ],
+    "display": "flex",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "9px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "svg",
+    "id": "",
+    "text": "",
+    "rect": [
+      152.53125,
+      776,
+      18,
+      18
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "path",
+    "id": "",
+    "text": "",
+    "rect": [
+      154.78125,
+      779.75,
+      6.75,
+      10.5
+    ],
+    "display": "inline",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "path",
+    "id": "",
+    "text": "",
+    "rect": [
+      164.15625,
+      780.5,
+      3.734405517578125,
+      9
+    ],
+    "display": "inline",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "save-view",
+    "text": "↓",
+    "rect": [
+      182.53125,
+      767,
+      16.5,
+      36
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "9px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "clean-view",
+    "text": "◱",
+    "rect": [
+      199.03125,
+      767,
+      17.421875,
+      36
+    ],
+    "display": "block",
+    "font": "9px Arial, Helvetica, sans-serif",
+    "padding": "9px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "notes",
+    "text": "i",
+    "rect": [
+      216.453125,
+      766,
+      33,
+      38
+    ],
+    "display": "block",
+    "font": "17px Georgia, serif",
+    "padding": "9px 6px",
+    "gap": "normal"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "text": "DRAG TO EXPLORE · SCROLL TO MOVE CLOSER · SELECT A HOME",
+    "rect": [
+      0,
+      826,
+      390,
+      6
+    ],
+    "display": "block",
+    "font": "6px Arial, Helvetica, sans-serif",
+    "padding": "0px",
+    "gap": "normal"
+  },
+  {
+    "tag": "SPAN",
+    "id": "",
+    "text": "·",
+    "rect": [
+      132.265625,
+      826,
+      18.703125,
+      6
+    ],
+    "display": "inline",
+    "font": "6px Arial, Helvetica, sans-serif",
+    "padding": "0px 8px",
+    "gap": "normal"
+  },
+  {
+    "tag": "SPAN",
+    "id": "",
+    "text": "·",
+    "rect": [
+      249.65625,
+      826,
+      18.703125,
+      6
+    ],
+    "display": "inline",
+    "font": "6px Arial, Helvetica, sans-serif",
+    "padding": "0px 8px",
+    "gap": "normal"
+  }
+]

@@ -1,0 +1,19 @@
+[
+  "Header under 90px",
+  "Views scroll in one row",
+  "Interior toolbar hidden outside",
+  "Pause works",
+  "Sound works",
+  "labels-toggle works",
+  "map-toggle works",
+  "light works",
+  "Mobile control touch targets at least 40px",
+  "Escape closes and returns focus",
+  "Household select opens reader",
+  "Reader close returns focus to visible select",
+  "Notes opens with focus",
+  "Notes close returns focus",
+  "Hide interface works",
+  "Restore interface works",
+  "Desktop restores original control locations"
+]
