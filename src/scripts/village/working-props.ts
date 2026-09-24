@@ -262,7 +262,9 @@ export function createPropKit(oak?:T.MeshStandardMaterial){
   for(let i=0;i<18;i++){const g=new T.ConeGeometry(.010,.040,3);add(g,E,cut,[(rand()-.5)*1.8,.014,(rand()-.5)*.9],[Math.PI/2,rand()*tau,0]);}
  }
 
- parts.forEach((list,i)=>{if(!list.length)return;const g=mergeGeometries(list);const m=new T.Mesh(g,mats[i]);m.castShadow=m.receiveShadow=true;root.add(m);list.forEach(p=>p.dispose());});
+ // Re-index the merged kit model: identical vertices (same position, normal, uv, colour) are shared,
+ // so every placed copy is indexed too — about a third of the GPU memory, same pixels.
+ parts.forEach((list,i)=>{if(!list.length)return;const merged=mergeGeometries(list),g=mergeVertices(merged);merged.dispose();const m=new T.Mesh(g,mats[i]);m.castShadow=m.receiveShadow=true;root.add(m);list.forEach(p=>p.dispose());});
  root.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(root);root.userData.size=bounds.getSize(new T.Vector3()).toArray();return root;
  };
  const models=Object.fromEntries((Object.keys(propNames) as PropKind[]).map(k=>[k,make(k)])) as Record<PropKind,T.Group>;

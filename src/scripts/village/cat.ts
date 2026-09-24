@@ -156,11 +156,12 @@ function furMaterial(length:number,density:number,flick=false){
  m.customProgramCacheKey=()=>`cat-fur-${length}-${density}-${flick}`;
  return m;
 }
+const allShells:T.InstancedMesh[]=[];
 function furred(g:T.BufferGeometry,m:T.Material){
  const group=new T.Group(),base=new T.Mesh(g,m),shells=new T.InstancedMesh(g,m,SHELLS);
  for(let i=0;i<SHELLS;i++)shells.setMatrixAt(i,new T.Matrix4());shells.count=SHELLS;
  base.castShadow=base.receiveShadow=true;shells.receiveShadow=true;shells.castShadow=false;shells.frustumCulled=false;
- group.add(base,shells);return group;
+ group.add(base,shells);allShells.push(shells);return group;
 }
 function eyeMaterial(){
  const m=new T.MeshPhysicalMaterial({color:'#ffffff',roughness:.25,clearcoat:1,clearcoatRoughness:.04});
@@ -206,6 +207,10 @@ export function createCat(){
   // Slow blinks.
   const blink=Math.max(0,Math.sin(time*.43+.7))**60;eyes.forEach(e=>e.scale.y=1-.92*blink);
  }
+ // Fur shells only where they can be resolved: all twelve within 3 m, fewer further off, none
+ // beyond ~22 m (where a strand is far below a pixel); the solid pelt always draws.
+ const centre=new T.Vector3();
+ root.userData.furDetail=(eye:T.Vector3)=>{root.getWorldPosition(centre);const d=eye.distanceTo(centre),n=d<3?SHELLS:d<8?9:d<22?5:0;for(const s of allShells){s.count=n;s.visible=n>0;}};
  update(0);
  return {root,body,tail,update};
 }

@@ -21,6 +21,7 @@ import {installLightPool,updateLightPool} from './light-pool';
 import {addSpringFlowers} from './spring-flowers';
 import {addFlyAgarics} from './fly-agaric';
 import {createSoundscape} from './soundscape';
+import {chunkInstances} from './instance-chunks';
 import {LINK} from '../chainmaker/rig';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
 import {addWorkingChainmaker} from '../chainmaker/worker';
@@ -67,12 +68,18 @@ const dummy=new T.Object3D();
 function cube(x:number,y:number,z:number,w:number,h:number,d:number,m:T.Material,angle=0){dummy.position.set(x,y,z);dummy.rotation.set(0,angle,0);dummy.scale.set(w,h,d);dummy.updateMatrix();batch(new T.BoxGeometry(1,1,1),m,dummy.matrix);}
 function beam(a:T.Vector3,b:T.Vector3,r:number,m:T.Material){const diff=b.clone().sub(a);dummy.position.copy(a).add(b).multiplyScalar(.5);dummy.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),diff.clone().normalize());dummy.scale.set(1,1,1);dummy.updateMatrix();batch(new T.CylinderGeometry(r*.75,r,diff.length(),5),m,dummy.matrix);}
 async function start(){
-const mount=$('village-canvas');const renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;mount.append(renderer.domElement);renderer.domElement.tabIndex=0;renderer.domElement.setAttribute('aria-label','Village. Drag to orbit; scroll to zoom; select a house.');
+const mount=$('village-canvas');// Lite mode for devices that cannot hold the full scene in GPU memory (older iPads): chosen with
+// ?lite, or remembered after the full scene once lost its graphics context on this device.
+const lite=(()=>{if(new URLSearchParams(location.search).has('lite'))return true;try{return localStorage.getItem('mg-lite')==='1';}catch{return false;}})();
+const basePixelRatio=Math.min(devicePixelRatio,lite?1:1.5);
+// No canvas MSAA: the scene renders through the composer's own (non-multisampled) targets, so a
+// multisampled drawing buffer only cost ~90 MB of GPU memory and a resolve per frame.
+const renderer=new T.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(basePixelRatio);renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;mount.append(renderer.domElement);renderer.domElement.tabIndex=0;renderer.domElement.setAttribute('aria-label','Village. Drag to orbit; scroll to zoom; select a house.');
 addEventListener('pagehide',event=>{if(!event.persisted)disposeMaterialTextures();});
 const scene=new T.Scene();scene.background=new T.Color('#c4c7b9');scene.fog=new T.Fog('#c4c7b9',850,1700);const sky=createSky(scene);
 const camera=new T.PerspectiveCamera(38,innerWidth/innerHeight,.2,2600);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=9;controls.maxDistance=1800;controls.maxPolarAngle=Math.PI*.48;controls.minPolarAngle=.04;controls.maxTargetRadius=300;controls.cursor.set(0,0,-60);controls.zoomSpeed=.8;
 const updateCompass=createCompass($('village-compass'));
-const hemi=new T.HemisphereLight('#d6e2ec','#5c5140',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#c4d4e4',.75);fill.position.set(70,50,-90);scene.add(fill);installLightPool(scene,6);
+const hemi=new T.HemisphereLight('#d6e2ec','#5c5140',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(lite?2048:4096,lite?2048:4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#c4d4e4',.75);fill.position.set(70,50,-90);scene.add(fill);installLightPool(scene,6);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));camera.layers.enable(1);camera.layers.enable(FOLIAGE_LAYER);const aoCamera=camera.clone();aoCamera.layers.set(0);const ao=new GTAOPass(scene,aoCamera,innerWidth,innerHeight);ao.blendIntensity=.8;ao.updateGtaoMaterial({radius:.6,distanceExponent:1.6,thickness:1.2,scale:1});composer.addPass(ao);composer.addPass(cinematicOutput());
 const farRequest=Promise.all([fetch('/far-country/far-country.json').then(r=>r.json() as Promise<FarData>),new T.TextureLoader().loadAsync('/far-country/ground-1882.webp')]);
 stage('before households fetch');const households:Household[]=await fetch('/households.json').then(r=>{if(!r.ok)throw Error('Household data unavailable');return r.json();});const [farData,farGround]=await farRequest;const homes=makeHomes(households);prepareGround(homes);const founder=homes.find(h=>h.number===22)!;const domesticShop=weaverWorkshop(founder);
@@ -108,7 +115,8 @@ paintHistoricLandscape(ctx,pixel,backyardShops);
 paintLanes(ctx,pixel,rand,paths);paintLaneEdges(ctx,pixel,paths);
 paintWorkingYards(ctx,pixel,homes);
 for(let i=0;i<65000;i++){const x=rand()*4096,y=rand()*4096;ctx.fillStyle=i%2?'#3f42310c':'#e0ce9f0d';ctx.fillRect(x,y,rand()*6+1,rand()*3+1);}
-stage('terrain painted');const groundTexture=new T.CanvasTexture(terrainCanvas);groundTexture.colorSpace=T.SRGBColorSpace;groundTexture.anisotropy=8;
+stage('terrain painted');// Lite mode uploads the painted terrain at half size (21 MB instead of 85 MB on the GPU).
+const groundTexture=new T.CanvasTexture(lite?(()=>{const half=document.createElement('canvas');half.width=half.height=2048;half.getContext('2d')!.drawImage(terrainCanvas,0,0,2048,2048);return half;})():terrainCanvas);groundTexture.colorSpace=T.SRGBColorSpace;groundTexture.anisotropy=8;
 const groundGeo=new T.PlaneGeometry(460,520,460,520);groundGeo.rotateX(-Math.PI/2);groundGeo.translate(0,0,-60);const pos=groundGeo.attributes.position;const index:number[]=[];const source=groundGeo.index!;for(let i=0;i<pos.count;i++)pos.setY(i,ground(pos.getX(i),pos.getZ(i)));for(let i=0;i<source.count;i+=3){const ids=[source.getX(i),source.getX(i+1),source.getX(i+2)];if(ids.every(v=>within(pos.getX(v),pos.getZ(v))))index.push(...ids);}groundGeo.setIndex(index);
 const uv=groundGeo.attributes.uv;for(let i=0;i<pos.count;i++)uv.setXY(i,(pos.getX(i)+230)/460,1-(pos.getZ(i)+320)/520);groundGeo.computeVertexNormals();// Tree-cover map (≈1.8 m texels), filled once the trees are placed; the ground shader turns
 // grass to leaf litter and soil beneath closed canopy.
@@ -204,7 +212,7 @@ const yardMat=material('#6a553c'),leafMat=material('#637341');
 function yardPoint(x:number,z:number,y=0){const p=localPoint(founder,x,z);return new T.Vector3(p[0],ground(...p)+y,p[1]);}
 for(const x of [-4.8,1.5]){const p=yardPoint(x,-6.6);cube(p.x,p.y+1.2,p.z,.10,2.4,.10,timber,founder.angle);}
 const laundry=addLaundry(scene,founder);
-const life=addVillageLife(scene,homes,paths);mount.dataset.animals=JSON.stringify(life.stats);
+const life=addVillageLife(scene,homes,paths);let catFur:((eye:T.Vector3)=>void)|undefined;life.root.traverse(o=>{if(o.userData.furDetail)catFur=o.userData.furDetail;});mount.dataset.animals=JSON.stringify(life.stats);
 
 mount.dataset.coalBunkers=String(addYardDetails(scene,homes));
 for(let row=0;row<9;row++)for(let col=0;col<13;col++){const p=yardPoint(-1.7+col*.24,-4.1-row*.12,.032);cube(p.x,p.y,p.z,.228,.05,.108,stone,founder.angle);}
@@ -481,7 +489,7 @@ const inhabited=inhabitHouses(scene,homes);
 const initialPlace=new URLSearchParams(location.search),requestedView=initialPlace.get('view');view(requestedView&&['village','approach','forge','henry','brook','lane','washing','yard','outside','workings','workshops'].includes(requestedView)?requestedView:'village',true);
 // Review hook: ?cam=x,y,z,tx,ty,tz fixes an exact outdoor camera for repeatable comparisons.
 // Performance inspection: ?debug exposes the scene graph and renderer statistics.
-if(initialPlace.has('debug'))Object.assign(window,{__village:{scene,renderer,camera,controls}});
+if(initialPlace.has('debug'))Object.assign(window,{__village:{scene,renderer,camera,controls,composer,ao}});
 const reviewCamera=initialPlace.get('cam')?.split(',').map(Number);if(reviewCamera?.length===6&&reviewCamera.every(Number.isFinite))move(new T.Vector3(...reviewCamera.slice(0,3)),new T.Vector3(...reviewCamera.slice(3)),true);
 // Room layouts for every cottage are planned in a worker and seeded into the cache as they arrive.
 {const planner=new Worker(new URL('./plan-worker.ts',import.meta.url),{type:'module'});let remaining=homes.length;
@@ -489,6 +497,9 @@ const reviewCamera=initialPlace.get('cam')?.split(',').map(Number);if(reviewCame
  planner.onerror=()=>planner.terminate();planner.postMessage(homes.map(h=>({...h})));}
 // Compile every shader variant before the village is interactive, so panning never stalls on a first
 // appearance: detailed cottages of each style, one furnished room per style and all current materials.
+// Split static instanced sets into grid chunks so frustum culling can skip what is off screen
+// (tree crowns and trunks stay whole: they are edited at runtime to clear sight lines).
+{const chunked=chunkInstances(scene,{exclude:new Set([...crownMeshes,...trunkMeshes])});mount.dataset.instanceChunks=JSON.stringify(chunked);}
 stage('before warm-up');$('load-label').textContent='Preparing materials…';
 {const shown=highRoots.filter(o=>!o.visible);shown.forEach(o=>o.visible=true);
  const samples=[0,1,2].map(style=>homes.find(h=>h.style===style&&h.number!==chainshopReplacesHouse)).filter((h):h is Home=>!!h).flatMap(h=>planInterior(h).floors.map((_,floor)=>{const room=createInteriors(scene,true);room.show(h,floor);return room;}));
@@ -496,7 +507,27 @@ stage('before warm-up');$('load-label').textContent='Preparing materials…';
  samples.forEach(room=>room.hide());shown.forEach(o=>o.visible=false);}
 stage('ready');document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('button,select').forEach(el=>el.disabled=false);$('loading').hidden=true;$('village-status').textContent='Village loaded. All 59 households are available.';cleanView(new URLSearchParams(location.search).has('clean'));const initialHome=homes.find(h=>h.number===Number(initialPlace.get('house')));if(initialHome){select(initialHome);visit(initialHome,true);if(initialPlace.get('room')==='1')stepInside(initialHome,Number(initialPlace.get('floor')));if(initialPlace.has('inside')){inspection.enter(initialHome,initialPlace.get('inside')==='small'&&initialHome.number===22?'small':initialPlace.get('inside')==='main'||initialHome.number===5?'main':null);const floor=Number(initialPlace.get('floor'));if(floor===1)inspection.setFloor(floor);if(initialPlace.get('worker')==='1')inspection.watchWorker();}}document.documentElement.dataset.villageReady='true';mount.dataset.households=String(homes.length);mount.dataset.renderedCottages=String(houseRoots.filter(o=>o.visible).length);mount.dataset.forgeCount='1';mount.dataset.cottageTypes='3';const lastShadowTarget=new T.Vector3(Infinity,0,0);let shadowSpan=0;let last=performance.now(),frame=0,total=0,lodTimer=1;
 document.addEventListener('village-asset-ready',()=>{renderer.shadowMap.needsUpdate=true;});
-function animate(now:number){const real=(now-last)/1000,dt=Math.min(real,.05);last=now;if(!document.hidden){if(!paused)time+=dt*(reduced?.5:1);soundscape.setPaused(paused);soundscape.setDusk(dusk);soundscape.update(time);landscape.update(time);foliageTime.value=time;fireTime.value=time;for(const fire of forgeFires)fire.update(time);smallFire.update(time);laundry.update(time);life.update(time);inspection.update(time);const workerVisible=forgeRoot.visible&&camera.position.distanceTo(forgeRoot.position)<80;if(worker.root.visible!==workerVisible)renderer.shadowMap.needsUpdate=true;worker.root.visible=workerVisible;if(workerVisible){worker.update(time);if(!paused)renderer.shadowMap.needsUpdate=true;}if(tween){tween.t+=dt;const r=Math.min(1,tween.t/tween.duration),t=r*r*(3-2*r);camera.position.lerpVectors(tween.from,tween.to,t);controls.target.lerpVectors(tween.fromTarget,tween.target,t);if(r===1)tween=null;}controls.update();updateCompass(camera.quaternion);if(roomHome){const bounded=containRoom(camera.position,controls.target,roomBounds());camera.position.copy(bounded.position);controls.target.copy(bounded.target);}if(!roomHome&&within(camera.position.x,camera.position.z))camera.position.y=Math.max(camera.position.y,ground(camera.position.x,camera.position.z)+1.2);if(inhabited.update(camera.position,time,inspection.active))renderer.shadowMap.needsUpdate=true;mount.dataset.inhabitedHomes=String(inhabited.loaded);mount.dataset.inhabitedFloors=String(inhabited.floors);lodTimer+=dt;if(lodTimer>.35){lodTimer=0;let visible=0,shadowDirty=false;const ranked=homes.map((h,i)=>({i,d:Math.hypot(h.x-controls.target.x,h.z-controls.target.z)})).sort((a,b)=>a.d-b.d);const near=new Set(ranked.filter(a=>a.d<85&&camera.position.distanceTo(controls.target)<160).slice(0,18).map(a=>a.i));homes.forEach((h,i)=>{const on=near.has(i)||camera.position.distanceTo(houseRoots[i].position)<20;if(highRoots[i].visible!==on)shadowDirty=true;highRoots[i].visible=on;lowRoots[i].visible=!on;if(on)visible++;});mount.dataset.detailedHomes=String(visible);
+// At most ~60 frames a second: 120 Hz screens (ProMotion Macs, recent iPhones and iPads) would
+// otherwise render every frame twice as often for no visible gain.
+let frameGate=0;
+// Dynamic resolution, only for devices whose GPU falls behind: after ~1.5 s below ~45 fps the
+// render scale steps down (to 62% at most) — but each step is kept only if frames actually get
+// ≥10% faster; if the bottleneck is elsewhere (CPU, other apps) it reverts and backs off. After
+// ~6 s back at full rate it steps up again. A machine that holds 60 fps never leaves full resolution.
+let renderScale=1,slowFor=0,fastFor=0,trial:{from:number;before:number;sum:number;n:number}|null=null,backoff=0,failures=0;
+const setRenderScale=(scale:number)=>{renderScale=scale;const ratio=basePixelRatio*scale,w=mount.clientWidth,h=mount.clientHeight;renderer.setPixelRatio(ratio);composer.setPixelRatio(ratio);renderer.setSize(w,h);composer.setSize(w,h);mount.dataset.renderScale=scale.toFixed(2);};
+let recent=1/60;
+function adaptResolution(interval:number){
+ if(stillFrame||interval>.25||failures>=3)return;
+ recent+=(interval-recent)*.05;
+ if(trial){trial.sum+=interval;trial.n++;if(trial.n<90)return;
+  const after=trial.sum/trial.n;if(after>trial.before*.9){setRenderScale(trial.from);failures++;backoff=20;}trial=null;slowFor=fastFor=0;return;}
+ if(backoff>0){backoff-=interval;return;}
+ if(interval>.022){slowFor+=interval;fastFor=0;}else if(interval<.018){fastFor+=interval;slowFor=0;}
+ if(slowFor>1.5&&renderScale>.62){trial={from:renderScale,before:recent,sum:0,n:0};setRenderScale(Math.max(.62,renderScale-.12));}
+ else if(fastFor>6&&renderScale<1){setRenderScale(Math.min(1,renderScale+.1));fastFor=0;}
+}
+function animate(now:number){if(now-frameGate<1000/75){requestAnimationFrame(animate);return;}frameGate=now;adaptResolution((now-last)/1000);const real=(now-last)/1000,dt=Math.min(real,.05);last=now;if(!document.hidden){if(!paused)time+=dt*(reduced?.5:1);soundscape.setPaused(paused);soundscape.setDusk(dusk);soundscape.update(time);catFur?.(camera.position);landscape.update(time);foliageTime.value=time;fireTime.value=time;for(const fire of forgeFires)fire.update(time);smallFire.update(time);laundry.update(time);life.update(time);inspection.update(time);const workerVisible=forgeRoot.visible&&camera.position.distanceTo(forgeRoot.position)<80;if(worker.root.visible!==workerVisible)renderer.shadowMap.needsUpdate=true;worker.root.visible=workerVisible;if(workerVisible){worker.update(time);if(!paused)renderer.shadowMap.needsUpdate=true;}if(tween){tween.t+=dt;const r=Math.min(1,tween.t/tween.duration),t=r*r*(3-2*r);camera.position.lerpVectors(tween.from,tween.to,t);controls.target.lerpVectors(tween.fromTarget,tween.target,t);if(r===1)tween=null;}controls.update();updateCompass(camera.quaternion);if(roomHome){const bounded=containRoom(camera.position,controls.target,roomBounds());camera.position.copy(bounded.position);controls.target.copy(bounded.target);}if(!roomHome&&within(camera.position.x,camera.position.z))camera.position.y=Math.max(camera.position.y,ground(camera.position.x,camera.position.z)+1.2);if(inhabited.update(camera.position,time,inspection.active))renderer.shadowMap.needsUpdate=true;mount.dataset.inhabitedHomes=String(inhabited.loaded);mount.dataset.inhabitedFloors=String(inhabited.floors);lodTimer+=dt;if(lodTimer>.35){lodTimer=0;let visible=0,shadowDirty=false;const ranked=homes.map((h,i)=>({i,d:Math.hypot(h.x-controls.target.x,h.z-controls.target.z)})).sort((a,b)=>a.d-b.d);const near=new Set(ranked.filter(a=>a.d<85&&camera.position.distanceTo(controls.target)<160).slice(0,18).map(a=>a.i));homes.forEach((h,i)=>{const on=near.has(i)||camera.position.distanceTo(houseRoots[i].position)<20;if(highRoots[i].visible!==on)shadowDirty=true;highRoots[i].visible=on;lowRoots[i].visible=!on;if(on)visible++;});mount.dataset.detailedHomes=String(visible);
 const target=controls.target;const distance=camera.position.distanceTo(target);
 // Remove only foreground crowns from close house views; restore them when the camera moves.
 const sight=new T.Line3(camera.position,target),closest=new T.Vector3(),zero=new T.Matrix4().makeScale(0,0,0);
@@ -517,7 +548,7 @@ smoke.forEach(({p,phase,draw,rate},i)=>{const age=(time*.45*rate+phase)%8;const 
 smokeOrder.sort((a,b)=>smokeDepth[a]-smokeDepth[b]);smokeOrder.forEach((index,slot)=>{const q=positions[index];smokeOffset.setXYZ(slot,q.x,q.y,q.z);smokeShape.setXYZW(slot,...shapes[index] as [number,number,number,number]);});
 smokeOffset.needsUpdate=smokeShape.needsUpdate=true;}
 updateHouseLabels(camera,namesOpen,mapOpen,inspection.active||!!roomHome||$('village-app').dataset.clean==='true',mount.clientWidth,mount.clientHeight);
-ao.enabled=!inspection.workshopActive&&camera.position.distanceTo(controls.target)<130;aoCamera.copy(camera);aoCamera.layers.set(0);updateLightPool(camera);if(!inspection.active)landscape.reflect(renderer,camera,controls.target);composer.render();renderer.shadowMap.autoUpdate=false;
+ao.enabled=!lite&&!inspection.workshopActive&&camera.position.distanceTo(controls.target)<130;aoCamera.copy(camera);aoCamera.layers.set(0);updateLightPool(camera);if(!inspection.active)landscape.reflect(renderer,camera,controls.target);composer.render();renderer.shadowMap.autoUpdate=false;
 if(savePicture){
   savePicture=false;const aspect=camera.aspect,pixelRatio=renderer.getPixelRatio();
   camera.aspect=16/9;camera.updateProjectionMatrix();renderer.setPixelRatio(1);composer.setPixelRatio(1);renderer.setSize(1920,1080,false);composer.setSize(1920,1080);landscape.reflect(renderer,camera,controls.target,true);composer.render();
@@ -526,6 +557,10 @@ if(savePicture){
 }
 frame++;total+=real;if(frame%60===0){mount.dataset.surfaceTextureMemory=JSON.stringify(maintainMaterialTextures());mount.dataset.gpuTextures=String(renderer.info.memory.textures);}if(frame%120===0){mount.dataset.fps=String(Math.round(frame/total));mount.dataset.drawCalls=String(renderer.info.render.calls);}}
 requestAnimationFrame(animate);}requestAnimationFrame(animate);
-renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();$('loading').hidden=false;$('load-label').textContent='Graphics paused. Reload to return to the village.';});
+// Out of GPU memory: switch this device to lite mode once and reload, rather than stopping.
+renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();$('loading').hidden=false;
+ if(!lite){let stored=false;try{localStorage.setItem('mg-lite','1');stored=true;}catch{/* storage blocked */}
+  $('load-label').textContent='Switching to lighter graphics for this device…';setTimeout(()=>{const u=new URL(location.href);if(!stored)u.searchParams.set('lite','1');location.replace(u.toString());},900);return;}
+ $('load-label').textContent='Graphics paused. Reload to return to the village.';});
 }
 start().catch(error=>{console.error('Village could not load',error);$('loading').hidden=false;$('load-label').textContent='The village could not load. Reload to try again.';$('village-status').textContent='Village loading failed.';});
