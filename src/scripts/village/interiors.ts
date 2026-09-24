@@ -1,3 +1,4 @@
+import {createFire} from './fire';
 import {requestLight,lightPoolInstalled,type PooledLight} from './light-pool';
 import {addHenryStatue} from './henry-statue';
 import {textureDetail,type TextureDetail} from './texture-detail';
@@ -17,7 +18,7 @@ export interface InteriorView {group:T.Group;plan:InteriorPlan;floor:number;floo
 /** Shared room builder for isolated cutaways and furnished village shells. */
 export function createInteriors(scene:T.Object3D,embedded=false){
  let active:InteriorView|null=null,clock=0;let removeStatue:(()=>void)|undefined;
- let flame:T.Mesh|null=null,glow:{intensity:number}|null=null;let lampFlame:T.Mesh|null=null,lampGlow:{intensity:number}|null=null;
+ let flame:T.Mesh|null=null,glow:{intensity:number}|null=null,hearthFire:ReturnType<typeof createFire>|null=null;let lampFlame:T.Mesh|null=null,lampGlow:{intensity:number}|null=null;
  // Room lights come from the shared pool in the village (constant light count, no shader recompiles);
  // isolated studies without a pool keep real lights.
  const pooled:PooledLight[]=[];
@@ -27,7 +28,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
  }
  const resources=new Set<T.Material|T.Texture|T.BufferGeometry>();
  const own=<A extends T.Material|T.Texture|T.BufferGeometry>(r:A)=>{resources.add(r);return r;};
- function hide(){for(const handle of pooled)handle.release();pooled.length=0;removeStatue?.();removeStatue=undefined;if(active)scene.remove(active.group);for(const r of resources)r.dispose();resources.clear();active=null;flame=null;glow=null;lampFlame=null;lampGlow=null;}
+ function hide(){hearthFire?.dispose();hearthFire=null;for(const handle of pooled)handle.release();pooled.length=0;removeStatue?.();removeStatue=undefined;if(active)scene.remove(active.group);for(const r of resources)r.dispose();resources.clear();active=null;flame=null;glow=null;lampFlame=null;lampGlow=null;}
  function show(home:Home,floor=0):InteriorView{
   hide();const plan=planInterior(home);floor=Math.max(0,Math.min(plan.floors.length-1,floor));
   const rand=seeded(plan.seed+floor*473),root=new T.Group();root.name=`House ${home.number} — interpreted interior — ${plan.floors[floor].name}`;
@@ -232,9 +233,9 @@ export function createInteriors(scene:T.Object3D,embedded=false){
     box(face-.06,1.42,z,.24,.09,dd+.21,woods[1]);box(x-.12,.54,z,.03,.85,dd-.40,dark);
 
     for(let i=0;i<5;i++)sphere(face-.18,.25,z+(rand()-.5)*dd*.5,.07,.035,.055,dark);
-    const ember=own(new T.MeshStandardMaterial({color:'#a95319',emissive:'#e96117',emissiveIntensity:.7,roughness:1}));
-    flame=new T.Mesh(own(new T.SphereGeometry(.085,8,5)),ember);flame.scale.set(.65,.50,2.1);flame.position.set(face-.16,base+.27,z);root.add(flame);
-    glow=roomLight(root,new T.Vector3(face+.16,base+.55,z),'#e7a15e',1.0,3.2);
+    // A small banked coal fire in the grate; its light comes from the shared pool.
+    hearthFire=createFire({width:Math.min(.34,dd*.4),depth:.2,flameHeight:.17,tongues:5,sparks:8,smoke:new T.Vector3(-.05,.55,0),light:{intensity:1.0,distance:3.2,offset:new T.Vector3(.3,.28,0)},heat:.8,seed:plan.seed%997});
+    hearthFire.group.position.set(face-.16,base+.2,z);hearthFire.group.rotation.y=Math.PI/2;root.add(hearthFire.group);
 
     for(let i=0;i<2;i++){rod(new T.Vector3(face-.08,.10,z+dd*.40-i*.09),new T.Vector3(face-.13,.94,z+dd*.43-i*.09),.012,iron);add(new T.TorusGeometry(.027,.008,5,10),iron,face-.13,.97,z+dd*.43-i*.09,0,Math.PI/2);}
     for(const side of [-1,1]){cylinder(face-.06,1.51,z+side*dd*.34,.026,.035,.09,ceramic);cylinder(face-.06,1.64,z+side*dd*.34,.018,.018,.18,cream);}
@@ -319,5 +320,5 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   active={group:root,plan,floor,floors:plan.floors.length,target:new T.Vector3(targetPoint[0],home.height+base+.8,targetPoint[1]),camera:new T.Vector3(cameraPoint[0],home.height+base+Math.max(w,d)*1.02+2.88,cameraPoint[1])};
   root.userData.interiorPlan=plan;root.userData.home=home;if(home.number===22&&floor===0)removeStatue=addHenryStatue(root,base);return active;
  }
- return {show,hide,setFloor(floor:number){return active?show(active.group.userData.home as Home,floor):null;},get active(){return active;},update(time:number){clock=time;if(lampGlow)lampGlow.intensity=.55+.015*Math.sin(clock*3.7)+.008*Math.sin(clock*8.1);if(lampFlame)lampFlame.scale.y=.023+.001*Math.sin(clock*4.3);if(glow)glow.intensity=.85+.12*Math.sin(clock*4.7)+.06*Math.sin(clock*9.1);if(flame)flame.scale.y=.45+.10*Math.sin(clock*5.7);}};
+ return {show,hide,setFloor(floor:number){return active?show(active.group.userData.home as Home,floor):null;},get active(){return active;},update(time:number){clock=time;if(lampGlow)lampGlow.intensity=.55+.015*Math.sin(clock*3.7)+.008*Math.sin(clock*8.1);if(lampFlame)lampFlame.scale.y=.023+.001*Math.sin(clock*4.3);if(glow)glow.intensity=.85+.12*Math.sin(clock*4.7)+.06*Math.sin(clock*9.1);hearthFire?.update(clock);if(flame)flame.scale.y=.45+.10*Math.sin(clock*5.7);}};
 }

@@ -129,7 +129,7 @@ for(const {p,tx,tz,s} of wakes)for(const side of [-1,1])for(let j=0;j<12;j++){
  vertex(j,-1);vertex(j+1,-1);vertex(j,1);vertex(j,1);vertex(j+1,-1);vertex(j+1,1);
 }
 const wakeGeo=new T.BufferGeometry();wakeGeo.setAttribute('position',new T.Float32BufferAttribute(wakeVerts,3));wakeGeo.setAttribute('uv',new T.Float32BufferAttribute(wakeUvs,2));
-const wakeMat=new T.ShaderMaterial({uniforms:{time:waterTime},vertexShader:`varying vec2 wakeUv;void main(){wakeUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`uniform float time;varying vec2 wakeUv;void main(){float edge=1.-abs(wakeUv.x);float pulse=.3+.7*pow(.5+.5*sin(wakeUv.y*32.-time*6.),3.);float alpha=edge*(1.-wakeUv.y)*pulse*.34;gl_FragColor=vec4(.63,.66,.54,alpha); #include <tonemapping_fragment>
+const wakeMat=new T.ShaderMaterial({uniforms:{time:waterTime},vertexShader:`varying vec2 wakeUv;void main(){wakeUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`uniform float time;varying vec2 wakeUv;void main(){float edge=1.-abs(wakeUv.x);float pulse=.3+.7*pow(.5+.5*sin(wakeUv.y*32.-time*6.),3.);float alpha=edge*(1.-wakeUv.y)*pulse*.16;gl_FragColor=vec4(.63,.66,.54,alpha); #include <tonemapping_fragment>
 #include <colorspace_fragment>
 }`,transparent:true,depthWrite:false,side:T.DoubleSide});
 // Shader directives must start on their own line.

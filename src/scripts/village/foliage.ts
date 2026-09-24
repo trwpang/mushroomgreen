@@ -13,9 +13,9 @@ export const FOLIAGE_LAYER=2;
 
 export const seeded=(seed:number)=>()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
 
-/** Atlas cells: 0–1 broadleaf sprays, 2 hawthorn/hazel shrub spray, 3 bramble spray, 4 fir spray, 5 pine tufts, 6 fresh fern frond, 7 overwintered fern frond, 8 ivy. */
-export type LeafCell=0|1|2|3|4|5|6|7|8;
-const CELL=512,COLUMNS=4,ROWS=3,WIDTH=CELL*COLUMNS,HEIGHT=CELL*ROWS;
+/** Atlas cells: 0–1 broadleaf sprays, 2 hawthorn/hazel shrub spray, 3 bramble spray, 4 fir spray, 5 pine tufts, 6 fresh fern frond, 7 overwintered fern frond. */
+export type LeafCell=0|1|2|3|4|5|6|7;
+const CELL=512,COLUMNS=4,ROWS=2,WIDTH=CELL*COLUMNS,HEIGHT=CELL*ROWS;
 const cellOrigin=(cell:LeafCell):[number,number]=>[(cell%COLUMNS)*CELL,Math.floor(cell/COLUMNS)*CELL];
 let atlas:T.DataTexture|null=null;
 
@@ -102,34 +102,6 @@ function drawFern(ctx:CanvasRenderingContext2D,[ox,oy]:[number,number],palette:s
  ctx.restore();
 }
 
-/** Common ivy: a wiry stem with alternate, glossy, three-to-five-lobed leaves on long stalks. */
-function drawIvy(ctx:CanvasRenderingContext2D,[ox,oy]:[number,number],random:()=>number){
- ctx.save();ctx.translate(ox,oy);ctx.beginPath();ctx.rect(6,6,CELL-12,CELL-12);ctx.clip();
- const palette=['#2f4a24','#3a5629','#2a4020','#44602e','#355026'];
- for(let stem=0;stem<3;stem++){
-  let x=CELL*(.3+stem*.2),y=CELL*.98,a=-Math.PI/2+(random()-.5)*.4;
-  ctx.strokeStyle='#4a3b2a';ctx.lineWidth=3;
-  for(let k=0;k<9;k++){
-   const nx=x+Math.cos(a)*CELL*.1,ny=y+Math.sin(a)*CELL*.1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(nx,ny);ctx.stroke();
-   const side=k%2?1:-1,sa=a+side*(1.1+random()*.4),len=CELL*.05,lx=nx+Math.cos(sa)*len,ly=ny+Math.sin(sa)*len,size=CELL*(.07+random()*.035);
-   ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(nx,ny);ctx.lineTo(lx,ly);ctx.stroke();ctx.lineWidth=3;
-   // Palmate leaf: five pointed lobes, the middle one longest, pale veins.
-   ctx.save();ctx.translate(lx,ly);ctx.rotate(sa+Math.PI/2+(random()-.5)*.5);const base=palette[Math.floor(random()*palette.length)];
-   ctx.fillStyle=base;ctx.beginPath();
-   const lobes=[[-1.25,.55],[-.62,.85],[0,1.05],[.62,.85],[1.25,.55]];
-   ctx.moveTo(0,size*.18);
-   for(let i=0;i<lobes.length;i++){const [ang,r]=lobes[i],px=Math.sin(ang)*size*r,py=-Math.cos(ang)*size*r;const mid=i<lobes.length-1?(ang+lobes[i+1][0])/2:ang+.6,mr=size*.42;
-    ctx.lineTo(px,py);ctx.lineTo(Math.sin(mid)*mr,-Math.cos(mid)*mr);}
-   ctx.closePath();ctx.fill();
-   const g=ctx.createRadialGradient(-size*.2,-size*.4,0,0,-size*.3,size);g.addColorStop(0,'rgba(210,225,180,.28)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fill();
-   ctx.strokeStyle='rgba(175,190,140,.55)';ctx.lineWidth=1;for(const [ang,r] of lobes){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.sin(ang)*size*r*.8,-Math.cos(ang)*size*r*.8);ctx.stroke();}
-   ctx.restore();ctx.strokeStyle='#4a3b2a';
-   x=nx;y=ny;a+=(random()-.5)*.6;a=Math.max(-Math.PI*.8,Math.min(-Math.PI*.2,a));
-  }
- }
- ctx.restore();
-}
-
 /** Conifer shoots: short paired needles in two ranks along a forking twig (fir), or radiating brushes (pine). */
 function drawNeedles(ctx:CanvasRenderingContext2D,[ox,oy]:[number,number],pine:boolean,random:()=>number){
  ctx.save();ctx.translate(ox,oy);ctx.beginPath();ctx.rect(6,6,CELL-12,CELL-12);ctx.clip();
@@ -164,7 +136,6 @@ export function leafAtlas(){
  drawSpray(ctx,cellOrigin(2),{leaves:[[-.6,1,0],[0,1,.05],[.6,1,0],[1.2,.8,-.05],[-1.2,.8,-.05]],lobes:2.5,serration:.08,size:[26,40],width:.42,palette:['#5d7535','#688139','#56702f','#7a8f44'],twig:'#443a2a',stemCount:3},random);
  drawSpray(ctx,cellOrigin(3),{leaves:[[-.35,1,0],[.35,1,0],[0,1.15,.05]],lobes:0,serration:.12,size:[34,50],width:.45,palette:['#3f5a2f','#4d6536','#5a6a33','#6c5a33','#46602f'],twig:'#5a3a33',stemCount:2},random);
  drawNeedles(ctx,cellOrigin(4),false,random);drawNeedles(ctx,cellOrigin(5),true,random);
- drawIvy(ctx,cellOrigin(8),random);
  drawFern(ctx,cellOrigin(6),['#6d9a3a','#79a444','#618d34','#86ad4d'],0,random);drawFern(ctx,cellOrigin(7),['#4f6a31','#5b7236','#47602d'],.3,random);
  const pixels=ctx.getImageData(0,0,WIDTH,HEIGHT).data;
  // Canvas pixels are unpremultiplied: give transparent texels the cell's mean leaf colour to avoid dark mip fringes.
@@ -249,54 +220,7 @@ export function curve(from:T.Vector3,direction:T.Vector3,length:number,lift:numb
  return points;
 }
 
-/** Ivy climbing a curved stem: cards pressed to the bark on one broad side, thinning with height. */
-function ivyGeometry(stem:T.Vector3[],r0:number,r1:number,random:()=>number){
- const cards:Card[]=[],total=stem.slice(1).reduce((s,p,i)=>s+p.distanceTo(stem[i]),0),face=random()*Math.PI*2,reach=2.2+random()*2.2;
- for(let i=0;i<380;i++){
-  const t=Math.pow(random(),1.35)*Math.min(1,reach/total);let d=t*total,k=0;
-  while(k<stem.length-2&&d>stem[k].distanceTo(stem[k+1])){d-=stem[k].distanceTo(stem[k+1]);k++;}
-  const a=stem[k],b=stem[k+1],axis=b.clone().sub(a).normalize(),p=a.clone().lerp(b,Math.min(1,d/a.distanceTo(b)));
-  if(p.y<.02)continue;
-  const spread=(random()-.5)*(3.4-2.2*t/Math.min(1,reach/total)),theta=face+spread;
-  const out=new T.Vector3(Math.cos(theta),0,Math.sin(theta));out.addScaledVector(axis,-out.dot(axis)).normalize();
-  const radius=r0+(r1-r0)*t+.012;
-  cards.push({centre:p.clone().addScaledVector(out,radius+.02),normal:out.clone().add(new T.Vector3((random()-.5)*.5,(random()-.3)*.4,(random()-.5)*.5)).normalize(),up:axis.clone().add(new T.Vector3((random()-.5)*.6,0,(random()-.5)*.6)),size:.34+random()*.2,cell:8,shade:.55+.45*random(),tint:random()*2-1,shading:out.clone().add(new T.Vector3(0,.35,0)).normalize()});
- }
- return cardGeometry(cards);
-}
-
-/**
- * Moss and lichen on bark: green on the damp north (−Z) side and on upper surfaces, strongest near the
- * ground and on fallen wood. Uses barkCoverage, so conifer stems stay mostly clean.
- */
-export function mossyBark(material:T.MeshStandardMaterial){
- const previous=material.onBeforeCompile,key=material.customProgramCacheKey();
- material.onBeforeCompile=function(shader,renderer){
-  previous.call(this,shader,renderer);
-  shader.vertexShader='varying vec3 mossNormal;varying float mossHeight;varying vec3 mossPoint;\n'+shader.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>
-   mat3 mossBasis=mat3(modelMatrix);
-   #ifdef USE_INSTANCING
-    mossBasis=mossBasis*mat3(instanceMatrix);
-   #endif
-   mossNormal=normalize(mossBasis*objectNormal);mossHeight=position.y;mossPoint=position;`);
-  shader.fragmentShader='varying vec3 mossNormal;varying float mossHeight;varying vec3 mossPoint;\n'+shader.fragmentShader.replace('#include <roughnessmap_fragment>',`
-   float mossPatch=fract(sin(dot(floor(mossPoint*vec3(14.,6.,14.)),vec3(12.9898,78.233,31.17)))*43758.5453);
-   float mossBlob=.5+.5*sin(mossPoint.x*9.+sin(mossPoint.y*3.1)*2.+mossPoint.z*7.);
-   float mossSide=smoothstep(-.35,.6,dot(normalize(mossNormal),normalize(vec3(0.,.55,-1.))));
-   float mossLow=1.-smoothstep(.2,2.8+mossBlob,mossHeight);
-   float mossAmount=clamp(mossSide*(.35+.65*mossLow)*(.55+.45*mossBlob)+(mossPatch-.5)*.25,0.,1.);
-   diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.15,.23,.06)*(.8+mossPatch*.5),smoothstep(.22,.62,mossAmount)*.9);
-   // Pale grey-green lichen crusts higher on the stem.
-   float lichen=smoothstep(.78,.95,mossPatch)*(1.-mossLow)*smoothstep(.2,.8,mossSide+.3);
-   diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.42,.46,.36),lichen*.55);
-   #include <roughnessmap_fragment>`);
- };
- material.customProgramCacheKey=()=>key+'|mossy-bark-v1';
- material.needsUpdate=true;
- return material;
-}
-
-export type Broadleaf={trunk:T.BufferGeometry;crown:T.BufferGeometry;ivy?:T.BufferGeometry};
+export type Broadleaf={trunk:T.BufferGeometry;crown:T.BufferGeometry};
 /**
  * Broadleaf variants keep the original crown envelope (≈2.6 m radius, 3.1–7.5 m high)
  * so tree clearances, crown hiding and shadows remain valid for every placement.
@@ -332,7 +256,7 @@ export function broadleafVariants():Broadleaf[]{
   const crown=fillClumps(clumps,crownCentre,2.7,3.0,7.6,variant===1?[1,1,0]:[0,0,1],[.95,1.3],random);
   const trunk=mergeGeometries(limbs.flatMap(limbGeometry));
   trunk.computeBoundingSphere();
-  return {trunk,crown,ivy:ivyGeometry(stem,.22,.07,seeded(7931865+variant*131))};
+  return {trunk,crown};
  });
 }
 

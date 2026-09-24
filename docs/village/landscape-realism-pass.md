@@ -125,3 +125,23 @@ Measured with headless Chrome (Metal), using CPU profiles and per-pass draw-call
   - Overview pan: median 67 → 16.7 ms; worst 150 → 133 ms.
   - Pixel differences on fixed still views average under 1.3 grey levels (shadow texel alignment).
 - `?debug` exposes `window.__village` (scene, renderer, camera, controls) for inspection.
+
+## Fires, chimney smoke and brook water (24 September)
+
+- **Ivy and moss removed** at Tom's request (the ivy cards read as squares on the trunks).
+- **`fire.ts`**, one shared WebGL module (no simulation textures):
+  - A fuel bed of lumpy coal whose slow fbm heat field separates dark coal, pale ash and glowing cracks.
+  - Short flame tongues on crossed sheets, faded when seen edge-on, shaped by a rising, curling noise and kept inside the hearth.
+  - Fixed-pool sparks and soft smoke drawn toward the hood throat or flue.
+  - Flickering firelight from the pooled lights.
+  - Used by the three main-forge hearths, Henry's small shop (lower output; counter-scaled inside the scaled shop root) and every cottage grate.
+  - The WebGPU fluid-fire skill example was not adopted: it needs WebGPU compute (see `threejs-skills-review.md`). Only the ordering ideas were used.
+- **Chimney smoke:** about 80% of cottages (cold chimneys chosen by a deterministic hash), 16 puffs each, soft fbm texture, wind lean with gusts, one instanced draw.
+- **Brook:**
+  - Flow-map ripples: two advected noise layers cross-faded, faster mid-channel.
+  - Depth from the channel profile: clear tea-brown shallows, peaty green depths.
+  - Schlick fresnel with a distorted planar reflection. Grazing angles become opaque; shallows stay see-through.
+  - Faint moving churn. The old white "rain streak" glints and strong wake lines are gone.
+- Performance: an A/B test against the previous perf commit under the same machine load (a VM and a simulator were running) showed no measurable cost.
+
+Hearth detail still to do, from Tom's proposal: hot metal on the chain links, sparks timed to hammer contact (the accepted hands must be preserved), and close surface detail such as ash and soot.
