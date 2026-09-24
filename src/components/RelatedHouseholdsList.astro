@@ -1,0 +1,69 @@
+---
+/**
+ * RelatedHouseholdsList — other households of the same family.
+ *
+ * Queries the content collection for every household whose `family`
+ * matches the passed value, excludes the current household (by
+ * number), sorts ascending by number, and renders a list of links.
+ * Used on the per-household page to surface relatives living in the
+ * same corner of the hamlet.
+ *
+ * Renders nothing when no other households share the family (i.e.
+ * the family has only one entry). Most families have ≥ 2 entries,
+ * so this usually renders.
+ *
+ * `family` is declared as `string` rather than the content-collection
+ * enum type — the parent page passes `household.data.family` which is
+ * already enum-constrained at the schema boundary.
+ *
+ * Font inherits the global IM Fell English; link colour/underline
+ * inherits from the global stylesheet.
+ */
+import { getCollection } from 'astro:content';
+import { slugify } from '../lib/slug';
+
+interface Props {
+  family: string;
+  excludeNumber: number;
+}
+
+const { family, excludeNumber } = Astro.props;
+
+const all = await getCollection('households');
+
+const items = all
+  .filter((h) => h.data.family === family && h.data.number !== excludeNumber)
+  .map((h) => h.data)
+  .sort((a, b) => a.number - b.number);
+---
+{items.length > 0 && (
+  <section class="related">
+    <h2>Other {family} households</h2>
+    <ul>
+      {items.map((h) => (
+        <li>
+          <a href={`/household/${slugify(h.number, h.household_name)}`}>
+            No.{h.number} — {h.household_name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .related {
+    margin: 1.5rem 0;
+  }
+
+  .related h2 {
+    font-size: 1.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .related ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+/**
+ * NeighboursList — renders a household's explicit neighbours.
+ *
+ * Takes an array of household numbers (from a household's `neighbours`
+ * frontmatter field), looks each up in the content collection, and
+ * renders a list of links to those households. Used on the per-household
+ * page to show physically adjacent dwellings.
+ *
+ * Renders nothing (no heading, no empty list) when the numbers array
+ * is empty or when none of the numbers match a household — so the
+ * parent page can include it unconditionally.
+ *
+ * Today, every household's `neighbours` field is empty (the data
+ * wasn't captured during migration). This component still ships so
+ * the consumer page doesn't need a conditional, and so it's ready
+ * when the data arrives.
+ *
+ * Font inherits the global IM Fell English; link colour/underline
+ * inherits from the global stylesheet.
+ */
+import { getCollection } from 'astro:content';
+import { slugify } from '../lib/slug';
+
+interface Props {
+  numbers: number[];
+}
+
+const { numbers } = Astro.props;
+
+const all = await getCollection('households');
+const byNumber = new Map(all.map((h) => [h.data.number, h.data]));
+
+const items = numbers
+  .map((n) => byNumber.get(n))
+  .filter((h): h is NonNullable<typeof h> => !!h);
+---
+{items.length > 0 && (
+  <section class="neighbours">
+    <h2>Neighbours</h2>
+    <ul>
+      {items.map((h) => (
+        <li>
+          <a href={`/household/${slugify(h.number, h.household_name)}`}>
+            No.{h.number} — {h.household_name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .neighbours {
+    margin: 1.5rem 0;
+  }
+
+  .neighbours h2 {
+    font-size: 1.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .neighbours ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+</style>

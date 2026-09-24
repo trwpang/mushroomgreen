@@ -1,0 +1,85 @@
+---
+/**
+ * HouseholdMeta — metadata strip for a per-household page.
+ *
+ * Renders below the page title on /household/[slug]. Shows the family
+ * name, 1861 occupant count (pluralised), an optional Founder badge,
+ * an optional amber callout when the household's position is estimated
+ * (not yet in OpenStreetMap), and an optional Founder call-out block.
+ *
+ * Layout (Section 6b of the design doc):
+ *   No. 22 — Henry Weaver, b.1789  ★ Founder       <- page title (not here)
+ *   Weaver family · 2 occupants in 1861            <- this component
+ *   [if estimated_position] ⓘ Position estimated…  <- this component
+ *   [if founder] ★ Founder of Mushroom Green       <- this component
+ *
+ * Trust boundary: `family` is enum-validated by the content collection
+ * schema; `occupants_1861` is int ≥ 0. No user input — all values come
+ * from our own Markdown frontmatter.
+ *
+ * Font inherits the global IM Fell English set in BaseLayout; don't
+ * override `font-family` here.
+ */
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  household: CollectionEntry<'households'>['data'];
+}
+
+const { household } = Astro.props;
+---
+<div class="meta-strip">
+  <span>{household.family} family</span>
+  <span aria-hidden="true">·</span>
+  <span>
+    {household.occupants_1861} occupant{household.occupants_1861 === 1 ? '' : 's'} in 1861
+  </span>
+  {household.founder && (
+    <span class="founder-badge">★ Founder</span>
+  )}
+</div>
+
+{household.estimated_position && (
+  <div class="estimated-callout" role="note">
+    ⓘ Position estimated — not yet in OpenStreetMap.
+  </div>
+)}
+
+{household.founder && (
+  <div class="founder-callout" role="note">
+    <strong>★ Founder of Mushroom Green</strong>
+  </div>
+)}
+
+<style>
+  .meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+    margin: 0.5rem 0 1rem;
+  }
+
+  .founder-badge {
+    color: #b8860b;
+    font-weight: bold;
+  }
+
+  .estimated-callout {
+    background: #fff8e8;
+    border-left: 3px solid #c07000;
+    padding: 8px 12px;
+    margin: 0 0 1rem;
+    font-size: 0.9em;
+    color: #8a5500;
+  }
+
+  .founder-callout {
+    background: #fffbea;
+    border-left: 3px solid #b8860b;
+    padding: 10px 14px;
+    margin: 0 0 1rem;
+    font-size: 0.95em;
+    color: #4a3800;
+  }
+</style>
