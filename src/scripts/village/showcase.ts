@@ -132,11 +132,15 @@ export function addShowcase(scene:T.Scene){
 }
 
 // World-space detail stays the same size at every camera distance.
-export function weatherGround(material:T.MeshStandardMaterial){
+const noCanopy=new T.DataTexture(new Uint8Array(4),1,1);noCanopy.needsUpdate=true;
+/** `canopy` (optional) is a tree-cover map over the terrain (x −230…230, z −320…200): under a
+ * closed canopy grass gives way to leaf litter, bare soil and moss. */
+export function weatherGround(material:T.MeshStandardMaterial,canopy:T.Texture=noCanopy){
   material.onBeforeCompile=shader=>{
+    shader.uniforms.canopyMap={value:canopy};
     shader.vertexShader='varying vec3 earthPoint;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nearthPoint=(modelMatrix*vec4(transformed,1.0)).xyz;');
-    shader.fragmentShader=`varying vec3 earthPoint;
+    shader.fragmentShader=`varying vec3 earthPoint;uniform sampler2D canopyMap;
 float earthHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float earthNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(earthHash(i),earthHash(i+vec2(1.,0.)),f.x),mix(earthHash(i+vec2(0.,1.)),earthHash(i+vec2(1.,1.)),f.x),f.y);}
 `+shader.fragmentShader;
@@ -147,6 +151,39 @@ float clods=earthNoise(earthPoint.xz*3.2);
 float patches=earthNoise(earthPoint.xz*.38);
 diffuseColor.rgb*=.77+grain*.20+clods*.20;
 diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.83,.87,.78),smoothstep(.40,.72,patches)*.34);
+// Woodland floor: where the canopy closes, grass gives way to last autumn's leaves, bare damp
+// soil and moss. Two overlapping layers of leaf-shaped cells resolve near the camera and
+// average to a brown litter tone further off. Brightness follows the ground it replaces.
+float canopy=texture2D(canopyMap,vec2((earthPoint.x+230.)/460.,(earthPoint.z+320.)/520.)).r;
+float litter=smoothstep(.34,.6,canopy+earthNoise(earthPoint.xz*.45)*.32+earthNoise(earthPoint.xz*1.9)*.14-.23);
+float leafMask=0.;
+if(litter>0.){
+  float lum=dot(diffuseColor.rgb,vec3(.3,.59,.11));
+  // Decayed humus between leaves, then three layers of whole leaves at different sizes;
+  // each layer is patchy, so leaves overlap in drifts rather than tiling.
+  vec3 leafTone=vec3(1.18,.9,.58)*(.82+.3*earthNoise(earthPoint.xz*38.));float leafLit=1.;
+  for(int k=0;k<3;k++){
+    float scale=k==0?17.:k==1?11.5:7.6;
+    vec2 lp=earthPoint.xz*scale+vec2(float(k)*.37,float(k)*.71),cell=floor(lp);
+    float h=earthHash(cell+float(k)*17.),a=h*6.283,size=.75+.45*earthHash(cell+9.7);
+    vec2 c=vec2(earthHash(cell+2.1),earthHash(cell+5.3))*.6+.2;
+    vec2 d=lp-cell-c;d=mat2(cos(a),-sin(a),sin(a),cos(a))*d;
+    // Ovate outline, pointed at the tip; a faint midrib.
+    float shape=length(d/(vec2(.5,.26+.05*sign(d.x))*size));
+    float leaf=(1.-smoothstep(.9,1.,shape))*step(.42-.12*float(k),earthNoise(cell*.37+float(k)*5.));
+    if(leaf>.01){
+      vec3 tone=h<.35?vec3(1.5,.95,.5):h<.65?vec3(1.3,1.02,.62):h<.85?vec3(1.05,.78,.5):vec3(1.55,1.2,.7);
+      tone*=(.86+.2*earthHash(cell+4.4))*(1.-.12*(1.-smoothstep(.0,.03,abs(d.y))));
+      leafTone=mix(leafTone,tone,leaf);leafMask=max(leafMask,leaf);leafLit=mix(leafLit,.9+.2*earthHash(cell+6.),leaf);}
+  }
+  vec3 near=leafTone*leafLit;
+  vec3 litterCol=mix(vec3(1.32,.97,.58)*.9,near,grainFilter)*lum*1.05;
+  float soil=smoothstep(.6,.76,earthNoise(earthPoint.xz*.85+3.)+earthNoise(earthPoint.xz*4.)*.18);
+  litterCol=mix(litterCol,vec3(1.05,.82,.6)*lum*.62,soil*.8);
+  float moss=smoothstep(.66,.8,earthNoise(earthPoint.xz*1.3+11.))*smoothstep(.55,.85,canopy);
+  litterCol=mix(litterCol,vec3(.82,1.25,.45)*lum*.9,moss*.7);
+  diffuseColor.rgb=mix(diffuseColor.rgb,litterCol,litter);
+}
 // Ground structure at separate scales: tufted grass with sun-bleached tips on green ground,
 // gravel and small stones speckling bare soil. Filtered with distance so it never shimmers.
 float earthNear=1.-smoothstep(12.,60.,length(vViewPosition));
@@ -158,21 +195,21 @@ diffuseColor.rgb*=mix(1.,.8+tuft*.34,greenGround*earthNear);
 diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.22,1.1,.82),bleached*greenGround*.45);
 vec2 pebbleCell=floor(earthPoint.xz*14.),pebbleOff=vec2(earthHash(pebbleCell),earthHash(pebbleCell+3.7));
 float pebbleSize=.18+.22*earthHash(pebbleCell+9.1);
-float bareSoil=smoothstep(.012,.05,diffuseColor.r-diffuseColor.g);
+float bareSoil=smoothstep(.012,.05,diffuseColor.r-diffuseColor.g)*(1.-litter);
 float pebble=(1.-smoothstep(pebbleSize*.55,pebbleSize*.8,length(fract(earthPoint.xz*14.)-pebbleOff*.6-.2)))*step(.7,earthHash(pebbleCell+1.3))*bareSoil*earthNear*grainFilter;
 diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.12,1.1,1.06)*(.85+earthHash(pebbleCell+5.)*.3),pebble*.6);`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
 float bareEarth=smoothstep(.002,.025,diffuseColor.r-diffuseColor.g);
 float damp=bareEarth*smoothstep(.52,.75,earthNoise(earthPoint.xz*.62));
-roughnessFactor=mix(roughnessFactor,.31,damp*.77);`);
+roughnessFactor=mix(roughnessFactor,.31,damp*.77*(1.-litter*.7));`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
 vec3 earthRipple=vec3((earthNoise(earthPoint.xz*16.0)-.5)*.23,0.,(earthNoise(earthPoint.zx*16.0+9.0)-.5)*.23);
-float gritHeight=(earthNoise(earthPoint.xz*32.)-.5)*.006*grainFilter+pebble*.0035-tuft*greenGround*.002;
+float gritHeight=(earthNoise(earthPoint.xz*32.)-.5)*.006*grainFilter+pebble*.0035-tuft*greenGround*.002+leafMask*litter*.0011*grainFilter;
 vec3 groundDx=dFdx(-vViewPosition),groundDy=dFdy(-vViewPosition);
 vec3 groundR1=cross(groundDy,normal),groundR2=cross(normal,groundDx);
 float groundDet=dot(groundDx,groundR1);
 normal=normalize(max(abs(groundDet),1e-9)*normal-sign(groundDet)*(dFdx(gritHeight)*groundR1+dFdy(gritHeight)*groundR2));
 normal=normalize(normal+mat3(viewMatrix)*earthRipple*.65);`);
   };
-  material.customProgramCacheKey=()=> 'earth-detail-v5';
+  material.customProgramCacheKey=()=> 'earth-detail-v6';
 }

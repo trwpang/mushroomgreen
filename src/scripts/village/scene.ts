@@ -108,7 +108,11 @@ paintWorkingYards(ctx,pixel,homes);
 for(let i=0;i<65000;i++){const x=rand()*4096,y=rand()*4096;ctx.fillStyle=i%2?'#3f42310c':'#e0ce9f0d';ctx.fillRect(x,y,rand()*6+1,rand()*3+1);}
 stage('terrain painted');const groundTexture=new T.CanvasTexture(terrainCanvas);groundTexture.colorSpace=T.SRGBColorSpace;groundTexture.anisotropy=8;
 const groundGeo=new T.PlaneGeometry(460,520,460,520);groundGeo.rotateX(-Math.PI/2);groundGeo.translate(0,0,-60);const pos=groundGeo.attributes.position;const index:number[]=[];const source=groundGeo.index!;for(let i=0;i<pos.count;i++)pos.setY(i,ground(pos.getX(i),pos.getZ(i)));for(let i=0;i<source.count;i+=3){const ids=[source.getX(i),source.getX(i+1),source.getX(i+2)];if(ids.every(v=>within(pos.getX(v),pos.getZ(v))))index.push(...ids);}groundGeo.setIndex(index);
-const uv=groundGeo.attributes.uv;for(let i=0;i<pos.count;i++)uv.setXY(i,(pos.getX(i)+230)/460,1-(pos.getZ(i)+320)/520);groundGeo.computeVertexNormals();const terrain=new T.Mesh(groundGeo,new T.MeshStandardMaterial({map:groundTexture,color:'#c1c3ab',roughness:1}));weatherGround(terrain.material);terrain.receiveShadow=true;scene.add(terrain);
+const uv=groundGeo.attributes.uv;for(let i=0;i<pos.count;i++)uv.setXY(i,(pos.getX(i)+230)/460,1-(pos.getZ(i)+320)/520);groundGeo.computeVertexNormals();// Tree-cover map (≈1.8 m texels), filled once the trees are placed; the ground shader turns
+// grass to leaf litter and soil beneath closed canopy.
+const CANOPY=256,canopyData=new Uint8Array(CANOPY*CANOPY),canopyTexture=new T.DataTexture(canopyData,CANOPY,CANOPY,T.RedFormat);canopyTexture.magFilter=canopyTexture.minFilter=T.LinearFilter;
+const canopyAt=(x:number,z:number)=>{const i=Math.floor((x+230)/460*CANOPY),j=Math.floor((z+320)/520*CANOPY);return i<0||j<0||i>=CANOPY||j>=CANOPY?0:canopyData[j*CANOPY+i]/255;};
+const terrain=new T.Mesh(groundGeo,new T.MeshStandardMaterial({map:groundTexture,color:'#c1c3ab',roughness:1}));weatherGround(terrain.material,canopyTexture);terrain.receiveShadow=true;scene.add(terrain);
 addRoadCrossing(scene,groundTexture);
 const historic=addHistoricLandscape(scene),smallShops=addBackyardWorkshops(scene,backyardShops),plots=addYardPlots(scene,yardPlots);mount.dataset.gardenGrowth=JSON.stringify({hedgeRuns:plots.hedgeRuns,cabbages:plots.cabbages});
 mount.dataset.historicLandscape=JSON.stringify({shops:smallShops.count,plots:plots.plots,boundaries:plots.sections,beds:plots.beds,railMetres:Math.round(historic.railMetres/2),sleepers:historic.sleepers,shafts:historic.shaftCount,pools:historic.pools,draws:historic.draws+smallShops.draws+plots.draws+2,triangles:historic.triangles+smallShops.triangles+plots.triangles});
@@ -255,6 +259,11 @@ treePositions.forEach((p,i)=>{
  const q=pixel(p),radius=2.6*scale/460*4096,g=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],radius);g.addColorStop(0,'#454b2d45');g.addColorStop(1,'#454b2d00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],radius,0,Math.PI*2);ctx.fill();
 });groundTexture.needsUpdate=true;
 
+{// Canopy cover: each tree shades a soft disc of about its crown; cover saturates where crowns meet.
+ const cover=new Float32Array(CANOPY*CANOPY),cx=460/CANOPY,cz=520/CANOPY;
+ for(const p of treePositions){const i0=Math.floor((p[0]+230)/cx),j0=Math.floor((p[1]+320)/cz);
+  for(let j=j0-7;j<=j0+7;j++)for(let i=i0-7;i<=i0+7;i++){if(i<0||j<0||i>=CANOPY||j>=CANOPY)continue;const d=Math.hypot(-230+(i+.5)*cx-p[0],-320+(j+.5)*cz-p[1]);if(d<12)cover[j*CANOPY+i]+=Math.exp(-((d/4.3)**2))*.85;}}
+ for(let k=0;k<cover.length;k++)canopyData[k]=Math.round(255*(1-Math.exp(-cover[k])));canopyTexture.needsUpdate=true;}
 stage('trees placed');mount.dataset.flowers=JSON.stringify(addSpringFlowers(scene,homes,paths,treePositions));
 // Sparse meadow grass, denser on the margins; no blades through lanes or buildings.
 const grassVertices:number[]=[];
@@ -279,7 +288,8 @@ for(let i=0;i<78000;i++){
 }
 for(let i=grassPoints.length-1;i>=0;i--)if(siteIssue(grassPoints[i].p,.15)||!industryClear(...grassPoints[i].p))grassPoints.splice(i,1);
 const meadow=new T.InstancedMesh(grassGeo,new T.MeshStandardMaterial({color:'#a2a27c',roughness:1,side:T.DoubleSide}),grassPoints.length);
-grassPoints.forEach(({p,height,dry},i)=>{dummy.position.set(p[0],ground(...p)+.01,p[1]);dummy.rotation.set(0,grassRandom()*6.28,0);const width=.7+grassRandom()*.85;dummy.scale.set(width,height,width);dummy.updateMatrix();meadow.setMatrixAt(i,dummy.matrix);meadow.setColorAt(i,new T.Color(dry?'#8b7a4b':'#596840').multiplyScalar(.8+grassRandom()*.4));});meadow.receiveShadow=true;scene.add(meadow);mount.dataset.grassTufts=String(grassPoints.length);
+// Grass thins out under closed canopy (draws still consumed so other placements keep their seeds).
+grassPoints.forEach(({p,height,dry},i)=>{dummy.position.set(p[0],ground(...p)+.01,p[1]);dummy.rotation.set(0,grassRandom()*6.28,0);const width=.7+grassRandom()*.85,shade=Math.max(0,1-Math.max(0,canopyAt(...p)-.45)/.2);dummy.scale.set(width*shade,height*shade,width*shade);dummy.updateMatrix();meadow.setMatrixAt(i,dummy.matrix);meadow.setColorAt(i,new T.Color(dry?'#8b7a4b':'#596840').multiplyScalar(.8+grassRandom()*.4));});meadow.receiveShadow=true;scene.add(meadow);mount.dataset.grassTufts=String(grassPoints.length);
 for(const [m,geos]of meshes){const g=mergeGeometries(geos);if(g){const mesh=new T.Mesh(g,m);mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);}for(const g of geos)g.dispose();}meshes.clear();
 // The existing forge is reused as architecture, without its standalone diorama base.
 $('load-label').textContent='Lighting the chain shop…';const forge=await loader.loadAsync('/forge/mushroom-green-forge.glb');const forgeRoot=new T.Group();const forgePos:Point=chainshopPosition;forgeRoot.position.set(forgePos[0],ground(...forgePos),forgePos[1]);forgeRoot.rotation.y=1.03;
