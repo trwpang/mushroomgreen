@@ -34,11 +34,21 @@ export function planYardPlots(homes:Home[],paths:Point[][],shops:BackyardShop[])
  setSiteReservations(reservations);return out;
 }
 export function paintYardPlots(ctx:CanvasRenderingContext2D,pixel:(p:Point)=>Point,plots:YardPlot[]){for(const p of plots){ctx.beginPath();p.polygon.forEach((q,i)=>{const xy=pixel(q);if(i)ctx.lineTo(...xy);else ctx.moveTo(...xy);});ctx.closePath();ctx.fillStyle=['#72634818','#414b3312','#8d76541a'][p.home%3];ctx.fill();}}
-export function addYardPlots(scene:T.Scene,plots:YardPlot[]){const b=new DetailBatch();b.root.name='Irregular cottage plots';const wood=refineSurface(new T.MeshStandardMaterial({color:'#635740',roughness:1}),'wood'),brick=refineSurface(new T.MeshStandardMaterial({color:'#745b45',roughness:1}),'brick'),leaf=refineSurface(new T.MeshStandardMaterial({color:'#61703d',roughness:1}),'leaf'),soil=refineSurface(new T.MeshStandardMaterial({color:'#51432e',roughness:1}),'stone');
+export function addYardPlots(scene:T.Scene,plots:YardPlot[]){const b=new DetailBatch();b.root.name='Irregular cottage plots';const wood=refineSurface(new T.MeshStandardMaterial({color:'#635740',roughness:1}),'wood'),brick=refineSurface(new T.MeshStandardMaterial({color:'#745b45',roughness:1}),'brick'),leaf=refineSurface(new T.MeshStandardMaterial({color:'#61703d',roughness:1}),'leaf'),soil=refineSurface(new T.MeshStandardMaterial({color:'#51432e',roughness:1}),'stone'),mortar=refineSurface(new T.MeshStandardMaterial({color:'#6b6555',roughness:1}),'plaster');
  const v=(p:Point,y:number)=>new T.Vector3(p[0],ground(...p)+y,p[1]);let sections=0,beds=0;const hedges:T.Matrix4[]=[],cabbages:T.Matrix4[]=[];
  for(const plot of plots){for(const {a,b:end,kind}of plot.boundaries){const dx=end[0]-a[0],dz=end[1]-a[1],l=Math.hypot(dx,dz),angle=-Math.atan2(dz,dx),q=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),angle);sections++;
   if(kind===0){for(const p of [a,end])b.block(wood,v(p,.43),new T.Vector3(.07,.86,.07),q);for(const y of [.32,.69])b.beam(wood,v(a,y),v(end,y),.031);b.beam(wood,v(a,.30),v(end,.7),.022);}
-  else if(kind===1){for(let row=0;row<4;row++)for(let j=0,n=Math.ceil(l/.25);j<n;j++){const t=(j+.5)/n,p:Point=[a[0]+dx*t,a[1]+dz*t];b.block(brick,v(p,.06+row*.12),new T.Vector3(l/n-.012,.11,.24),q,.76+((row*7+j*3+plot.home)%7)*.055);}}
+  else if(kind===1){
+   // Low brick garden wall: 215×65 mm bricks in stretcher bond on a lime mortar core, with a
+   // soldier coping of bricks on edge. Height and length follow the original boundary.
+   const course=.075,rows=6,mortarH=rows*course;
+   const inset=Math.min(.02,l*.05)/l;for(let k=0,n=Math.max(1,Math.round(l/.9));k<n;k++){const t=inset+(k+.5)/n*(1-2*inset),p:Point=[a[0]+dx*t,a[1]+dz*t];b.block(mortar,v(p,mortarH/2),new T.Vector3(l*(1-2*inset)/n+.002,mortarH,.17),q);}
+   for(let row=0;row<rows;row++){const n=Math.max(1,Math.round(l/.225)),stagger=row%2?.5:0;
+    for(let j=-(row%2);j<n;j++){const s0=Math.max(0,(j+stagger)/n),s1=Math.min(1,(j+1+stagger)/n);if(s1-s0<.2/n)continue;const t=(s0+s1)/2,p:Point=[a[0]+dx*t,a[1]+dz*t];
+     const tone=.72+((row*7+j*13+plot.home*5)%11)*.035,jitter=((row*5+j*3)%7-3)*.0015;
+     b.block(brick,v([p[0]-dz/l*jitter,p[1]+dx/l*jitter],.0325+row*course+.005),new T.Vector3((s1-s0)*l-.01,.065,.1025*2-.01),q,tone);}}
+   for(let j=0,n=Math.max(1,Math.round(l/.075));j<n;j++){const t=(j+.5)/n,p:Point=[a[0]+dx*t,a[1]+dz*t];b.block(brick,v(p,mortarH+.11),new T.Vector3(l/n-.009,.215,.1025*2),q,.62+((j*11+plot.home)%9)*.04);}
+  }
   // Garden hedges: overlapping leaf-card runs along the boundary, a little uneven in height and line.
   else for(let j=0,n=Math.max(1,Math.round(l/.6));j<n;j++){const t=(j+.5)/n,p:Point=[a[0]+dx*t,a[1]+dz*t],wobble=Math.sin(j*2.3+plot.home)*.5+.5,m=new T.Matrix4().compose(v([p[0]-dz/l*(wobble-.5)*.06,p[1]+dx/l*(wobble-.5)*.06],-.03),q.clone().multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),(wobble-.5)*.12)),new T.Vector3(l/n*1.15,.9+wobble*.2,.9+wobble*.12));hedges.push(m);}
  }

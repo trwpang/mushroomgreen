@@ -61,6 +61,17 @@ function partBuilder(root:T.Group){
  return {put,oval,rod,finish};
 }
 function material(color:string,roughness=.9){return new T.MeshStandardMaterial({color,roughness});}
+/** Loft ellipse sections [z, centreY, halfWidth, halfHeight] (or [y-step profile with vertical=true: z,y,rx,ry along the neck]). */
+function henLoft(sections:number[][],vertical=false){
+ const n=18,pos:number[]=[],idx:number[]=[];
+ sections.forEach(([z,y,rx,ry],j)=>{for(let i=0;i<n;i++){const a=i/n*Math.PI*2;
+  if(vertical)pos.push(Math.cos(a)*rx,y,z+Math.sin(a)*ry);else pos.push(Math.cos(a)*rx,y+Math.sin(a)*ry,z);}});
+ for(let j=0;j<sections.length-1;j++)for(let i=0;i<n;i++){const a=j*n+i,b=j*n+(i+1)%n,c=a+n,d=b+n;idx.push(a,c,b,b,c,d);}
+ // Close both ends with a centre vertex.
+ for(const [end,flip] of [[0,true],[sections.length-1,false]] as const){const [z,y]=sections[end],centre=pos.length/3;pos.push(0,vertical?y:y,vertical?z:z);if(vertical)pos[pos.length-2]=y;
+  for(let i=0;i<n;i++){const a=end*n+i,b=end*n+(i+1)%n;if(flip)idx.push(centre,a,b);else idx.push(centre,b,a);}}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();return g;
+}
 
 export function addVillageLife(scene:T.Scene,homes:Home[],paths:Point[][]=[]){
  const placements=planVillageLife(homes,paths),root=new T.Group();root.name='Village yard animals';scene.add(root);
@@ -70,8 +81,9 @@ export function addVillageLife(scene:T.Scene,homes:Home[],paths:Point[][]=[]){
   const body=new T.Group(),tail=new T.Group();animal.add(body,tail);
   if(a.kind==='hen'){
    const feather=feathers[a.seed%3],b=partBuilder(body);
-   b.oval(feather,[0,.285,0],[.14,.18,.23],[-.18,0,0]);
-   // Layered wing coverts lie against an oval breast; tapered feathers give a readable bird outline.
+   // One continuous lofted body from raised tail to full breast (no stacked ovals).
+   b.put(henLoft([[-.27,.44,.018,.03],[-.22,.4,.05,.07],[-.15,.34,.1,.12],[-.06,.3,.13,.14],[.03,.29,.135,.145],[.1,.3,.12,.13],[.15,.32,.085,.1],[.18,.35,.03,.05]]),feather,[0,0,0]);
+   // Layered wing coverts lie against the body; tapered feathers give a readable bird outline.
    for(const side of [-1,1]){
     b.oval(dark,[side*.114,.3,-.015],[.05,.115,.17],[.12,side*.13,side*.16]);
     for(let i=0;i<6;i++)b.oval(feather,[side*(.135+i*.002),.32-i*.012,.055-i*.034],[.018,.055,.078],[.35,side*.18,side*.1]);
@@ -82,8 +94,8 @@ export function addVillageLife(scene:T.Scene,homes:Home[],paths:Point[][]=[]){
    tail.position.set(0,.32,-.16);const t=partBuilder(tail);
    for(let i=0;i<5;i++)t.oval(i%2?feather:dark,[(i-2)*.022,.055,-.052],[.025,.12,.045],[-.72,(i-2)*.19,0]);t.finish();
    const neck=new T.Group();neck.position.set(0,.35,.13);animal.add(neck);const n=partBuilder(neck);
-   n.oval(feather,[0,.075,.014],[.069,.125,.071],[-.25,0,0]);
-   n.oval(feather,[0,.19,.047],[.067,.074,.073]);
+   // Neck and head lofted as one surface so the hackles flow into the skull.
+   n.put(henLoft([[-.02,-.01,.075,.07],[.0,.06,.062,.06],[.02,.13,.05,.05],[.045,.19,.058,.06],[.07,.225,.045,.045],[.09,.24,.012,.012]],true),feather,[0,0,0]);
    n.rod(ochre,[0,.18,.105],[0,.166,.169],.028,.002);
    for(const side of [-1,1]){n.oval(eye,[side*.058,.205,.071],[.009,.011,.009]);n.oval(comb,[side*.015,.143,.093],[.014,.031,.012]);}
    for(let i=0;i<4;i++)n.oval(comb,[0,.257+Math.sin(i*.9)*.008,.015+i*.025],[.013,.022+i%2*.009,.019]);n.finish();
