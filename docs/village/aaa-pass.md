@@ -33,3 +33,12 @@ Method: ten fixed cameras (`still=1`, and `cam=` where needed) are captured with
 6. **Brook geometry**: waterline refinement, buried rocks, local disturbance around obstructions.
 
 Capture gotcha: under heavy machine load, a view captured about 6 s after load can still show the distant house version. Use `WAIT=10000` for review captures.
+
+## Round 4 (24 Sept, Tom's review: load time, chainmaker, brook, smoke, cat, grate fire)
+- **Load time** ~11.1 s → ~8.6 s with byte-identical layout (terrain noise loop inlined; nearestRoad grid index; segment-box pruning for rail/stream searches; tree cells for prop checks; streamSurface seeded by the cell distance). Equivalence was proven against the previous commit on 400k random points and the whole prop plan.
+- **Chainmaker**: tong reins rolled edge-on and seated in the fist (skin inside reins 113 vertices → 0; the skeletal check now asserts < 2 mm contact); the centre anvil stool's front pulled back 18 cm so it clears his shins.
+- **Motion**: prefers-reduced-motion no longer freezes smoke and water (half speed instead). **Cottage grates** burn inside the range basket.
+- **Brook** (brook-fft.ts, brook-flow.ts, brook-water.ts): three FFT cascades on a baked current (Rankine flow round stones, wakes, V-arms, pillows), two-phase flow-map advection, flow-gated foam, true shoreline banks with bays, height-corrected planar reflection, Fresnel reflection/transmission. The old wake strips and churn flecks (the "white dashes") are gone. Codex review: artifacts/village/brook-fft/codex-review.md; its regressions (overhanging stones, rushes through stones, foil-like reflection, foam outlines) were fixed.
+- **Cat** (cat.ts): SDF-sculpted sitting tabby with shell fur, markings, glossy eyes, whiskers and idle life.
+
+Water backlog (Codex): opaque-pass depth for true Beer–Lambert thickness and refraction; bed gravel and submerged stones; persistent (ping-pong) foam that decays downstream.
