@@ -21,7 +21,7 @@ import {installLightPool,updateLightPool} from './light-pool';
 import {addSpringFlowers} from './spring-flowers';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
 import {addWorkingChainmaker} from '../chainmaker/worker';
-import {centralWorkstation} from './workshop';
+import {centralWorkstation,clearChainmakerStance} from './workshop';
 import {wearWorkshop} from './workshop-wear';
 import {addWorkshopProps} from './workshop-props';
 import {detailArchitecture,textureDetail} from './texture-detail';
@@ -51,6 +51,8 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import {cinematicOutput} from '../rendering/finish';
 import { streamWidth,outsideRoads,roundedLine,renderedRoads,brooks,boundary,greens,project,ground,prepareGround,weaverWorkshop,makeHomes,nearestRoad,nearestVillageRoad,nearestSegment,localPoint,streamDistance,chainshopPosition,chainshopReplacesHouse,type Point,type Home,type Household } from './layout';
 const $=<E extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as E;
+const loadDebug=new URLSearchParams(location.search).has('debug'),loadStart=performance.now();
+const stage=(name:string)=>{if(loadDebug)console.info(`[load] ${((performance.now()-loadStart)/1000).toFixed(2)}s ${name}`);};
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let seed=1865;function rand(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;}
 const material=(color:string,roughness=.9)=>new T.MeshStandardMaterial({color,roughness});
@@ -70,10 +72,10 @@ const updateCompass=createCompass($('village-compass'));
 const hemi=new T.HemisphereLight('#d6e2ec','#5c5140',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#c4d4e4',.75);fill.position.set(70,50,-90);scene.add(fill);installLightPool(scene,6);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));camera.layers.enable(1);camera.layers.enable(FOLIAGE_LAYER);const aoCamera=camera.clone();aoCamera.layers.set(0);const ao=new GTAOPass(scene,aoCamera,innerWidth,innerHeight);ao.blendIntensity=.8;ao.updateGtaoMaterial({radius:.6,distanceExponent:1.6,thickness:1.2,scale:1});composer.addPass(ao);composer.addPass(cinematicOutput());
 const farRequest=Promise.all([fetch('/far-country/far-country.json').then(r=>r.json() as Promise<FarData>),new T.TextureLoader().loadAsync('/far-country/ground-1882.webp')]);
-const households:Household[]=await fetch('/households.json').then(r=>{if(!r.ok)throw Error('Household data unavailable');return r.json();});const [farData,farGround]=await farRequest;const homes=makeHomes(households);prepareGround(homes);const founder=homes.find(h=>h.number===22)!;const domesticShop=weaverWorkshop(founder);
+stage('before households fetch');const households:Household[]=await fetch('/households.json').then(r=>{if(!r.ok)throw Error('Household data unavailable');return r.json();});const [farData,farGround]=await farRequest;const homes=makeHomes(households);prepareGround(homes);const founder=homes.find(h=>h.number===22)!;const domesticShop=weaverWorkshop(founder);
 const within=(x:number,z:number)=>Math.pow(x/210,2)+Math.pow((z+60)/240,2)<.97;
 // Paint an original terrain atlas in world coordinates. Roads follow the saved village map and the traced historic exit.
-const terrainCanvas=document.createElement('canvas');terrainCanvas.width=terrainCanvas.height=4096;const ctx=terrainCanvas.getContext('2d')!;const img=ctx.createImageData(4096,4096);
+stage('before terrain canvas');const terrainCanvas=document.createElement('canvas');terrainCanvas.width=terrainCanvas.height=4096;const ctx=terrainCanvas.getContext('2d')!;const img=ctx.createImageData(4096,4096);
 for(let j=0;j<4096;j++)for(let i=0;i<4096;i++){const n=rand()*13+Math.sin(i*.017+Math.cos(j*.02)*2)*5+Math.sin(j*.025)*4;const k=(j*4096+i)*4;img.data[k]=103+n;img.data[k+1]=110+n;img.data[k+2]=70+n*.75;img.data[k+3]=255;}ctx.putImageData(img,0,0);
 const pixel=(p:Point):Point=>[(p[0]+230)/460*4096,(p[1]+320)/520*4096];
 function stroke(points:Point[],width:number,color:string){ctx.beginPath();points.forEach((p,i)=>{const q=pixel(p);if(i)ctx.lineTo(...q);else ctx.moveTo(...q);});ctx.strokeStyle=color;ctx.lineWidth=width/460*4096;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();}
@@ -102,7 +104,7 @@ paintHistoricLandscape(ctx,pixel,backyardShops);
 paintLanes(ctx,pixel,rand,paths);paintLaneEdges(ctx,pixel,paths);
 paintWorkingYards(ctx,pixel,homes);
 for(let i=0;i<65000;i++){const x=rand()*4096,y=rand()*4096;ctx.fillStyle=i%2?'#3f42310c':'#e0ce9f0d';ctx.fillRect(x,y,rand()*6+1,rand()*3+1);}
-const groundTexture=new T.CanvasTexture(terrainCanvas);groundTexture.colorSpace=T.SRGBColorSpace;groundTexture.anisotropy=8;
+stage('terrain painted');const groundTexture=new T.CanvasTexture(terrainCanvas);groundTexture.colorSpace=T.SRGBColorSpace;groundTexture.anisotropy=8;
 const groundGeo=new T.PlaneGeometry(460,520,460,520);groundGeo.rotateX(-Math.PI/2);groundGeo.translate(0,0,-60);const pos=groundGeo.attributes.position;const index:number[]=[];const source=groundGeo.index!;for(let i=0;i<pos.count;i++)pos.setY(i,ground(pos.getX(i),pos.getZ(i)));for(let i=0;i<source.count;i+=3){const ids=[source.getX(i),source.getX(i+1),source.getX(i+2)];if(ids.every(v=>within(pos.getX(v),pos.getZ(v))))index.push(...ids);}groundGeo.setIndex(index);
 const uv=groundGeo.attributes.uv;for(let i=0;i<pos.count;i++)uv.setXY(i,(pos.getX(i)+230)/460,1-(pos.getZ(i)+320)/520);groundGeo.computeVertexNormals();const terrain=new T.Mesh(groundGeo,new T.MeshStandardMaterial({map:groundTexture,color:'#c1c3ab',roughness:1}));weatherGround(terrain.material);terrain.receiveShadow=true;scene.add(terrain);
 addRoadCrossing(scene,groundTexture);
@@ -115,7 +117,7 @@ const rimPos:number[]=[];for(const {a,b,count}of edges.values())if(count===1){co
 const rg=new T.BufferGeometry();rg.setAttribute('position',new T.Float32BufferAttribute(rimPos,3));rg.computeVertexNormals();const rimMaterial=material('#514b36');rimMaterial.side=T.DoubleSide;scene.add(new T.Mesh(rg,rimMaterial));
 const base=new T.Mesh(new T.PlaneGeometry(2400,2400),material('#bec3b0'));base.rotation.x=-Math.PI/2;base.position.y=-4.1;base.receiveShadow=true;scene.add(base);
 // Geometry is shared across cottages. Detailed houses only appear near the camera target.
-$('load-label').textContent='Building cottages and working yards…';const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);const kit=await loader.loadAsync('/village/cottages.glb');const highTemplates:T.Object3D[]=[];for(let i=0;i<3;i++){const group=kit.scene.getObjectByName('cottage_'+i);if(!group)throw Error('Cottage kit missing type '+i);highTemplates.push(group);}
+$('load-label').textContent='Building cottages and working yards…';const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);stage('before cottage kit');const kit=await loader.loadAsync('/village/cottages.glb');const highTemplates:T.Object3D[]=[];for(let i=0;i<3;i++){const group=kit.scene.getObjectByName('cottage_'+i);if(!group)throw Error('Cottage kit missing type '+i);highTemplates.push(group);}
 const windowMaterials:T.MeshStandardMaterial[]=[glass];
 for(const root of highTemplates)root.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=o.receiveShadow=true;const ms=Array.isArray(o.material)?o.material:[o.material];for(const m of ms)if(m instanceof T.MeshStandardMaterial){if(m.map)m.map.anisotropy=8;if(m.name.includes('Small dark glass')){m.roughness=.16;m.metalness=.15;m.color.set('#91a6a0');m.transparent=true;m.opacity=.24;m.depthWrite=false;o.castShadow=false;windowMaterials.push(m);}}}});
 // One mesh per material in each cottage template (79 → ~24 draws). Door/frame and chimney meshes stay
@@ -177,7 +179,7 @@ for(const side of [-1,1])for(const x of [-w*.32,w*.32])for(const y of (style===1
 add(new T.BoxGeometry(1.1,.1,.26),stone,0,.05,d/2+.12);
 for(const dz of [-.14,.14])add(new T.CylinderGeometry(.075,.095,.3,8),brick,-w/2+.55,r+.55+.75+.15,dz);
 mergeByMaterial(root);return root;}
-const houseRoots:T.Group[]=[],highRoots:T.Object3D[]=[],lowRoots:T.Object3D[]=[];const pickTargets:T.Mesh[]=[];
+stage('before houses');const houseRoots:T.Group[]=[],highRoots:T.Object3D[]=[],lowRoots:T.Object3D[]=[];stage('houses? ');const pickTargets:T.Mesh[]=[];
 for(const s of backyardShops){const pick=new T.Mesh(new T.BoxGeometry(s.width,2.8,s.depth),new T.MeshBasicMaterial({visible:false}));pick.position.set(s.p[0],s.y+1.4,s.p[1]);pick.rotation.y=s.angle;pick.userData.home=homes.find(h=>h.number===s.home);smallShops.root.add(pick);pickTargets.push(pick);}
 for(const h of homes){const root=new T.Group();root.position.set(h.x,h.height,h.z);root.rotation.y=h.angle;root.scale.set(h.sx,1,h.sz);const low=lowHouse(h.style),high=highTemplates[h.style].clone(true);high.visible=false;root.add(low,high);individualise(h,root,low,high);root.visible=h.number!==chainshopReplacesHouse;scene.add(root);houseRoots.push(root);highRoots.push(high);lowRoots.push(low);
 const pick=new T.Mesh(new T.BoxGeometry([6.4,7.2,9.2][h.style],h.style===1?6.2:4.5,[4.6,4.8,4.5][h.style]),new T.MeshBasicMaterial({visible:false}));pick.position.y=(h.style===1?6.2:4.5)/2;pick.userData.home=h;root.add(pick);if(h.number!==chainshopReplacesHouse)pickTargets.push(pick);
@@ -203,7 +205,7 @@ for(let i=0;i<7;i++){const p=yardPoint(5.8,-2.3+i*.18,.52);cube(p.x,p.y,p.z,.065
 beam(yardPoint(5.8,-2.4,.22),yardPoint(5.8,-1.1,.79),.033,timber);
 for(let i=0;i<7;i++){const a=yardPoint(4.5+i%3*.16,3.8, .13+Math.floor(i/3)*.15),b=yardPoint(5.5+i%3*.16,3.8,.13+Math.floor(i/3)*.15);beam(a,b,.09,timber);}
 const bench=yardPoint(-3.1,4.1,.5);cube(bench.x,bench.y,bench.z,1.6,.13,.43,timber,founder.angle);for(const x of [-3.7,-2.5]){const p=yardPoint(x,4.1,.25);cube(p.x,p.y,p.z,.1,.5,.33,timber,founder.angle);}
-// Broadleaf crowns are leaf-cluster cards on branching trunks (foliage.ts). The old
+stage('before trees');// Broadleaf crowns are leaf-cluster cards on branching trunks (foliage.ts). The old
 // folded-leaf generator's 7,500 draws are still consumed to preserve the scene seed.
 for(let i=0;i<7500;i++)rand();
 const foliageTime={value:0},broadleaf=broadleafVariants(),canopyMat=foliageMaterial(foliageTime,{color:'#d2d6bd'});
@@ -251,12 +253,12 @@ treePositions.forEach((p,i)=>{
  const q=pixel(p),radius=2.6*scale/460*4096,g=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],radius);g.addColorStop(0,'#454b2d45');g.addColorStop(1,'#454b2d00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],radius,0,Math.PI*2);ctx.fill();
 });groundTexture.needsUpdate=true;
 
-mount.dataset.flowers=JSON.stringify(addSpringFlowers(scene,homes,paths,treePositions));
+stage('trees placed');mount.dataset.flowers=JSON.stringify(addSpringFlowers(scene,homes,paths,treePositions));
 // Sparse meadow grass, denser on the margins; no blades through lanes or buildings.
 const grassVertices:number[]=[];
 for(let blade=0;blade<7;blade++){const a=blade*2.4,x=Math.cos(a)*.09,z=Math.sin(a)*.09,h=.15+(blade%3)*.055,w=.013;grassVertices.push(x-w,0,z,x+w,0,z,x+.025,h*.6,z+.015,x-w,0,z,x+.025,h*.6,z+.015,x+.045,h,z+.025);}
 const grassGeo=new T.BufferGeometry();grassGeo.setAttribute('position',new T.Float32BufferAttribute(grassVertices,3));grassGeo.computeVertexNormals();
-const grassPoints:{p:Point;height:number;dry:boolean}[]=[];
+stage('flowers done');const grassPoints:{p:Point;height:number;dry:boolean}[]=[];
 // Discontinuous wall weeds: small tufts in sheltered corners, not a tidy border.
 for(const h of homes.filter(h=>h.number!==chainshopReplacesHouse)){const w=[6.4,7.2,9.2][h.style]*h.sx,d=[4.6,4.8,4.5][h.style]*h.sz;
  for(let i=0;i<90;i++){const x=(grassRandom()-.5)*(w+1.5),z=(i%2?1:-1)*(d/2+.2+grassRandom()*.8),p=localPoint(h,x,z);if(Math.abs(x)<1.2&&z>0||grassPatch(...p)<.48)continue;grassPoints.push({p,height:.45+grassRandom()*.85,dry:i%3===0});}
@@ -280,11 +282,11 @@ for(const [m,geos]of meshes){const g=mergeGeometries(geos);if(g){const mesh=new 
 // The existing forge is reused as architecture, without its standalone diorama base.
 $('load-label').textContent='Lighting the chain shop…';const forge=await loader.loadAsync('/forge/mushroom-green-forge.glb');const forgeRoot=new T.Group();const forgePos:Point=chainshopPosition;forgeRoot.position.set(forgePos[0],ground(...forgePos),forgePos[1]);forgeRoot.rotation.y=1.03;
 const buildingNames=/^(Masonry|Brickwork|Interior|Shutters|Wood_grain|Shutter_braces|Ironmongery|Window|Door|Threshold|Roof|Ridge|Gutters|Chimney|Flue|Lead|Hearth|Cinders|Hood|Anvil|Hammer|Finished_chain|Stock_iron|Quench|Tub|Coal_heap|Timber_stock|Bench|Tongs)/;
-forge.scene.updateMatrixWorld(true);forge.scene.traverse(o=>{if(o instanceof T.Mesh&&(buildingNames.test(o.name)||/^Annex/.test(o.name))){const isWorkingHammer=/^Hammer/.test(o.name);const mesh=new T.Mesh(isWorkingHammer?centralWorkstation(o.geometry,o.matrixWorld,false):o.geometry,o.material);mesh.name=o.name;if(/^Cinders/.test(o.name)){mesh.material=(Array.isArray(o.material)?o.material[0]:o.material).clone();const cm=mesh.material as T.MeshStandardMaterial;if(cm.emissive.getHex()!==0){cm.emissive.set('#d54e14');cm.emissiveIntensity=.65;}}if(!isWorkingHammer)mesh.applyMatrix4(o.matrixWorld);mesh.castShadow=mesh.receiveShadow=true;forgeRoot.add(mesh);}});scene.add(forgeRoot);const forgePick=new T.Mesh(new T.BoxGeometry(9.7,5.7,5.1),new T.MeshBasicMaterial({visible:false}));forgePick.position.y=2.7;forgePick.userData.forge=true;forgeRoot.add(forgePick);pickTargets.push(forgePick);
+forge.scene.updateMatrixWorld(true);forge.scene.traverse(o=>{if(o instanceof T.Mesh&&(buildingNames.test(o.name)||/^Annex/.test(o.name))){const isWorkingHammer=/^Hammer/.test(o.name),isStance=/^Anvil_(square_base|square_top|bolts|iron_strap)/.test(o.name),baked=isWorkingHammer||isStance;const mesh=new T.Mesh(isWorkingHammer?centralWorkstation(o.geometry,o.matrixWorld,false):isStance?clearChainmakerStance(o.geometry,o.matrixWorld):o.geometry,o.material);mesh.name=o.name;if(/^Cinders/.test(o.name)){mesh.material=(Array.isArray(o.material)?o.material[0]:o.material).clone();const cm=mesh.material as T.MeshStandardMaterial;if(cm.emissive.getHex()!==0){cm.emissive.set('#d54e14');cm.emissiveIntensity=.65;}}if(!baked)mesh.applyMatrix4(o.matrixWorld);mesh.castShadow=mesh.receiveShadow=true;forgeRoot.add(mesh);}});scene.add(forgeRoot);const forgePick=new T.Mesh(new T.BoxGeometry(9.7,5.7,5.1),new T.MeshBasicMaterial({visible:false}));forgePick.position.y=2.7;forgePick.userData.forge=true;forgeRoot.add(forgePick);pickTargets.push(forgePick);
 const annexPick=new T.Mesh(new T.BoxGeometry(3.5,5.4,3.7),new T.MeshBasicMaterial({visible:false}));annexPick.position.set(2.875,2.6,-3.71);annexPick.userData.forge=true;forgeRoot.add(annexPick);pickTargets.push(annexPick);mount.dataset.chainshopAnnex='1';
 // Live coal fires in the three main-forge hearths (station centres measured from the Cinders mesh).
 const forgeFires=[[-3.39,1.59],[-.41,1.62],[2.57,1.58]].map(([x,z],i)=>{const fire=createFire({width:.46,depth:.34,flameHeight:.26,tongues:8,sparks:26,smoke:new T.Vector3(0,.58,-.02),light:{intensity:i===1?2.2:1.6,distance:4.2,offset:new T.Vector3(0,.35,.25)},seed:11+i*7});fire.group.position.set(x,.995,z);forgeRoot.add(fire.group);return fire;});
-const worker=addWorkingChainmaker(forgeRoot,(await loader.loadAsync('/chainmaker-v2/chainmaker.glb')).scene);
+stage('forge built');const worker=addWorkingChainmaker(forgeRoot,(await loader.loadAsync('/chainmaker-v2/chainmaker.glb')).scene);
 mount.dataset.chainmakers='1';
 // A smaller family workshop at Henry's roadside gable. The location is an
 // oral-history interpretation; this remains separate from the surviving forge.
@@ -297,17 +299,17 @@ const shopLime=new T.MeshStandardMaterial({name:'Chalk limewash domestic stack',
 const beforeStack=weaverShop.children.length;openStack(weaverShop,0,4.18,1.25,.66,1.65,.62,shopLime);weaverShop.children.slice(beforeStack).forEach(o=>o.name='Chimney_domestic');
 const smallPick=new T.Mesh(new T.BoxGeometry(9.4,5,5),new T.MeshBasicMaterial({visible:false}));smallPick.position.y=2.5;smallPick.userData.home=founder;weaverShop.add(smallPick);pickTargets.push(smallPick);scene.add(weaverShop);mount.dataset.domesticChainshops='1';
 // Henry's single smaller hearth: lower output, its own phase. The shop root is scaled, so counter-scale the fire.
-const smallFire=createFire({width:.44,depth:.32,flameHeight:.2,tongues:6,sparks:14,smoke:new T.Vector3(0,.55,-.02),light:{intensity:1.3,distance:3.4,offset:new T.Vector3(0,.35,.25)},heat:.85,seed:61});
+stage('small shop built');const smallFire=createFire({width:.44,depth:.32,flameHeight:.2,tongues:6,sparks:14,smoke:new T.Vector3(0,.55,-.02),light:{intensity:1.3,distance:3.4,offset:new T.Vector3(0,.35,.25)},heat:.85,seed:61});
 smallFire.group.position.set(-.41,.995,1.62);smallFire.group.scale.set(1/weaverShop.scale.x,1/weaverShop.scale.y,1/weaverShop.scale.z);weaverShop.add(smallFire.group);
-const mainContents=addWorkshopProps(forgeRoot),smallContents=addWorkshopProps(weaverShop,true);mount.dataset.workshopContents=JSON.stringify({main:mainContents.counts,small:smallContents.counts});
+stage('before workshop props');const mainContents=addWorkshopProps(forgeRoot),smallContents=addWorkshopProps(weaverShop,true);mount.dataset.workshopContents=JSON.stringify({main:mainContents.counts,small:smallContents.counts});
 const shopGlow=new T.PointLight('#ffab57',5,4,2);shopGlow.position.copy(weaverShop.localToWorld(new T.Vector3(4.3,1.2,0)));scene.add(shopGlow);
-const showcase=addShowcase(scene);
+stage('before showcase');const showcase=addShowcase(scene);
 let cartOak:T.MeshStandardMaterial|undefined;highTemplates[0].traverse(o=>{if(o instanceof T.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])if(m instanceof T.MeshStandardMaterial&&/Old oak/.test(m.name))cartOak=m;});
-const yardCart=addForgeCart(scene,cartOak);mount.dataset.carts='1';
-const workingProps=addWorkingProps(scene,homes,cartOak,paths,treePositions);mount.dataset.workingProps=JSON.stringify(workingProps.counts);
+stage('before cart');const yardCart=addForgeCart(scene,cartOak);mount.dataset.carts='1';
+stage('before working props');const workingProps=addWorkingProps(scene,homes,cartOak,paths,treePositions);mount.dataset.workingProps=JSON.stringify(workingProps.counts);
 let landscapeSeed=9321865;const landscapeRandom=()=>{landscapeSeed=(Math.imul(landscapeSeed,1664525)+1013904223)>>>0;return landscapeSeed/4294967296;};
-const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)]);mount.dataset.shrubs=String(landscape.counts.shrubs);
-// The modelled ground ends on the within() ellipse. The far country continues it from the OS six-inch sheets
+stage('before landscape');const landscape=addLandscape(scene,homes.filter(h=>h.number!==chainshopReplacesHouse),landscapeRandom,[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)]);mount.dataset.shrubs=String(landscape.counts.shrubs);
+stage('before far country');// The modelled ground ends on the within() ellipse. The far country continues it from the OS six-inch sheets
 // (surveyed 1881-82): mapped parcels, hedges, lanes, woods, buildings and the brooks, on real DTM heights.
 const farEdge=(a:number):Point=>[Math.cos(a)*210*Math.sqrt(.95),-60+Math.sin(a)*240*Math.sqrt(.95)];
 const farCountry=addFarCountry(scene,farEdge,farData,farGround,{nearTrees:matrices=>{
@@ -322,12 +324,12 @@ const farCountry=addFarCountry(scene,farEdge,farData,farGround,{nearTrees:matric
  matrices.forEach((m,i)=>hedge.setMatrixAt(i,m));hedge.layers.set(FOLIAGE_LAYER);hedge.castShadow=hedge.receiveShadow=true;scene.add(hedge);
 },weather:weatherGround,water:historic.waterMaterial});mount.dataset.farCountry=JSON.stringify(farCountry.counts);
 mount.dataset.forgePosition=forgePos.join(',');
-weatherArchitecture(forgeRoot,forgeRoot.position.y);weatherArchitecture(weaverShop,weaverShop.position.y);
+stage('landscape done');weatherArchitecture(forgeRoot,forgeRoot.position.y);weatherArchitecture(weaverShop,weaverShop.position.y);
 refineSurface(timber,'wood');refineSurface(iron,'iron');refineSurface(stone,'stone');refineSurface(brick,'brick');refineSurface(lime,'plaster');refineSurface(glass,'glass');
 refineSurface(meadow.material,'leaf');refineSurface(trunkMaterial,'bark');for(const crown of crownMeshes)refineSurface(crown.material as T.MeshStandardMaterial,'leaf');refineObject(scene);wearWorkshop(forgeRoot);wearWorkshop(weaverShop);detailArchitecture(scene);
 let agedBuildings=0;for(let i=0;i<homes.length;i++)if(homes[i].number!==chainshopReplacesHouse){ageBuilding(houseRoots[i],homes[i].number);agedBuildings++;}ageBuilding(forgeRoot,5,true);ageBuilding(weaverShop,22,true);mount.dataset.researchBuildingPass=String(agedBuildings+2);
 textureDetail(trunkMaterial,'broadleaf-bark');
-// Woodland ground flora and deadwood keep to the trees, clear of routes, yards, banks, workshops and fixed views.
+stage('before woodland floor');// Woodland ground flora and deadwood keep to the trees, clear of routes, yards, banks, workshops and fixed views.
 const floorClear=(p:Point,r:number)=>{
  if(!within(...p)||streamDistance(...p)<streamWidth(...p)*.5+1.6+r||!clearOfYards(...p))return false;
  const road=nearestRoad(p);if(Math.hypot(p[0]-road[0],p[1]-road[1])<3.8+r)return false;
@@ -338,7 +340,7 @@ const floorClear=(p:Point,r:number)=>{
 const approachEye:Point=[forgePos[0]+18.2,forgePos[1]-12.8];
 const woodlandFloor=addWoodlandFloor(scene,{trees:treePositions.map(p=>({p})),clear:floorClear,time:foliageTime,bark:trunkMaterial,keepClear:[[brookLook,brookEye],[approachEye,forgePos]]});
 paintWoodlandLitter(ctx,pixel,woodlandFloor.litter);groundTexture.needsUpdate=true;mount.dataset.woodlandFloor=JSON.stringify(woodlandFloor.counts);
-// Lane margins avoid buildings, paths, working props, animals and reserved sites.
+stage('before lane verges');// Lane margins avoid buildings, paths, working props, animals and reserved sites.
 const occupied=[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)];
 const laneClear=(p:Point,r:number)=>within(...p)&&!siteIssue(p,r)&&industryClear(...p,r)&&!occupied.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1+r)&&
  !homes.some(h=>{const dx=p[0]-h.x,dz=p[1]-h.z,c=Math.cos(h.angle),s=Math.sin(h.angle),lx=dx*c-dz*s,lz=dx*s+dz*c;return Math.abs(lx)<[6.4,7.2,9.2][h.style]*h.sx/2+.6+r&&Math.abs(lz)<[4.6,4.8,4.5][h.style]*h.sz/2+.6+r;})&&
@@ -346,7 +348,7 @@ const laneClear=(p:Point,r:number)=>within(...p)&&!siteIssue(p,r)&&industryClear
  Math.hypot(p[0]-chainshopPosition[0],p[1]-chainshopPosition[1])>9&&Math.hypot(p[0]-domesticShop.p[0],p[1]-domesticShop.p[1])>4;
 mount.dataset.laneVerges=JSON.stringify(addLaneVerges(scene,{clear:laneClear}).counts);
 // A static local environment supplies reflected sky and foliage; flow normals animate it.
-const capture=new T.WebGLCubeRenderTarget(128,{type:T.HalfFloatType});const reflectionCamera=new T.CubeCamera(.1,600,capture);reflectionCamera.children.forEach(c=>c.layers.enable(FOLIAGE_LAYER));reflectionCamera.position.set(-75,ground(-75,55)+3,55);[...landscape.waterMeshes,...showcase.puddles,...historic.waterMeshes].forEach(o=>o.visible=false);scene.updateMatrixWorld(true);reflectionCamera.update(renderer,scene);[...landscape.waterMeshes,...showcase.puddles,...historic.waterMeshes].forEach(o=>o.visible=true);const pmrem=new T.PMREMGenerator(renderer);const reflection=pmrem.fromCubemap(capture.texture);setHenryStatueEnvironment(reflection.texture);historic.waterMaterial.envMap=reflection.texture;historic.waterMaterial.needsUpdate=true;landscape.waterMaterial.envMap=reflection.texture;landscape.waterMaterial.envMapIntensity=.3;showcase.wet.envMap=reflection.texture;showcase.wet.envMapIntensity=.35;for(const m of windowMaterials){m.envMap=reflection.texture;m.envMapIntensity=.45;m.roughness=.08;m.metalness=0;glazeWindow(m);m.needsUpdate=true;}forgeRoot.traverse(o=>{if(o instanceof T.Mesh&&/^Annex_glazing/.test(o.name)){const m=o.material as T.MeshStandardMaterial;m.envMap=reflection.texture;m.envMapIntensity=.55;m.transparent=true;m.opacity=.48;m.depthWrite=false;m.needsUpdate=true;o.castShadow=false;}});capture.dispose();pmrem.dispose();
+stage('before env capture');const capture=new T.WebGLCubeRenderTarget(128,{type:T.HalfFloatType});const reflectionCamera=new T.CubeCamera(.1,600,capture);reflectionCamera.children.forEach(c=>c.layers.enable(FOLIAGE_LAYER));reflectionCamera.position.set(-75,ground(-75,55)+3,55);[...landscape.waterMeshes,...showcase.puddles,...historic.waterMeshes].forEach(o=>o.visible=false);scene.updateMatrixWorld(true);reflectionCamera.update(renderer,scene);[...landscape.waterMeshes,...showcase.puddles,...historic.waterMeshes].forEach(o=>o.visible=true);const pmrem=new T.PMREMGenerator(renderer);const reflection=pmrem.fromCubemap(capture.texture);setHenryStatueEnvironment(reflection.texture);historic.waterMaterial.envMap=reflection.texture;historic.waterMaterial.needsUpdate=true;landscape.waterMaterial.envMap=reflection.texture;landscape.waterMaterial.envMapIntensity=.3;showcase.wet.envMap=reflection.texture;showcase.wet.envMapIntensity=.35;for(const m of windowMaterials){m.envMap=reflection.texture;m.envMapIntensity=.45;m.roughness=.08;m.metalness=0;glazeWindow(m);m.needsUpdate=true;}forgeRoot.traverse(o=>{if(o instanceof T.Mesh&&/^Annex_glazing/.test(o.name)){const m=o.material as T.MeshStandardMaterial;m.envMap=reflection.texture;m.envMapIntensity=.55;m.transparent=true;m.opacity=.48;m.depthWrite=false;m.needsUpdate=true;o.castShadow=false;}});capture.dispose();pmrem.dispose();
 // Map overlay: exact source footprints, boundary, mapped routes, and household numbers.
 const overlay=new T.Group();overlay.visible=false;scene.add(overlay);function mapLine(points:Point[],color:string,closed=false){const ps=closed?[...points,points[0]]:points;const g=new T.BufferGeometry().setFromPoints(ps.map(p=>new T.Vector3(p[0],ground(...p)+.25,p[1])));const line=new T.Line(g,new T.LineBasicMaterial({color,depthTest:false,transparent:true,opacity:.85}));line.renderOrder=5;overlay.add(line);}
 mapLine(boundary,'#f0d492',true);for(const r of renderedRoads)mapLine(r,'#f2deae');for(const g of greens)mapLine(g,'#c5e2a0',true);
@@ -380,7 +382,8 @@ const smokeOrder=smoke.map((_,i)=>i),smokeDepth=new Float32Array(smoke.length),s
 let savePicture=false;
 $('save-view').onclick=()=>{savePicture=true;};$('close-picture').onclick=()=>{$<HTMLDialogElement>('picture-preview').close();};
 const stillFrame=new URLSearchParams(location.search).has('still');
-let paused=reduced||stillFrame,dusk=false,mapOpen=false,namesOpen=false,selected:Home|null=null,time=stillFrame?4:0,lightAmount=0;let tween:{from:T.Vector3;to:T.Vector3;fromTarget:T.Vector3;target:T.Vector3;t:number;duration:number}|null=null;
+// Reduced motion keeps camera moves instant and slows ambient life to half speed; Pause still stops it all.
+let paused=stillFrame,dusk=false,mapOpen=false,namesOpen=false,selected:Home|null=null,time=stillFrame?4:0,lightAmount=0;let tween:{from:T.Vector3;to:T.Vector3;fromTarget:T.Vector3;target:T.Vector3;t:number;duration:number}|null=null;
 const center=new T.Vector3(5,ground(5,-50),-50);
 function move(pos:T.Vector3,target:T.Vector3,immediate=false,duration=1.6){if(roomHome){const bounded=containRoom(pos,target,roomBounds());pos=bounded.position;target=bounded.target;}if(immediate||reduced){camera.position.copy(pos);controls.target.copy(target);controls.update();tween=null;}else tween={from:camera.position.clone(),to:pos,fromTarget:controls.target.clone(),target:target.clone(),t:0,duration};}
 function zoom(factor:number){
@@ -464,14 +467,14 @@ const reviewCamera=initialPlace.get('cam')?.split(',').map(Number);if(reviewCame
  planner.onerror=()=>planner.terminate();planner.postMessage(homes.map(h=>({...h})));}
 // Compile every shader variant before the village is interactive, so panning never stalls on a first
 // appearance: detailed cottages of each style, one furnished room per style and all current materials.
-$('load-label').textContent='Preparing materials…';
+stage('before warm-up');$('load-label').textContent='Preparing materials…';
 {const shown=highRoots.filter(o=>!o.visible);shown.forEach(o=>o.visible=true);
  const samples=[0,1,2].map(style=>homes.find(h=>h.style===style&&h.number!==chainshopReplacesHouse)).filter((h):h is Home=>!!h).flatMap(h=>planInterior(h).floors.map((_,floor)=>{const room=createInteriors(scene,true);room.show(h,floor);return room;}));
  try{await renderer.compileAsync(scene,camera);}catch(error){console.warn('Shader warm-up incomplete',error);}
  samples.forEach(room=>room.hide());shown.forEach(o=>o.visible=false);}
-document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('button,select').forEach(el=>el.disabled=false);$('loading').hidden=true;$('village-status').textContent='Village loaded. All 59 households are available.';cleanView(new URLSearchParams(location.search).has('clean'));const initialHome=homes.find(h=>h.number===Number(initialPlace.get('house')));if(initialHome){select(initialHome);visit(initialHome,true);if(initialPlace.get('room')==='1')stepInside(initialHome,Number(initialPlace.get('floor')));if(initialPlace.has('inside')){inspection.enter(initialHome,initialPlace.get('inside')==='small'&&initialHome.number===22?'small':initialPlace.get('inside')==='main'||initialHome.number===5?'main':null);const floor=Number(initialPlace.get('floor'));if(floor===1)inspection.setFloor(floor);if(initialPlace.get('worker')==='1')inspection.watchWorker();}}document.documentElement.dataset.villageReady='true';mount.dataset.households=String(homes.length);mount.dataset.renderedCottages=String(houseRoots.filter(o=>o.visible).length);mount.dataset.forgeCount='1';mount.dataset.cottageTypes='3';const lastShadowTarget=new T.Vector3(Infinity,0,0);let shadowSpan=0;let last=performance.now(),frame=0,total=0,lodTimer=1;
+stage('ready');document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('button,select').forEach(el=>el.disabled=false);$('loading').hidden=true;$('village-status').textContent='Village loaded. All 59 households are available.';cleanView(new URLSearchParams(location.search).has('clean'));const initialHome=homes.find(h=>h.number===Number(initialPlace.get('house')));if(initialHome){select(initialHome);visit(initialHome,true);if(initialPlace.get('room')==='1')stepInside(initialHome,Number(initialPlace.get('floor')));if(initialPlace.has('inside')){inspection.enter(initialHome,initialPlace.get('inside')==='small'&&initialHome.number===22?'small':initialPlace.get('inside')==='main'||initialHome.number===5?'main':null);const floor=Number(initialPlace.get('floor'));if(floor===1)inspection.setFloor(floor);if(initialPlace.get('worker')==='1')inspection.watchWorker();}}document.documentElement.dataset.villageReady='true';mount.dataset.households=String(homes.length);mount.dataset.renderedCottages=String(houseRoots.filter(o=>o.visible).length);mount.dataset.forgeCount='1';mount.dataset.cottageTypes='3';const lastShadowTarget=new T.Vector3(Infinity,0,0);let shadowSpan=0;let last=performance.now(),frame=0,total=0,lodTimer=1;
 document.addEventListener('village-asset-ready',()=>{renderer.shadowMap.needsUpdate=true;});
-function animate(now:number){const real=(now-last)/1000,dt=Math.min(real,.05);last=now;if(!document.hidden){if(!paused)time+=dt;landscape.update(time);foliageTime.value=time;fireTime.value=time;for(const fire of forgeFires)fire.update(time);smallFire.update(time);laundry.update(time);life.update(time);inspection.update(time);const workerVisible=forgeRoot.visible&&camera.position.distanceTo(forgeRoot.position)<80;if(worker.root.visible!==workerVisible)renderer.shadowMap.needsUpdate=true;worker.root.visible=workerVisible;if(workerVisible){worker.update(time);if(!paused)renderer.shadowMap.needsUpdate=true;}if(tween){tween.t+=dt;const r=Math.min(1,tween.t/tween.duration),t=r*r*(3-2*r);camera.position.lerpVectors(tween.from,tween.to,t);controls.target.lerpVectors(tween.fromTarget,tween.target,t);if(r===1)tween=null;}controls.update();updateCompass(camera.quaternion);if(roomHome){const bounded=containRoom(camera.position,controls.target,roomBounds());camera.position.copy(bounded.position);controls.target.copy(bounded.target);}if(!roomHome&&within(camera.position.x,camera.position.z))camera.position.y=Math.max(camera.position.y,ground(camera.position.x,camera.position.z)+1.2);if(inhabited.update(camera.position,time,inspection.active))renderer.shadowMap.needsUpdate=true;mount.dataset.inhabitedHomes=String(inhabited.loaded);mount.dataset.inhabitedFloors=String(inhabited.floors);lodTimer+=dt;if(lodTimer>.35){lodTimer=0;let visible=0,shadowDirty=false;const ranked=homes.map((h,i)=>({i,d:Math.hypot(h.x-controls.target.x,h.z-controls.target.z)})).sort((a,b)=>a.d-b.d);const near=new Set(ranked.filter(a=>a.d<85&&camera.position.distanceTo(controls.target)<160).slice(0,18).map(a=>a.i));homes.forEach((h,i)=>{const on=near.has(i)||camera.position.distanceTo(houseRoots[i].position)<20;if(highRoots[i].visible!==on)shadowDirty=true;highRoots[i].visible=on;lowRoots[i].visible=!on;if(on)visible++;});mount.dataset.detailedHomes=String(visible);
+function animate(now:number){const real=(now-last)/1000,dt=Math.min(real,.05);last=now;if(!document.hidden){if(!paused)time+=dt*(reduced?.5:1);landscape.update(time);foliageTime.value=time;fireTime.value=time;for(const fire of forgeFires)fire.update(time);smallFire.update(time);laundry.update(time);life.update(time);inspection.update(time);const workerVisible=forgeRoot.visible&&camera.position.distanceTo(forgeRoot.position)<80;if(worker.root.visible!==workerVisible)renderer.shadowMap.needsUpdate=true;worker.root.visible=workerVisible;if(workerVisible){worker.update(time);if(!paused)renderer.shadowMap.needsUpdate=true;}if(tween){tween.t+=dt;const r=Math.min(1,tween.t/tween.duration),t=r*r*(3-2*r);camera.position.lerpVectors(tween.from,tween.to,t);controls.target.lerpVectors(tween.fromTarget,tween.target,t);if(r===1)tween=null;}controls.update();updateCompass(camera.quaternion);if(roomHome){const bounded=containRoom(camera.position,controls.target,roomBounds());camera.position.copy(bounded.position);controls.target.copy(bounded.target);}if(!roomHome&&within(camera.position.x,camera.position.z))camera.position.y=Math.max(camera.position.y,ground(camera.position.x,camera.position.z)+1.2);if(inhabited.update(camera.position,time,inspection.active))renderer.shadowMap.needsUpdate=true;mount.dataset.inhabitedHomes=String(inhabited.loaded);mount.dataset.inhabitedFloors=String(inhabited.floors);lodTimer+=dt;if(lodTimer>.35){lodTimer=0;let visible=0,shadowDirty=false;const ranked=homes.map((h,i)=>({i,d:Math.hypot(h.x-controls.target.x,h.z-controls.target.z)})).sort((a,b)=>a.d-b.d);const near=new Set(ranked.filter(a=>a.d<85&&camera.position.distanceTo(controls.target)<160).slice(0,18).map(a=>a.i));homes.forEach((h,i)=>{const on=near.has(i)||camera.position.distanceTo(houseRoots[i].position)<20;if(highRoots[i].visible!==on)shadowDirty=true;highRoots[i].visible=on;lowRoots[i].visible=!on;if(on)visible++;});mount.dataset.detailedHomes=String(visible);
 const target=controls.target;const distance=camera.position.distanceTo(target);
 // Remove only foreground crowns from close house views; restore them when the camera moves.
 const sight=new T.Line3(camera.position,target),closest=new T.Vector3(),zero=new T.Matrix4().makeScale(0,0,0);

@@ -16,7 +16,7 @@ const data=Buffer.from(JSON.stringify(json)),padding=(4-data.length%4)%4,j=Buffe
 const header=Buffer.alloc(20);header.write('glTF');header.writeUInt32LE(2,4);header.writeUInt32LE(20+j.length+binary.length,8);header.writeUInt32LE(j.length,12);header.writeUInt32LE(0x4e4f534a,16);
 const cleaned=Buffer.concat([header,j,binary]);
 const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-let maxWristError=0,maxVertex=0,maxWristBend=0,maxJointStep=0;
+let maxRein=-1,maxWristError=0,maxVertex=0,maxWristBend=0,maxJointStep=0;
 for(const floor of [0,.125]){
  const gltf=await loader.parseAsync(cleaned.buffer.slice(cleaned.byteOffset,cleaned.byteOffset+cleaned.byteLength),'');
  const root=gltf.scene,parent=new T.Group();parent.position.set(12,7,-9);parent.rotation.y=.73;parent.add(root);parent.updateMatrixWorld(true);const rig=createSkeletalChainmakerRig(root,floor);root.position.y=floor;
@@ -76,6 +76,12 @@ for(const floor of [0,.125]){
    }
    const error=actual.distanceTo(p.arms[k].wrist);maxWristError=Math.max(maxWristError,error);assert.ok(error<.003,'Wrist must reach its tool grip');
   }
+  if(i%60===0){
+   // No skin inside the tong reins. Rein centre lines in the tong's own frame, fitted from the model.
+   const tongs=root.getObjectByName('Tongs')!;tongs.updateMatrixWorld(true);const toTong=tongs.matrixWorld.clone().invert();
+   root.traverse(o=>{if(!(o instanceof T.SkinnedMesh))return;o.skeleton.update();const pos=o.geometry.getAttribute('position');for(let v=0;v<pos.count;v++){const q=o.getVertexPosition(v,new T.Vector3()).applyMatrix4(o.matrixWorld).applyMatrix4(toTong);if(Math.abs(q.x)>.07)continue;
+    for(const z of [.0414*q.x-.0241,-.0311*q.x+.0238]){const depth=.0085-Math.hypot(q.y,q.z-z);maxRein=Math.max(maxRein,depth);assert.ok(depth<.002,`Tong rein must not pass through the hand (${(depth*1000).toFixed(1)} mm)`);}}});
+  }
   if(i%20===0)root.traverse(o=>{if(!(o instanceof T.SkinnedMesh))return;o.skeleton.update();const pos=o.geometry.getAttribute('position');for(let v=0;v<pos.count;v+=11){const p=o.getVertexPosition(v,new T.Vector3());assert.ok(p.toArray().every(Number.isFinite),'Finite deformed vertices');maxVertex=Math.max(maxVertex,p.length());assert.ok(p.length()<3,'No exploding skin');}});
   assert.ok(p.hammerFace.y+floor>=LINK.y+.007-1e-6,'Hammer must not enter the anvil');
  }
@@ -84,4 +90,4 @@ for(const floor of [0,.125]){
   const p=rig.update(time);assert.ok(Math.abs(p.hammerFace.y+floor-LINK.y-.007)<1e-6,'All three blows must reach the link');
  }
 }
-console.log(JSON.stringify({frames:842,floors:[0,.125],maxWristError,maxVertex,maxWristBend,maxJointStep,finiteSkin:true},null,2));
+console.log(JSON.stringify({frames:842,floors:[0,.125],maxWristError,maxVertex,maxWristBend,maxJointStep,maxReinDepth:maxRein,finiteSkin:true},null,2));

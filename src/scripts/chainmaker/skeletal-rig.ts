@@ -1,6 +1,9 @@
 import * as T from 'three';
 import {poseAt} from './rig';
 import {workingStroke} from './work-cycle';
+// The tong reins lie side by side. Rolled edge-on and seated in the fist (measured against the
+// posed hand: no skin inside either rein, fingers round 13 of 16 sides), pivoting about the jaws.
+export const tongHold={roll:-1.325,lift:.004,inset:-.028};
 export const hammerGrip={yaw:.75,trayWeight:3,fingerDrop:-.1,rake:.9,pole:[.6,-.5,.4] as [number,number,number]};
 /** Skeletal adapter for the recovered continuous mesh. All targets use figure-local metres. */
 export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
@@ -153,7 +156,10 @@ export function createSkeletalChainmakerRig(root:T.Object3D,floorHeight=0){
   }
   calibrated=true;
   tools.Hammer.position.copy(p.grip);tools.Hammer.quaternion.copy(p.hammer.q);
-  tools.Tongs.position.copy(p.tongGrip);tools.Tongs.quaternion.copy(p.arms[0].tool.q);
+  const tong=p.arms[0].tool,tip=p.tongGrip.clone().addScaledVector(tong.x,.43);
+  const seat=p.tongGrip.clone().addScaledVector(tong.y,tongHold.lift).addScaledVector(tong.z,tongHold.inset);
+  const pivot=new T.Quaternion().setFromUnitVectors(tong.x,tip.clone().sub(seat).normalize());
+  tools.Tongs.position.copy(seat);tools.Tongs.quaternion.copy(pivot.multiply(tong.q).multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),tongHold.roll)));
   root.updateMatrixWorld(true);return p;
  }
  return {update,grips:()=>rigs.map(r=>r.fingers.map(f=>({name:f.b.name,angle:f.angle,adduction:f.adduction})))};

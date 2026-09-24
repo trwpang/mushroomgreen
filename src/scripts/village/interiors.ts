@@ -232,10 +232,8 @@ export function createInteriors(scene:T.Object3D,embedded=false){
     box(x+.02,1.25,z,ww-.08,.22,dd,brick);box(x-.08,(wallH+1.36)/2,z,ww-.24,wallH-1.36,dd-.10,brick);
     box(face-.06,1.42,z,.24,.09,dd+.21,woods[1]);box(x-.12,.54,z,.03,.85,dd-.40,dark);
 
-    for(let i=0;i<5;i++)sphere(face-.18,.25,z+(rand()-.5)*dd*.5,.07,.035,.055,dark);
-    // A small banked coal fire in the grate; its light comes from the shared pool.
-    hearthFire=createFire({width:Math.min(.34,dd*.4),depth:.2,flameHeight:.17,tongues:5,sparks:8,smoke:new T.Vector3(-.05,.55,0),light:{intensity:1.0,distance:3.2,offset:new T.Vector3(.3,.28,0)},heat:.8,seed:plan.seed%997});
-    hearthFire.group.position.set(face-.16,base+.2,z);hearthFire.group.rotation.y=Math.PI/2;root.add(hearthFire.group);
+    for(let i=0;i<5;i++)rand(); // Former loose hearth coals (one draw each, preserving the room seed): the range's own fire basket now holds the fuel.
+    // The fire itself burns in the range's own fire basket (placed with the dressing below).
 
     for(let i=0;i<2;i++){rod(new T.Vector3(face-.08,.10,z+dd*.40-i*.09),new T.Vector3(face-.13,.94,z+dd*.43-i*.09),.012,iron);add(new T.TorusGeometry(.027,.008,5,10),iron,face-.13,.97,z+dd*.43-i*.09,0,Math.PI/2);}
     for(const side of [-1,1]){cylinder(face-.06,1.51,z+side*dd*.34,.026,.035,.09,ceramic);cylinder(face-.06,1.64,z+side*dd*.34,.018,.018,.18,cream);}
@@ -271,6 +269,15 @@ export function createInteriors(scene:T.Object3D,embedded=false){
    if(!embedded&&p.id==='curtains'&&p.z>0)continue; // Front wall is removed in the cutaway.
    const curtainOffset=!embedded&&p.id==='curtains'?.12:0;
    object(p.id,p.x,p.y+.03+curtainOffset,p.z,p.sx,p.sy,p.sz,p.angle,p.tilt??0);
+   if(p.id==='open-range'||p.id==='oven-range'||p.id==='hob-stove'){
+    // Coal fire in the range's basket (range-local metres, scaled and turned with the model).
+    const basket=p.id==='open-range'?{x:0,y:.3,z:.02,w:.26,d:.28}:{x:-.2,y:.3,z:.02,w:.28,d:.22};
+    const c=Math.cos(p.angle),sn=Math.sin(p.angle),lx=basket.x*p.sx,lz=basket.z*p.sz;
+    const closed=p.id==='hob-stove';
+    hearthFire?.dispose();
+    hearthFire=createFire({width:basket.w*p.sx,depth:basket.d*p.sz,flameHeight:closed?.01:.13*p.sy,tongues:closed?1:6,sparks:closed?0:6,smoke:null,light:{intensity:closed?.55:1.0,distance:3.2,offset:new T.Vector3(0,.15,.35)},heat:closed?.6:.9,seed:plan.seed%997});
+    hearthFire.group.position.set(p.x+lx*c+lz*sn,base+p.y+.03+basket.y*p.sy,p.z-lx*sn+lz*c);hearthFire.group.rotation.y=p.angle;root.add(hearthFire.group);
+   }
    if(home.number===22&&floor===0&&p.id==='oil-lamp'&&p.anchor.includes('-table-')){
     lampFlame=new T.Mesh(own(new T.SphereGeometry(1,12,8)),own(new T.MeshBasicMaterial({color:'#ffe2a3'})));
     lampFlame.position.set(p.x,base+p.y+.03+.162*p.sy,p.z);lampFlame.scale.set(.008,.023,.008);root.add(lampFlame);

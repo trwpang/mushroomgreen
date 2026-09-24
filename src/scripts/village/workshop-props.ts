@@ -148,7 +148,8 @@ export function addWorkshopProps(root:T.Group,domestic=false){
   stock(-.55,-1.65,1.08,18);stock(3.2,-1.6,.70,12);
   toolRail(-2.35,-1.89);toolRail(1.25,-1.89);
   quench(-1.25,.95,.24);quench(1.60,1.35,.20);
-  for(const station of [-3,0,3])benchTools(station-.30,.792,.40);
+  // The centre block's near face was pulled back for the worker's shins; its tools moved with it.
+  for(const station of [-3,0,3])benchTools(station-.30,.792,station===0?.58:.40);
  }else{
   fuelBed(0);
   pile('medium',-1.79,-.98,12,.27);pile('small',.62,-1.10,30,.20);
