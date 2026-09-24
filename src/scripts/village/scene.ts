@@ -19,6 +19,7 @@ import {mergeByMaterial} from './merge-meshes';
 import {createFire,fireTime,softSmokeTexture} from './fire';
 import {installLightPool,updateLightPool} from './light-pool';
 import {addSpringFlowers} from './spring-flowers';
+import {addFlyAgarics} from './fly-agaric';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
 import {addWorkingChainmaker} from '../chainmaker/worker';
 import {centralWorkstation,clearChainmakerStance} from './workshop';
@@ -341,6 +342,8 @@ const floorClear=(p:Point,r:number)=>{
 const approachEye:Point=[forgePos[0]+18.2,forgePos[1]-12.8];
 const woodlandFloor=addWoodlandFloor(scene,{trees:treePositions.map(p=>({p})),clear:floorClear,time:foliageTime,bark:trunkMaterial,keepClear:[[brookLook,brookEye],[approachEye,forgePos]]});
 paintWoodlandLitter(ctx,pixel,woodlandFloor.litter);groundTexture.needsUpdate=true;mount.dataset.woodlandFloor=JSON.stringify(woodlandFloor.counts);
+// Fly agarics at the foot of the tree beside the fallen log, right of the brook view.
+addFlyAgarics(scene,[{p:[-75.4,69.25],radius:.09,height:.2,open:.85,lean:.06},{p:[-74.7,69.8],radius:.074,height:.16,open:.6,lean:-.08},{p:[-75.05,69.65],radius:.034,height:.07,open:.05,lean:.04}]);
 stage('before lane verges');// Lane margins avoid buildings, paths, working props, animals and reserved sites.
 const occupied=[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)];
 const laneClear=(p:Point,r:number)=>within(...p)&&!siteIssue(p,r)&&industryClear(...p,r)&&!occupied.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1+r)&&
