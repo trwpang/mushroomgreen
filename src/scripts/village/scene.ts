@@ -76,7 +76,8 @@ stage('before households fetch');const households:Household[]=await fetch('/hous
 const within=(x:number,z:number)=>Math.pow(x/210,2)+Math.pow((z+60)/240,2)<.97;
 // Paint an original terrain atlas in world coordinates. Roads follow the saved village map and the traced historic exit.
 stage('before terrain canvas');const terrainCanvas=document.createElement('canvas');terrainCanvas.width=terrainCanvas.height=4096;const ctx=terrainCanvas.getContext('2d')!;const img=ctx.createImageData(4096,4096);
-for(let j=0;j<4096;j++)for(let i=0;i<4096;i++){const n=rand()*13+Math.sin(i*.017+Math.cos(j*.02)*2)*5+Math.sin(j*.025)*4;const k=(j*4096+i)*4;img.data[k]=103+n;img.data[k+1]=110+n;img.data[k+2]=70+n*.75;img.data[k+3]=255;}ctx.putImageData(img,0,0);
+// rand() inlined with row terms hoisted: byte-identical pixels and final seed, ~8x faster.
+{const data=img.data;let s=seed;for(let j=0,k=0;j<4096;j++){const bend=Math.cos(j*.02)*2,row=Math.sin(j*.025)*4;for(let i=0;i<4096;i++,k+=4){s=(Math.imul(s,1664525)+1013904223)>>>0;const n=s/4294967296*13+Math.sin(i*.017+bend)*5+row;data[k]=103+n;data[k+1]=110+n;data[k+2]=70+n*.75;data[k+3]=255;}}seed=s;}ctx.putImageData(img,0,0);
 const pixel=(p:Point):Point=>[(p[0]+230)/460*4096,(p[1]+320)/520*4096];
 function stroke(points:Point[],width:number,color:string){ctx.beginPath();points.forEach((p,i)=>{const q=pixel(p);if(i)ctx.lineTo(...q);else ctx.moveTo(...q);});ctx.strokeStyle=color;ctx.lineWidth=width/460*4096;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();}
 for(const polygon of greens){ctx.beginPath();polygon.forEach((p,i)=>{const q=pixel(p);if(i)ctx.lineTo(...q);else ctx.moveTo(...q);});ctx.closePath();ctx.fillStyle='#61713b55';ctx.fill();}

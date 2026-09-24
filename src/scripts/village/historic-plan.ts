@@ -12,7 +12,12 @@ export const railRoutes:P[][]=[
  [[511,454],[506,422],[520,385],[541,350],[570,312],[624,225],[680,126]].map(p=>trace(p as P)),
  [[463,316],[509,319],[552,316],[570,312],[620,292],[695,273],[758,248]].map(p=>trace(p as P)),
 ];
-export function railNearest(x:number,z:number){let distance=Infinity,p:P=[0,0],tangent:P=[1,0];for(const line of railRoutes)for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],q=segmentPoint([x,z],a,b),d=Math.hypot(x-q[0],z-q[1]);if(d<distance){distance=d;p=q;const l=Math.hypot(b[0]-a[0],b[1]-a[1]);tangent=[(b[0]-a[0])/l,(b[1]-a[1])/l];}}return {distance,p,tangent};}
+// Segment boxes let the nearest-rail search skip segments that cannot win. Results are
+// identical to a full scan: a segment is skipped only when its box is strictly farther away.
+const railBoxes=railRoutes.flatMap(line=>line.slice(1).map((b,i)=>{const a=line[i];return [Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])];}));
+const railExtent=railBoxes.reduce((e,b)=>[Math.min(e[0],b[0]),Math.min(e[1],b[1]),Math.max(e[2],b[2]),Math.max(e[3],b[3])],[Infinity,Infinity,-Infinity,-Infinity]);
+export function railNearest(x:number,z:number,limit=Infinity){let distance=Infinity,p:P=[0,0],tangent:P=[1,0],k=0;
+ if(limit<Infinity&&Math.max(railExtent[0]-x,x-railExtent[2],railExtent[1]-z,z-railExtent[3])>limit+1e-9)return {distance,p,tangent};for(const line of railRoutes)for(let i=1;i<line.length;i++,k++){const box=railBoxes[k],bx=Math.max(box[0]-x,0,x-box[2]),bz=Math.max(box[1]-z,0,z-box[3]);const bound=Math.min(distance,limit)+1e-9;if(bx*bx+bz*bz>bound*bound)continue;const a=line[i-1],b=line[i],q=segmentPoint([x,z],a,b),d=Math.hypot(x-q[0],z-q[1]);if(d<distance){distance=d;p=q;const l=Math.hypot(b[0]-a[0],b[1]-a[1]);tangent=[(b[0]-a[0])/l,(b[1]-a[1])/l];}}return {distance,p,tangent};}
 export const excavations=[
  {id:'north-clay-bank',p:trace([455,188]),rx:29,rz:48,depth:3.0,angle:-.42,kind:'clay'},
  {id:'shaft-working',p:trace([550,437]),rx:18,rz:27,depth:1.25,angle:.28,kind:'spoil'},
@@ -28,13 +33,14 @@ export function prepareHistoricGround(base:(x:number,z:number)=>number){railDatu
 export function railBed(x:number,z:number){return railDatum+(x-115)*.012-(z+120)*.009;}
 export function historicGround(x:number,z:number,y:number,roadDistance:number){
  const roadFade=smooth(4,9,roadDistance);
- for(const e of excavations){const r=hollowRadius(x,z,e);if(r<1)y-=e.depth*(1-smooth(.25,1,r))*roadFade;}
+ // hollowRadius<1 needs the point within 1.13 of the larger semi-axis; skip the trig beyond that.
+ for(const e of excavations){if(Math.hypot(x-e.p[0],z-e.p[1])>1.14*Math.max(e.rx,e.rz))continue;const r=hollowRadius(x,z,e);if(r<1)y-=e.depth*(1-smooth(.25,1,r))*roadFade;}
  for(const e of pools){const r=Math.hypot((x-e.p[0])/e.rx,(z-e.p[1])/e.rz);if(r<1.35)y-=e.depth*(1-smooth(.7,1.35,r))*roadFade;}
- const rail=railNearest(x,z);if(rail.distance<6.5){const t=1-smooth(1.6,6.5,rail.distance);y+=(railBed(...rail.p)-y)*t*roadFade;}
+ const rail=railNearest(x,z,6.5);if(rail.distance<6.5){const t=1-smooth(1.6,6.5,rail.distance);y+=(railBed(...rail.p)-y)*t*roadFade;}
  return y;
 }
 export function industryClear(x:number,z:number,margin=0){
- if(railNearest(x,z).distance<3.4+margin)return false;
+ if(railNearest(x,z,3.4+margin).distance<3.4+margin)return false;
  if(excavations.some(e=>hollowRadius(x,z,e)<.78+margin/20))return false;
  if(pools.some(e=>Math.hypot((x-e.p[0])/(e.rx+margin),(z-e.p[1])/(e.rz+margin))<1.4))return false;
  return true;

@@ -8,12 +8,21 @@ import {ground,localPoint,nearestRoad,nearestSegment,streamDistance,chainshopPos
 export type PropPlacement={kind:PropKind;p:Point;angle:number;home:number;group:string;tilt?:number;lift?:number;support?:string;wallSide?:-1|1;station?:string};
 const dims=(h:Home)=>({w:[6.4,7.2,9.2][h.style]*h.sx,d:[4.6,4.8,4.5][h.style]*h.sz});
 const local=(p:Point,c:Point,a:number):Point=>{const x=p[0]-c[0],z=p[1]-c[1];return [x*Math.cos(a)-z*Math.sin(a),x*Math.sin(a)+z*Math.cos(a)];};
+// Trees bucketed in 2m cells (cached per array); same test as trees.some(within .65m).
+const treeCells=new WeakMap<Point[],{count:number;cells:Map<number,Point[]>}>();
+function nearTree(p:Point,trees:Point[]){
+ let index=treeCells.get(trees);
+ if(!index||index.count!==trees.length){const cells=new Map<number,Point[]>();for(const t of trees){const key=Math.floor(t[0]/2)*65536+Math.floor(t[1]/2),list=cells.get(key);if(list)list.push(t);else cells.set(key,[t]);}index={count:trees.length,cells};treeCells.set(trees,index);}
+ const cx=Math.floor(p[0]/2),cz=Math.floor(p[1]/2);
+ for(let x=cx-1;x<=cx+1;x++)for(let z=cz-1;z<=cz+1;z++)for(const t of index.cells.get(x*65536+z)||[])if(Math.hypot(p[0]-t[0],p[1]-t[1])<.65)return true;
+ return false;
+}
 export function propGroundIssue(p:Point,homes:Home[],paths:Point[][],trees:Point[]=[],wall?:{home:number;side:-1|1}):string|null{
  if(siteIssue(p,.3)||!industryClear(...p,.5))return 'working yard';
  const r=nearestRoad(p);if(Math.hypot(p[0]-r[0],p[1]-r[1])<2.5)return 'lane';
  if(streamDistance(...p)<3.1)return 'brook';
  for(const path of paths)for(let i=1;i<path.length;i++){const q=nearestSegment(p,path[i-1],path[i]);if(Math.hypot(p[0]-q[0],p[1]-q[1])<.75)return 'path';}
- if(trees.some(t=>Math.hypot(p[0]-t[0],p[1]-t[1])<.65))return 'tree';
+ if(nearTree(p,trees))return 'tree';
  const f=local(p,chainshopPosition,1.03);if(Math.abs(f[0])<4.7&&Math.abs(f[1])<2.65)return 'forge wall';
  if(f[0]>4.45&&f[0]<8&&Math.abs(f[1])<1.6)return 'forge entrance';
  if(f[0]>-2.05&&f[0]<.65&&f[1]>3.8&&f[1]<9.1)return 'cart';

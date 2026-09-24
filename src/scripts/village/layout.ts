@@ -45,8 +45,10 @@ export function streamDistance(x:number,z:number){let d=Infinity;for(const [a,b]
 // Maintain one downstream grade on each mapped watercourse. Small rises in
 // the modern DTM are cut through, rather than making water travel uphill.
 const channels=brooks.map(line=>{let level=Infinity;return line.map(p=>{level=Math.min(level,baseGround(...p)-.35);return {p,h:level};});});
+// Segment boxes skip channel segments strictly farther than the best so far (same result as a full scan).
+const channelBoxes=channels.flatMap(line=>line.slice(1).map((b,i)=>{const a=line[i];return [Math.min(a.p[0],b.p[0]),Math.min(a.p[1],b.p[1]),Math.max(a.p[0],b.p[0]),Math.max(a.p[1],b.p[1])];}));
 export function streamSurface(x:number,z:number){let distance=Infinity,height=baseGround(x,z)-.35;
- for(const line of channels)for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],p=nearestSegment([x,z],a.p,b.p),d=Math.hypot(x-p[0],z-p[1]);if(d<distance){distance=d;const length=Math.hypot(b.p[0]-a.p[0],b.p[1]-a.p[1]);const t=length?Math.hypot(p[0]-a.p[0],p[1]-a.p[1])/length:0;height=a.h+(b.h-a.h)*t;}}
+ let k=0;for(const line of channels)for(let i=1;i<line.length;i++,k++){const box=channelBoxes[k],bx=Math.max(box[0]-x,0,x-box[2]),bz=Math.max(box[1]-z,0,z-box[3]),bound=distance+1e-9;if(bx*bx+bz*bz>bound*bound)continue;const a=line[i-1],b=line[i],p=nearestSegment([x,z],a.p,b.p),d=Math.hypot(x-p[0],z-p[1]);if(d<distance){distance=d;const length=Math.hypot(b.p[0]-a.p[0],b.p[1]-a.p[1]);const t=length?Math.hypot(p[0]-a.p[0],p[1]-a.p[1])/length:0;height=a.h+(b.h-a.h)*t;}}
  return height;
 }
 type Platform={x:number;z:number;angle:number;w:number;d:number;y:number};
@@ -63,9 +65,8 @@ export function prepareGround(homes:Home[]){
 }
 export function addGroundPlatforms(items:Platform[]){platforms.unshift(...items);}
 export function ground(x:number,z:number){
- let y=historicGround(x,z,baseGround(x,z),laneDistance(x,z));const d=streamDistance(x,z),w=streamWidth(x,z)*.5;
+ const roadDistance=laneDistance(x,z);let y=historicGround(x,z,baseGround(x,z),roadDistance);const d=streamDistance(x,z),w=streamWidth(x,z)*.5;
  if(d<w+12){const bed=streamSurface(x,z)-.48;const blend=d<w?1:Math.max(0,1-(d-w)/12)**2;y=Math.min(y,y+(bed-y)*blend);}
- const roadDistance=laneDistance(x,z);
  if(roadDistance<2.8){const shoulder=Math.max(0,Math.min(1,(2.8-roadDistance)/.7));y-=shoulder*(.15+.18*Math.exp(-(((roadDistance-.87)/.43)**2)));}
  let strongest=0,level=y;
  for(const p of platforms){if(Math.abs(x-p.x)>18||Math.abs(z-p.z)>18)continue;const dx=x-p.x,dz=z-p.z,c=Math.cos(p.angle),s=Math.sin(p.angle);const edge=Math.max(Math.abs(dx*c-dz*s)-p.w,Math.abs(dx*s+dz*c)-p.d);const t=Math.max(0,Math.min(1,1-edge/3));const weight=t*t*(3-2*t);if(weight>strongest){strongest=weight;level=p.y;}}
@@ -73,7 +74,30 @@ export function ground(x:number,z:number){
 }
 
 export function nearestSegment(p:Point,a:Point,b:Point):Point {const dx=b[0]-a[0],dz=b[1]-a[1];const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dz)/(dx*dx+dz*dz||1)));return [a[0]+dx*t,a[1]+dz*t];}
-export function nearestRoad(p:Point,lines:Point[][]=laneLines):Point {let best:Point=roads[0][0],d=Infinity;for(const line of lines)for(let i=1;i<line.length;i++){const q=nearestSegment(p,line[i-1],line[i]);const dd=Math.hypot(p[0]-q[0],p[1]-q[1]);if(dd<d){d=dd;best=q;}}return best;}
+// Grid index for nearestRoad. Rings of cells are searched outwards until no unvisited cell can
+// hold a closer segment; ties resolve to the lowest segment index, exactly as a full ordered scan.
+type RoadIndex={segments:[Point,Point][];cells:Map<number,number[]>;size:number;stamp:Uint32Array;query:number};
+const roadIndexes=new WeakMap<Point[][],RoadIndex>();
+function roadIndex(lines:Point[][]){
+ let index=roadIndexes.get(lines);if(index)return index;
+ const segments:[Point,Point][]=[],cells=new Map<number,number[]>(),size=12;
+ for(const line of lines)for(let i=1;i<line.length;i++)segments.push([line[i-1],line[i]]);
+ segments.forEach(([a,b],k)=>{for(let x=Math.floor(Math.min(a[0],b[0])/size);x<=Math.floor(Math.max(a[0],b[0])/size);x++)for(let z=Math.floor(Math.min(a[1],b[1])/size);z<=Math.floor(Math.max(a[1],b[1])/size);z++){const key=x*65536+z,list=cells.get(key);if(list)list.push(k);else cells.set(key,[k]);}});
+ index={segments,cells,size,stamp:new Uint32Array(segments.length),query:0};roadIndexes.set(lines,index);return index;
+}
+export function nearestRoad(p:Point,lines:Point[][]=laneLines):Point {
+ const index=roadIndex(lines),{segments,cells,size,stamp}=index,cx=Math.floor(p[0]/size),cz=Math.floor(p[1]/size),query=++index.query;
+ let best:Point=roads[0][0],d=Infinity,bestK=Infinity;
+ const visit=(x:number,z:number)=>{const list=cells.get(x*65536+z);if(!list)return;for(const k of list){if(stamp[k]===query)continue;stamp[k]=query;const q=nearestSegment(p,segments[k][0],segments[k][1]),dd=Math.hypot(p[0]-q[0],p[1]-q[1]);if(dd<d||(dd===d&&k<bestK)){d=dd;best=q;bestK=k;}}};
+ for(let r=0;r<4;r++){
+  if(r===0)visit(cx,cz);
+  else for(let i=-r;i<=r;i++){visit(cx+i,cz-r);visit(cx+i,cz+r);if(i>-r&&i<r){visit(cx-r,cz+i);visit(cx+r,cz+i);}}
+  // Every cell outside ring r lies at least r*size away.
+  if(d<r*size-1e-9)return best;
+ }
+ // Far from every road: finish with an ordered scan of the unvisited segments.
+ for(let k=0;k<segments.length;k++){if(stamp[k]===query)continue;const q=nearestSegment(p,segments[k][0],segments[k][1]),dd=Math.hypot(p[0]-q[0],p[1]-q[1]);if(dd<d||(dd===d&&k<bestK)){d=dd;best=q;bestK=k;}}return best;
+}
 export function nearestVillageRoad(p:Point):Point {return nearestRoad(p,villageLaneLines);}
 export function makeHomes(rows:Household[]):Home[]{return rows.map(h=>{let [x,z]=project([h.position.lat,h.position.lon]);const poly=(h.polygon||[]).map(project);let length=0,angle=0;
 for(let i=1;i<poly.length;i++){const dx=poly[i][0]-poly[i-1][0],dz=poly[i][1]-poly[i-1][1];if(Math.hypot(dx,dz)>length){length=Math.hypot(dx,dz);angle=-Math.atan2(dz,dx);}}
