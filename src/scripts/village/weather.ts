@@ -1,8 +1,7 @@
 import * as T from 'three';
 /**
- * Rain, decided once per visit: about one visit in four it is raining lightly from the first frame
- * to the last, otherwise it stays dry. No showers start or stop mid-visit. ?rain=1 forces rain,
- * ?rain=0 (and still captures) keep it dry.
+ * Rain, decided once per visit and steady for its whole length. Currently OFF for visitors (pending
+ * rain sound and on-screen controls); ?rain=1 turns it on for development.
  *
  * Rain is a camera-following volume of thin streaks animated entirely in the vertex shader: the
  * volume wraps in world space, so drops fall past the viewer rather than moving with them.
@@ -11,7 +10,9 @@ import * as T from 'three';
 export const wetness={value:0};
 export function createWeather(scene:T.Scene){
  const query=new URLSearchParams(location.search),mode=query.get('rain');
- const raining=mode==='1'||(mode!=='0'&&!query.has('still')&&Math.random()<.25),amount=raining?.85:0;
+ // Rain is off for visitors until its sound and controls are reworked; ?rain=1 still shows it for
+ // development. (Was: about one visit in four.)
+ const raining=mode==='1',amount=raining?.85:0;
  wetness.value=amount;
  const COUNT=10000,BOX=44,HEIGHT=26;
  const seeds=new Float32Array(COUNT*3);let s=91;const rand=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};
