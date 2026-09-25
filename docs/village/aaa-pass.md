@@ -42,3 +42,12 @@ Capture gotcha: under heavy machine load, a view captured about 6 s after load c
 - **Cat** (cat.ts): SDF-sculpted sitting tabby with shell fur, markings, glossy eyes, whiskers and idle life.
 
 Water backlog (Codex): opaque-pass depth for true Beer–Lambert thickness and refraction; bed gravel and submerged stones; persistent (ping-pong) foam that decays downstream.
+
+## Round 5 (25 Sept): performance, mobile, ektogamat review, weather
+- Performance (same pixels on capable machines): 60 fps cap; unused canvas MSAA removed (~90 MB); heavy static instanced sets split into 110 m chunks for frustum culling; indexed prop kit (geometry 211 → 150 MB); cat fur shells by distance; half-resolution GTAO (A/B ≤1/255); interiors compiled in the background after the village shows (first view ~1.4 s sooner).
+- Weak devices: dynamic resolution only when <45 fps and only if it helps; lite mode (?lite) chosen automatically after a WebGL context loss and remembered; touch-only devices at 1.25× pixel ratio.
+- Mobile controls (Codex): compact Pause / sound / More bar, one scrolling row of views, compact interior toolbar.
+- From ektogamat/threejs-conference (WebGPU/TSL; ideas ported, not code): half-res AO, mobile DPR budget, split warm-up, canvas fade-in. Tried and rejected: SMAA (colour fringes on edges) and HDR bloom (no visible glow without hazing the sky).
+- Weather: occasional light showers (weather.ts), deterministic from the shared clock; ?rain=1 / ?rain=0.
+
+Next (not done): KTX2/UASTC textures for GLBs (toktx unavailable; a WASM encoder route exists) to cut texture memory for old tablets; scene-wide image-based lighting trial; MSAA on the composer targets if the frame budget allows; the occasional pre-placement shadow race in captures.
