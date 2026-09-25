@@ -1,6 +1,12 @@
 import * as T from 'three';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
+/**
+ * Rooms merge many small parts per material. Keeping each part's index (and giving unindexed parts
+ * a plain one) lets shared corners be stored once instead of once per triangle: the same triangles,
+ * about a third of the vertex memory.
+ */
+export function withIndex(g:T.BufferGeometry){if(!g.index){const count=g.getAttribute('position').count,index=count>65535?new Uint32Array(count):new Uint16Array(count);for(let i=0;i<count;i++)index[i]=i;g.setIndex(new T.BufferAttribute(index,1));}return g;}
 import {type InteriorObjectId} from './interior-catalogue';
 import {detailedObject} from './interior-object-detail';
 export type ObjectMaterial='oak'|'darkwood'|'iron'|'steel'|'copper'|'cream'|'blue'|'clay'|'cloth'|'green'|'coal'|'glass'|'paper'|'linen'|'tile'|'stone'|'lampglass';
@@ -11,7 +17,7 @@ export interface InteriorObject {parts:ObjectPart[];bounds:T.Box3;surfaces:Objec
 export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
  const batches=new Map<ObjectMaterial,T.BufferGeometry[]>(),surfaces:ObjectSurface[]=[];
  const put=(g:T.BufferGeometry,m:ObjectMaterial,x=0,y=0,z=0,rx=0,ry=0,rz=0)=>{
-  const n=g.index?g.toNonIndexed():g.clone();g.dispose();if(!n.hasAttribute('color'))n.setAttribute('color',new T.Float32BufferAttribute(new Float32Array(n.getAttribute('position').count*3).fill(1),3));n.applyMatrix4(new T.Matrix4().compose(new T.Vector3(x,y,z),new T.Quaternion().setFromEuler(new T.Euler(rx,ry,rz)),new T.Vector3(1,1,1)));
+  const n=withIndex(g.clone());g.dispose();if(!n.hasAttribute('color'))n.setAttribute('color',new T.Float32BufferAttribute(new Float32Array(n.getAttribute('position').count*3).fill(1),3));n.applyMatrix4(new T.Matrix4().compose(new T.Vector3(x,y,z),new T.Quaternion().setFromEuler(new T.Euler(rx,ry,rz)),new T.Vector3(1,1,1)));
   const parts=batches.get(m)??[];parts.push(n);batches.set(m,parts);
  };
  const box=(x:number,y:number,z:number,w:number,h:number,d:number,m:ObjectMaterial='oak',ry=0)=>put(new T.BoxGeometry(w,h,d),m,x,y,z,0,ry);
@@ -363,7 +369,7 @@ export function buildInteriorObject(id:InteriorObjectId):InteriorObject{
  }else if(id==='board-ceiling'){
   for(let i=0;i<7;i++)box((i+.5)/7-.5,.015,0,1/7-.004,.03,1,i%3?'oak':'darkwood');for(const x of [-.43,.43])box(x,-.030,0,.045,.06,1,'darkwood');
  }else{throw new Error(`Missing object geometry: ${id}`);}
- const parts:ObjectPart[]=[];const bounds=new T.Box3();for(const [material,raw]of batches){const geometry=mergeGeometries(raw);raw.forEach(g=>g.dispose());geometry.computeBoundingBox();bounds.union(geometry.boundingBox!);parts.push({geometry,material});}
+ const parts:ObjectPart[]=[];const bounds=new T.Box3();for(const [material,raw]of batches){const merged=mergeGeometries(raw),geometry=mergeVertices(merged);merged.dispose();raw.forEach(g=>g.dispose());geometry.computeBoundingBox();bounds.union(geometry.boundingBox!);parts.push({geometry,material});}
  const floor=bounds.min.y;for(const part of parts)part.geometry.translate(0,-floor,0);bounds.translate(new T.Vector3(0,-floor,0));
  for(const surface of surfaces)surface.y-=floor;
  return {parts,bounds,surfaces};

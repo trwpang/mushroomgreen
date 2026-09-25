@@ -16,7 +16,8 @@ for(const [index,[id,name]]of interiorCatalogue.entries()){
  const model=interiorObject(id),node=doc.createNode(id).setTranslation([(index%10-4.5)*2.5,0,(Math.floor(index/10)-4.5)*2.5]).setExtras({title:name,id,units:'metres',origin:'bottom centre',supportSurfaces:model.surfaces});
  const mesh=doc.createMesh(name);
  for(const part of model.parts){const primitive=doc.createPrimitive().setMaterial(materials[part.material]);
-  for(const [from,to,type]of [['position','POSITION','VEC3'],['normal','NORMAL','VEC3'],['uv','TEXCOORD_0','VEC2'],['color','COLOR_0','VEC3']] as const){const attribute=part.geometry.getAttribute(from);if(attribute)primitive.setAttribute(to,doc.createAccessor().setBuffer(buffer).setType(type).setArray(new Float32Array(attribute.array)));}mesh.addPrimitive(primitive);
+  for(const [from,to,type]of [['position','POSITION','VEC3'],['normal','NORMAL','VEC3'],['uv','TEXCOORD_0','VEC2'],['color','COLOR_0','VEC3']] as const){const attribute=part.geometry.getAttribute(from);if(attribute)primitive.setAttribute(to,doc.createAccessor().setBuffer(buffer).setType(type).setArray(new Float32Array(attribute.array)));}
+  if(part.geometry.index)primitive.setIndices(doc.createAccessor().setBuffer(buffer).setType('SCALAR').setArray(new Uint32Array(part.geometry.index.array)));mesh.addPrimitive(primitive);
  }
  node.setMesh(mesh);scene.addChild(node);
 }

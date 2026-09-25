@@ -7,6 +7,7 @@ import {wearFloor} from './floor-wear';
 import {refineSurface,cloneSurface,type Surface} from '../rendering/surfaces';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {withIndex} from './interior-objects';
 import type {Home} from './layout';
 import {localPoint} from './layout';
 import {planInterior,roomDimensions,seeded,type InteriorPlan,type Furnishing} from './interior-plans';
@@ -57,7 +58,7 @@ export function createInteriors(scene:T.Object3D,embedded=false){
   const woods=['#e3ccaa','#c5b59d','#d3b590','#b59f84'].map(c=>mat(c,woodMap));
   const lime=mat(['#ddd6ba','#c7ccb9','#d8c7b0','#cbc3b3','#d7d0b9','#c4c7b5'][plan.palette],plasterMap),dark=mat('#211e18',undefined,.93,'coal'),iron=mat('#37372e',undefined,.7),brick=mat('#c2aa93',brickMap),stone=mat('#8a8170',undefined,.93,'stone'),cream=mat('#e9dfc9',clothMap),blanket=mat(['#786a53','#6a7773','#827064','#77794f','#8b7b66','#697071'][plan.palette],clothMap),ceramic=mat('#b5a787',undefined,.34),earthenware=mat('#835a3d',undefined,.42);
   const batches=new Map<T.Material,T.BufferGeometry[]>();
-  function add(g:T.BufferGeometry,m:T.Material,x=0,y=0,z=0,rx=0,ry=0,rz=0){const matrix=new T.Matrix4().compose(new T.Vector3(x,y+base,z),new T.Quaternion().setFromEuler(new T.Euler(rx,ry,rz)),new T.Vector3(1,1,1));const n=g.index?g.toNonIndexed():g.clone();g.dispose();if(!n.hasAttribute('color'))n.setAttribute('color',new T.Float32BufferAttribute(new Float32Array(n.getAttribute('position').count*3).fill(1),3));n.applyMatrix4(matrix);const b=batches.get(m)||[];b.push(n);batches.set(m,b);}
+  function add(g:T.BufferGeometry,m:T.Material,x=0,y=0,z=0,rx=0,ry=0,rz=0){const matrix=new T.Matrix4().compose(new T.Vector3(x,y+base,z),new T.Quaternion().setFromEuler(new T.Euler(rx,ry,rz)),new T.Vector3(1,1,1));const n=withIndex(g.clone());g.dispose();if(!n.hasAttribute('color'))n.setAttribute('color',new T.Float32BufferAttribute(new Float32Array(n.getAttribute('position').count*3).fill(1),3));n.applyMatrix4(matrix);const b=batches.get(m)||[];b.push(n);batches.set(m,b);}
   function box(x:number,y:number,z:number,a:number,b:number,c:number,m:T.Material=woods[0],ry=0){add(new T.BoxGeometry(a,b,c),m,x,y,z,0,ry);}
   function cylinder(x:number,y:number,z:number,rt:number,rb:number,h:number,m:T.Material,sides=12){add(new T.CylinderGeometry(rt,rb,h,sides),m,x,y,z);}
   function sphere(x:number,y:number,z:number,a:number,b:number,c:number,m:T.Material){const g=new T.SphereGeometry(1,12,7);g.scale(a,b,c);add(g,m,x,y,z);}

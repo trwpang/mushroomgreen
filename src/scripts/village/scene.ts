@@ -23,6 +23,7 @@ import {addFlyAgarics} from './fly-agaric';
 import {createSoundscape} from './soundscape';
 import {chunkInstances} from './instance-chunks';
 import {releaseGeometryAfterUpload,releaseTextureImages} from './release-cpu';
+import {leanShadowMap} from './shadow-target';
 import {createWeather} from './weather';
 import {LINK} from '../chainmaker/rig';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
@@ -84,7 +85,7 @@ addEventListener('pagehide',event=>{if(!event.persisted)disposeMaterialTextures(
 const scene=new T.Scene();scene.background=new T.Color('#c4c7b9');scene.fog=new T.Fog('#c4c7b9',850,1700);const sky=createSky(scene);const weather=createWeather(scene);const fogBase={near:850,far:1700};
 const camera=new T.PerspectiveCamera(38,innerWidth/innerHeight,.2,2600);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=9;controls.maxDistance=1800;controls.maxPolarAngle=Math.PI*.48;controls.minPolarAngle=.04;controls.maxTargetRadius=300;controls.cursor.set(0,0,-60);controls.zoomSpeed=.8;
 const updateCompass=createCompass($('village-compass'));
-const hemi=new T.HemisphereLight('#d6e2ec','#5c5140',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(lite?2048:4096,lite?2048:4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#c4d4e4',.75);fill.position.set(70,50,-90);scene.add(fill);installLightPool(scene,6);
+const hemi=new T.HemisphereLight('#d6e2ec','#5c5140',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(lite?2048:4096,lite?2048:4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;leanShadowMap(sun);scene.add(sun,sun.target);const fill=new T.DirectionalLight('#c4d4e4',.75);fill.position.set(70,50,-90);scene.add(fill);installLightPool(scene,6);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));camera.layers.enable(1);camera.layers.enable(FOLIAGE_LAYER);const aoCamera=camera.clone();aoCamera.layers.set(0);const ao=new GTAOPass(scene,aoCamera,innerWidth,innerHeight);ao.blendIntensity=.8;
 // AO is soft, low-frequency shading: computing it at half resolution and upsampling in the blend
 // quarters its cost (as ektogamat's threejs-punk does). ?ao=full keeps it full size for comparison.

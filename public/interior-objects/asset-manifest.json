@@ -1,13 +1,13 @@
 {
   "models": 121,
-  "bytes": 1594096,
+  "bytes": 1574952,
   "triangles": 213723,
-  "sha256": "c94b22ab5805b17662562c42229a4db046b0f789c590b0a57a183f9d04b06dff",
+  "sha256": "8f137fe2add76efb4a149b92cce3bcf097b8ff457de23bc1f3a415c62ae0f6ff",
   "compression": "EXT_meshopt_compression",
   "validationErrors": 0,
   "sourceHashes": {
     "src/scripts/village/interior-catalogue.ts": "f314bec32ba2f3b40fe001601a93cdad352bf9ef0f13bac4c705cecb05a9c30d",
-    "src/scripts/village/interior-objects.ts": "dbb6b0ea27e5c3abbbaeb8e61a366cd43ff793e750419a2746f41d0cd1d7d829",
+    "src/scripts/village/interior-objects.ts": "f941eb3a7d19a558d1256ec158e362320b9719dff1f7233ed2ff2147de060745",
     "src/scripts/village/interior-object-detail.ts": "903ea19abd7579f15b85542f5ba0b6cbfa65acf87f50dbc924eca0f75ab1985b"
   },
   "provenance": "Original project geometry, inspired by the documented museum references. No source photograph pixels included.",
