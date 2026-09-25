@@ -4,6 +4,7 @@ import {WORK_PERIOD,WORK_STRIKES} from '../chainmaker/work-cycle';
  * A small soundscape (Web Audio): one licensed recording, the rest synthesised:
  *  - the brook: a licensed field recording, looped seamlessly, placed at the nearest point of
  *    the water and heard only close up (3D distance: full within ~10 m, silent by ~35 m);
+ *  - rain (when chosen): an outdoor and an indoor recording, crossfading under a roof;
  *  - birdsong: occasional phrases (blackbird, robin, chaffinch, wood pigeon) from the trees
  *    round the listener, more of them under canopy, few at dusk;
  *  - the chainshop: an iron-on-anvil clang on each of the chainmaker's blows, placed at the anvil
@@ -19,7 +20,7 @@ export type SoundscapeOptions={
 export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
  let ctx:AudioContext|null=null,master:GainNode,enabled=true,started=false;
  try{enabled=localStorage.getItem('mg-sound')!=='off';}catch{/* storage may be blocked */}
- let brookPanner:PannerNode,brookGain:GainNode,rainGain:GainNode|null=null,rainMuffle:BiquadFilterNode|null=null,rainLoading=false,rain=0,rainSheltered=false,noise:AudioBuffer,nextBird=0,lastTime=0,dusk=false,paused=false;
+ let brookPanner:PannerNode,brookGain:GainNode,rainGain:GainNode|null=null,rainOut:GainNode|null=null,rainIn:GainNode|null=null,rainLoading=false,rain=0,rainSheltered=false,noise:AudioBuffer,nextBird=0,lastTime=0,dusk=false,paused=false;
  const brookPoints=opts.brooks.flatMap(line=>{const out:Point[]=[];for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/2));for(let j=0;j<n;j++)out.push([a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n]);}return out;});
  // Water surface heights, looked up once rather than every frame.
  const brookSurface=brookPoints.map(q=>opts.surface(q[0],q[1]));
@@ -43,10 +44,11 @@ export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
   void fetch('/sounds/babbling-brook.mp3').then(r=>r.arrayBuffer()).then(data=>ctx!.decodeAudioData(data)).then(buffer=>{
    const src=ctx!.createBufferSource();src.buffer=seamless(buffer);src.loop=true;src.connect(toPanner);src.connect(bed);src.start();
   }).catch(error=>console.warn('Brook sound unavailable',error));
-  // Rain: a licensed field recording of rain on foliage, heard all round the listener (not placed).
-  // Under a roof (a room or the chainshop cutaway) it is muffled. Fetched only when rain first starts.
-  rainGain=ctx.createGain();rainGain.gain.value=0;rainMuffle=ctx.createBiquadFilter();rainMuffle.type='lowpass';rainMuffle.frequency.value=20000;rainMuffle.Q.value=.5;
-  rainMuffle.connect(rainGain).connect(master);
+  // Rain: two licensed recordings — rain on foliage outdoors, rain heard from inside a room — that
+  // crossfade as you step under a roof (a room or the chainshop cutaway) and back out. Both are
+  // fetched only when rain first starts.
+  rainGain=ctx.createGain();rainGain.gain.value=0;rainGain.connect(master);
+  rainOut=ctx.createGain();rainOut.gain.value=1;rainOut.connect(rainGain);rainIn=ctx.createGain();rainIn.gain.value=0;rainIn.connect(rainGain);
   nextBird=ctx.currentTime+.5;
   document.addEventListener('visibilitychange',()=>{if(!ctx)return;if(document.hidden)void ctx.suspend();else if(enabled)void ctx.resume();});
  }
@@ -120,11 +122,13 @@ export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
   let best=brookPoints[0],bestY=0,d=Infinity;for(let k=0;k<brookPoints.length;k++){const q=brookPoints[k],y=brookSurface[k],e=(q[0]-cp.x)**2+(y-cp.y)**2+(q[1]-cp.z)**2;if(e<d){d=e;best=q;bestY=y;}}
   const brookDistance=Math.sqrt(d),near=1-Math.min(1,Math.max(0,(brookDistance-10)/25));
   place(brookPanner,best[0],bestY+.1,best[1],now);brookGain.gain.setTargetAtTime(1.05*near,now,.3);
-  if(rain>0&&!rainLoading&&rainMuffle){rainLoading=true;
-   void fetch('/sounds/rain-on-foliage.mp3').then(r=>r.arrayBuffer()).then(data=>ctx!.decodeAudioData(data)).then(buffer=>{
-    const src=ctx!.createBufferSource();src.buffer=seamless(buffer);src.loop=true;src.connect(rainMuffle!);src.start();
-   }).catch(error=>{rainLoading=false;console.warn('Rain sound unavailable',error);});}
-  rainGain?.gain.setTargetAtTime(rain*(rainSheltered?.5:.8),now,.6);rainMuffle?.frequency.setTargetAtTime(rainSheltered?850:20000,now,.3);
+  if(rain>0&&!rainLoading&&rainOut&&rainIn){rainLoading=true;
+   for(const [url,bed] of [['/sounds/rain-on-foliage.mp3',rainOut],['/sounds/rain-indoors.mp3',rainIn]] as const)
+    void fetch(url).then(r=>r.arrayBuffer()).then(data=>ctx!.decodeAudioData(data)).then(buffer=>{
+     const src=ctx!.createBufferSource();src.buffer=seamless(buffer);src.loop=true;src.connect(bed);src.start();
+    }).catch(error=>console.warn('Rain sound unavailable',url,error));}
+  rainGain?.gain.setTargetAtTime(rain*.8,now,.6);
+  rainOut?.gain.setTargetAtTime(rainSheltered?0:1,now,.35);rainIn?.gain.setTargetAtTime(rainSheltered?1:0,now,.35);
   // Birds: more under trees, few at dusk, quiet in the rain.
   if(!paused&&nextBird<now){const cover=opts.canopyAt(cp.x,cp.z);if(rain<.5)sing(now+.05);nextBird=now+((dusk?14:3)+rand()*(dusk?20:7)*(1.3-cover*.6))*(1+rain*3);}
   // Hammer blows, from the shared clock (so they stop with the worker when paused).
