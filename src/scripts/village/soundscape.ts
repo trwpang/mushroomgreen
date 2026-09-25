@@ -3,7 +3,7 @@ import {WORK_PERIOD,WORK_STRIKES} from '../chainmaker/work-cycle';
 /**
  * A small soundscape (Web Audio): one licensed recording, the rest synthesised:
  *  - the brook: a licensed field recording, looped seamlessly, placed at the nearest point of
- *    the water and fading out beyond ~45 m;
+ *    the water and heard only close up (3D distance: full within ~10 m, silent by ~35 m);
  *  - birdsong: occasional phrases (blackbird, robin, chaffinch, wood pigeon) from the trees
  *    round the listener, more of them under canopy, few at dusk;
  *  - the chainshop: an iron-on-anvil clang on each of the chainmaker's blows, placed at the anvil
@@ -21,6 +21,8 @@ export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
  try{enabled=localStorage.getItem('mg-sound')!=='off';}catch{/* storage may be blocked */}
  let brookPanner:PannerNode,brookGain:GainNode,rainGain:GainNode|null=null,rain=0,noise:AudioBuffer,nextBird=0,lastTime=0,dusk=false,paused=false;
  const brookPoints=opts.brooks.flatMap(line=>{const out:Point[]=[];for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/2));for(let j=0;j<n;j++)out.push([a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n]);}return out;});
+ // Water surface heights, looked up once rather than every frame.
+ const brookSurface=brookPoints.map(q=>opts.surface(q[0],q[1]));
  let seed=77;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
 
  // Moving sources glide; a new one-shot source must be placed at once, or it starts at the origin.
@@ -117,9 +119,11 @@ export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
   else{l.setPosition(cp.x,cp.y,cp.z);l.setOrientation(forward.x,forward.y,forward.z,up.x,up.y,up.z);}
   master.gain.setTargetAtTime(enabled&&!paused?1:0,now,.25);
   // Brook: follow the nearest stretch of water; beyond ~45 m it falls silent and stops scheduling.
-  let best=brookPoints[0],d=Infinity;for(const q of brookPoints){const e=(q[0]-cp.x)**2+(q[1]-cp.z)**2;if(e<d){d=e;best=q;}}
-  const brookDistance=Math.sqrt(d),near=Math.max(0,1-Math.max(0,brookDistance-18)/28);
-  place(brookPanner,best[0],opts.surface(best[0],best[1])+.1,best[1],now);brookGain.gain.setTargetAtTime(1.05*near,now,.3);
+  // Nearest water in true 3D distance (height included): the brook is heard only close up, never
+  // from high above it. Full within ~10 m, silent by ~35 m.
+  let best=brookPoints[0],bestY=0,d=Infinity;for(let k=0;k<brookPoints.length;k++){const q=brookPoints[k],y=brookSurface[k],e=(q[0]-cp.x)**2+(y-cp.y)**2+(q[1]-cp.z)**2;if(e<d){d=e;best=q;bestY=y;}}
+  const brookDistance=Math.sqrt(d),near=1-Math.min(1,Math.max(0,(brookDistance-10)/25));
+  place(brookPanner,best[0],bestY+.1,best[1],now);brookGain.gain.setTargetAtTime(1.05*near,now,.3);
   rainGain?.gain.setTargetAtTime(rain*.42,now,.8);
   // Birds: more under trees, few at dusk, quiet in the rain.
   if(!paused&&nextBird<now){const cover=opts.canopyAt(cp.x,cp.z);if(rain<.5)sing(now+.05);nextBird=now+((dusk?14:3)+rand()*(dusk?20:7)*(1.3-cover*.6))*(1+rain*3);}
