@@ -22,6 +22,7 @@ import {addSpringFlowers} from './spring-flowers';
 import {addFlyAgarics} from './fly-agaric';
 import {createSoundscape} from './soundscape';
 import {chunkInstances} from './instance-chunks';
+import {releaseGeometryAfterUpload,releaseTextureImages} from './release-cpu';
 import {createWeather} from './weather';
 import {LINK} from '../chainmaker/rig';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
@@ -515,6 +516,12 @@ const reviewCamera=initialPlace.get('cam')?.split(',').map(Number);if(reviewCame
 // Split static instanced sets into grid chunks so frustum culling can skip what is off screen
 // (tree crowns and trunks stay whole: they are edited at runtime to clear sight lines).
 {const chunked=chunkInstances(scene,{exclude:new Set([...crownMeshes,...trunkMeshes])});mount.dataset.instanceChunks=JSON.stringify(chunked);}
+// Drop JavaScript copies of static geometry once it is on the GPU (and again for detailed models
+// that stream in later); textures follow a few seconds after the village is showing.
+const releaseExclude=new Set<T.Object3D>(pickTargets);
+mount.dataset.cpuGeometry=JSON.stringify(releaseGeometryAfterUpload(scene,releaseExclude));
+const releaseTextures=()=>setTimeout(()=>{mount.dataset.cpuTextures=JSON.stringify(releaseTextureImages(scene,renderer));},4000);
+document.addEventListener('village-asset-ready',()=>{releaseGeometryAfterUpload(scene,releaseExclude);releaseTextures();});
 stage('before warm-up');$('load-label').textContent='Preparing materials…';
 {const shown=highRoots.filter(o=>!o.visible);shown.forEach(o=>o.visible=true);
  try{await renderer.compileAsync(scene,camera);}catch(error){console.warn('Shader warm-up incomplete',error);}
@@ -526,7 +533,7 @@ setTimeout(async()=>{const warm=new T.Scene();
  const samples=[0,1,2].map(style=>homes.find(h=>h.style===style&&h.number!==chainshopReplacesHouse)).filter((h):h is Home=>!!h).flatMap(h=>planInterior(h).floors.map((_,floor)=>{const room=createInteriors(warm,true);room.show(h,floor);return room;}));
  try{await renderer.compileAsync(warm,camera,scene);}catch(error){console.warn('Interior warm-up incomplete',error);}
  samples.forEach(room=>room.hide());mount.dataset.interiorsWarm='1';},1200);
-stage('ready');document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('button,select').forEach(el=>el.disabled=false);$('loading').hidden=true;$('village-status').textContent='Village loaded. All 59 households are available.';cleanView(new URLSearchParams(location.search).has('clean'));const initialHome=homes.find(h=>h.number===Number(initialPlace.get('house')));if(initialHome){select(initialHome);visit(initialHome,true);if(initialPlace.get('room')==='1')stepInside(initialHome,Number(initialPlace.get('floor')));if(initialPlace.has('inside')){inspection.enter(initialHome,initialPlace.get('inside')==='small'&&initialHome.number===22?'small':initialPlace.get('inside')==='main'||initialHome.number===5?'main':null);const floor=Number(initialPlace.get('floor'));if(floor===1)inspection.setFloor(floor);if(initialPlace.get('worker')==='1')inspection.watchWorker();}}document.documentElement.dataset.villageReady='true';mount.dataset.households=String(homes.length);mount.dataset.renderedCottages=String(houseRoots.filter(o=>o.visible).length);mount.dataset.forgeCount='1';mount.dataset.cottageTypes='3';const lastShadowTarget=new T.Vector3(Infinity,0,0);let shadowSpan=0;let last=performance.now(),frame=0,total=0,lodTimer=1;
+releaseTextures();stage('ready');document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('button,select').forEach(el=>el.disabled=false);$('loading').hidden=true;$('village-status').textContent='Village loaded. All 59 households are available.';cleanView(new URLSearchParams(location.search).has('clean'));const initialHome=homes.find(h=>h.number===Number(initialPlace.get('house')));if(initialHome){select(initialHome);visit(initialHome,true);if(initialPlace.get('room')==='1')stepInside(initialHome,Number(initialPlace.get('floor')));if(initialPlace.has('inside')){inspection.enter(initialHome,initialPlace.get('inside')==='small'&&initialHome.number===22?'small':initialPlace.get('inside')==='main'||initialHome.number===5?'main':null);const floor=Number(initialPlace.get('floor'));if(floor===1)inspection.setFloor(floor);if(initialPlace.get('worker')==='1')inspection.watchWorker();}}document.documentElement.dataset.villageReady='true';mount.dataset.households=String(homes.length);mount.dataset.renderedCottages=String(houseRoots.filter(o=>o.visible).length);mount.dataset.forgeCount='1';mount.dataset.cottageTypes='3';const lastShadowTarget=new T.Vector3(Infinity,0,0);let shadowSpan=0;let last=performance.now(),frame=0,total=0,lodTimer=1;
 document.addEventListener('village-asset-ready',()=>{renderer.shadowMap.needsUpdate=true;});
 // At most ~60 frames a second: 120 Hz screens (ProMotion Macs, recent iPhones and iPads) would
 // otherwise render every frame twice as often for no visible gain.

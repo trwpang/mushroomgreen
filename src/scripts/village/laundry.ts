@@ -30,6 +30,8 @@ export function addLaundry(scene:T.Scene,home:Home){
   const material=new T.MeshStandardMaterial({map,roughness:1,side:T.DoubleSide});refineSurface(material,'cloth');const mesh=new T.Mesh(geo,material);mesh.name=name;mesh.position.set(x,ropeY(x),.018);mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);
   // Bake top-edge slope into the undeformed coordinates; each peg meets the rope.
   const base=new Float32Array(vertices);for(let i=0;i<base.length;i+=3)base[i+1]+=ropeY(x+base[i])-ropeY(x);
+  // The cloth is re-shaped every frame: mark it dynamic (and so exempt from releasing its CPU copy).
+  if(!geo.getAttribute('normal'))geo.computeVertexNormals();(geo.getAttribute('position') as T.BufferAttribute).setUsage(T.DynamicDrawUsage);(geo.getAttribute('normal') as T.BufferAttribute).setUsage(T.DynamicDrawUsage);
   fabrics.push({geometry:geo,base,phase});
   for(const px of pegXs){const peg=new T.Group();peg.position.set(x+px,ropeY(x+px)+.025,.01);
     const head=new T.Mesh(new T.SphereGeometry(.022,7,5),pegMat);head.position.y=.038;peg.add(head);
