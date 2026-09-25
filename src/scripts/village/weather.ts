@@ -21,9 +21,9 @@ export function createWeather(scene:T.Scene){
  geometry.index=base.index;geometry.setAttribute('position',base.getAttribute('position'));geometry.setAttribute('uv',base.getAttribute('uv'));
  geometry.setAttribute('seed',new T.InstancedBufferAttribute(seeds,3));geometry.instanceCount=COUNT;
  // Fog-aware ShaderMaterials must carry three's fog uniforms.
- const uniforms={...T.UniformsUtils.clone(T.UniformsLib.fog),rainTime:{value:0},rainCamera:{value:new T.Vector3()},rainColour:{value:new T.Color('#b4bcc0')}};
+ const uniforms={...T.UniformsUtils.clone(T.UniformsLib.fog),rainTime:{value:0},rainFade:{value:1},rainCamera:{value:new T.Vector3()},rainColour:{value:new T.Color('#b4bcc0')}};
  const material=new T.ShaderMaterial({uniforms,transparent:true,depthWrite:false,fog:true,
-  vertexShader:`attribute vec3 seed;uniform float rainTime;uniform vec3 rainCamera;varying float rainAlpha;varying vec2 rainUv;
+  vertexShader:`attribute vec3 seed;uniform float rainTime,rainFade;uniform vec3 rainCamera;varying float rainAlpha;varying vec2 rainUv;
    #include <fog_pars_vertex>
    void main(){
     // Speed must not correlate with the start height (seed.z), or drops fall into bands that sweep
@@ -40,7 +40,7 @@ export function createWeather(scene:T.Scene){
     vec3 world=p+side*position.x*.011+(-slant)*position.y*len;
     vec4 mv=viewMatrix*vec4(world,1.);
     float d=length(mv.xyz);
-    rainAlpha=smoothstep(2.,5.,d)*(1.-smoothstep(14.,26.,d))*(.17+.1*seed.x);
+    rainAlpha=rainFade*smoothstep(2.,5.,d)*(1.-smoothstep(14.,26.,d))*(.17+.1*seed.x);
     rainUv=uv;
     gl_Position=projectionMatrix*mv;
     vec4 mvPosition=mv;
@@ -57,12 +57,17 @@ export function createWeather(scene:T.Scene){
    }`});
  // Visible from the start when raining, so the load-time shader warm-up compiles it (no stall).
  const streaks=new T.Mesh(geometry,material);streaks.frustumCulled=false;streaks.renderOrder=3;streaks.name='Rain';streaks.visible=raining;scene.add(streaks);
+ const forward=new T.Vector3(),smooth=(a:number,b:number,x:number)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
  return {
   amount,
   /** `time` is the shared clock; `shelter` hides the streaks (interiors, cutaways). */
   update(time:number,camera:T.Camera,shelter:boolean){
-   uniforms.rainTime.value=time;uniforms.rainCamera.value.copy(camera.position);
-   streaks.visible=raining&&!shelter;
+   // Streaks read only from near the ground: from high above, or looking straight down, they would be
+   // seen end-on and smear into white hatching, so they fade out with height and downward tilt.
+   camera.getWorldDirection(forward);
+   const fade=(1-smooth(70,150,camera.position.y))*(1-smooth(.72,.92,-forward.y));
+   uniforms.rainTime.value=time;uniforms.rainCamera.value.copy(camera.position);uniforms.rainFade.value=fade;
+   streaks.visible=raining&&!shelter&&fade>.01;
   },
  };
 }
