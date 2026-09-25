@@ -71,7 +71,10 @@ async function start(){
 const mount=$('village-canvas');// Lite mode for devices that cannot hold the full scene in GPU memory (older iPads): chosen with
 // ?lite, or remembered after the full scene once lost its graphics context on this device.
 const lite=(()=>{if(new URLSearchParams(location.search).has('lite'))return true;try{return localStorage.getItem('mg-lite')==='1';}catch{return false;}})();
-const basePixelRatio=Math.min(devicePixelRatio,lite?1:1.5);
+// Touch-only devices (phones, tablets) render at up to 1.25× — dense small screens hide the
+// difference and it saves ~30% of the GPU work; desktops keep 1.5×.
+const handheld=matchMedia('(pointer:coarse)').matches&&!matchMedia('(any-pointer:fine)').matches;
+const basePixelRatio=Math.min(devicePixelRatio,lite?1:handheld?1.25:1.5);
 // No canvas MSAA: the scene renders through the composer's own (non-multisampled) targets, so a
 // multisampled drawing buffer only cost ~90 MB of GPU memory and a resolve per frame.
 const renderer=new T.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(basePixelRatio);renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;mount.append(renderer.domElement);renderer.domElement.tabIndex=0;renderer.domElement.setAttribute('aria-label','Village. Drag to orbit; scroll to zoom; select a house.');
@@ -80,7 +83,11 @@ const scene=new T.Scene();scene.background=new T.Color('#c4c7b9');scene.fog=new 
 const camera=new T.PerspectiveCamera(38,innerWidth/innerHeight,.2,2600);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=9;controls.maxDistance=1800;controls.maxPolarAngle=Math.PI*.48;controls.minPolarAngle=.04;controls.maxTargetRadius=300;controls.cursor.set(0,0,-60);controls.zoomSpeed=.8;
 const updateCompass=createCompass($('village-compass'));
 const hemi=new T.HemisphereLight('#d6e2ec','#5c5140',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(lite?2048:4096,lite?2048:4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#c4d4e4',.75);fill.position.set(70,50,-90);scene.add(fill);installLightPool(scene,6);
-const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));camera.layers.enable(1);camera.layers.enable(FOLIAGE_LAYER);const aoCamera=camera.clone();aoCamera.layers.set(0);const ao=new GTAOPass(scene,aoCamera,innerWidth,innerHeight);ao.blendIntensity=.8;ao.updateGtaoMaterial({radius:.6,distanceExponent:1.6,thickness:1.2,scale:1});composer.addPass(ao);composer.addPass(cinematicOutput());
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));camera.layers.enable(1);camera.layers.enable(FOLIAGE_LAYER);const aoCamera=camera.clone();aoCamera.layers.set(0);const ao=new GTAOPass(scene,aoCamera,innerWidth,innerHeight);ao.blendIntensity=.8;
+// AO is soft, low-frequency shading: computing it at half resolution and upsampling in the blend
+// quarters its cost (as ektogamat's threejs-punk does). ?ao=full keeps it full size for comparison.
+if(new URLSearchParams(location.search).get('ao')!=='full'){const full=ao.setSize.bind(ao);ao.setSize=(w:number,h:number)=>full(Math.max(1,Math.ceil(w/2)),Math.max(1,Math.ceil(h/2)));ao.setSize(innerWidth,innerHeight);}
+ao.updateGtaoMaterial({radius:.6,distanceExponent:1.6,thickness:1.2,scale:1});composer.addPass(ao);composer.addPass(cinematicOutput());
 const farRequest=Promise.all([fetch('/far-country/far-country.json').then(r=>r.json() as Promise<FarData>),new T.TextureLoader().loadAsync('/far-country/ground-1882.webp')]);
 stage('before households fetch');const households:Household[]=await fetch('/households.json').then(r=>{if(!r.ok)throw Error('Household data unavailable');return r.json();});const [farData,farGround]=await farRequest;const homes=makeHomes(households);prepareGround(homes);const founder=homes.find(h=>h.number===22)!;const domesticShop=weaverWorkshop(founder);
 const within=(x:number,z:number)=>Math.pow(x/210,2)+Math.pow((z+60)/240,2)<.97;
@@ -502,9 +509,15 @@ const reviewCamera=initialPlace.get('cam')?.split(',').map(Number);if(reviewCame
 {const chunked=chunkInstances(scene,{exclude:new Set([...crownMeshes,...trunkMeshes])});mount.dataset.instanceChunks=JSON.stringify(chunked);}
 stage('before warm-up');$('load-label').textContent='Preparing materials…';
 {const shown=highRoots.filter(o=>!o.visible);shown.forEach(o=>o.visible=true);
- const samples=[0,1,2].map(style=>homes.find(h=>h.style===style&&h.number!==chainshopReplacesHouse)).filter((h):h is Home=>!!h).flatMap(h=>planInterior(h).floors.map((_,floor)=>{const room=createInteriors(scene,true);room.show(h,floor);return room;}));
  try{await renderer.compileAsync(scene,camera);}catch(error){console.warn('Shader warm-up incomplete',error);}
- samples.forEach(room=>room.hide());shown.forEach(o=>o.visible=false);}
+ shown.forEach(o=>o.visible=false);}
+// Interiors compile in the background once the village is showing: one furnished room per style,
+// built in an off-screen scene and compiled against the village lights, so the first visit is smooth
+// without holding up the first view.
+setTimeout(async()=>{const warm=new T.Scene();
+ const samples=[0,1,2].map(style=>homes.find(h=>h.style===style&&h.number!==chainshopReplacesHouse)).filter((h):h is Home=>!!h).flatMap(h=>planInterior(h).floors.map((_,floor)=>{const room=createInteriors(warm,true);room.show(h,floor);return room;}));
+ try{await renderer.compileAsync(warm,camera,scene);}catch(error){console.warn('Interior warm-up incomplete',error);}
+ samples.forEach(room=>room.hide());mount.dataset.interiorsWarm='1';},1200);
 stage('ready');document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('button,select').forEach(el=>el.disabled=false);$('loading').hidden=true;$('village-status').textContent='Village loaded. All 59 households are available.';cleanView(new URLSearchParams(location.search).has('clean'));const initialHome=homes.find(h=>h.number===Number(initialPlace.get('house')));if(initialHome){select(initialHome);visit(initialHome,true);if(initialPlace.get('room')==='1')stepInside(initialHome,Number(initialPlace.get('floor')));if(initialPlace.has('inside')){inspection.enter(initialHome,initialPlace.get('inside')==='small'&&initialHome.number===22?'small':initialPlace.get('inside')==='main'||initialHome.number===5?'main':null);const floor=Number(initialPlace.get('floor'));if(floor===1)inspection.setFloor(floor);if(initialPlace.get('worker')==='1')inspection.watchWorker();}}document.documentElement.dataset.villageReady='true';mount.dataset.households=String(homes.length);mount.dataset.renderedCottages=String(houseRoots.filter(o=>o.visible).length);mount.dataset.forgeCount='1';mount.dataset.cottageTypes='3';const lastShadowTarget=new T.Vector3(Infinity,0,0);let shadowSpan=0;let last=performance.now(),frame=0,total=0,lodTimer=1;
 document.addEventListener('village-asset-ready',()=>{renderer.shadowMap.needsUpdate=true;});
 // At most ~60 frames a second: 120 Hz screens (ProMotion Macs, recent iPhones and iPads) would
