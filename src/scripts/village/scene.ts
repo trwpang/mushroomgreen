@@ -458,14 +458,18 @@ renderer.domElement.addEventListener('pointermove',e=>{if(!roomHome||!roomDrag||
 for(const event of ['pointerup','pointercancel','lostpointercapture'])renderer.domElement.addEventListener(event,()=>{roomDrag=null;});
 function leaveRoom(){if(!roomHome)return;const h=roomHome;roomHome=null;$('room-controls').hidden=true;visit(h,true);}
 $('leave-room').onclick=leaveRoom;
+const HENRY_VIEW={eye:[1.45,2.05,-.4],look:[-2.5,.92,-.05]};
 function stepInside(h:Home,floor=0){
  if(h.number===5){inspection.enter(h,'main');return;}
  inspection.close(false);tween=null;controls.minDistance=.35;controls.maxDistance=6;controls.enableRotate=false;controls.enableDamping=false;controls.panSpeed=.16;controls.zoomSpeed=.25;controls.minPolarAngle=.12;controls.maxPolarAngle=Math.PI-.12;camera.near=.04;roomHome=h;$('room-controls').hidden=false;$('village-app').dataset.view='room';
  const dimensions=roomDimensions(h,floor);roomFloor=dimensions.level;
  const d=[4.6,4.8,4.5][h.style]*h.sz,w=[6.4,7.2,9.2][h.style]*h.sx;
- const p=localPoint(h,0,d*.30),q=localPoint(h,-w*.19,-d*.15);
- camera.fov=68;camera.updateProjectionMatrix();camera.position.set(p[0],h.height+dimensions.base+1.53,p[1]);
- controls.target.set(q[0],h.height+dimensions.base+1.13,q[1]);controls.update();
+ // Henry's kitchen opens on Tom's chosen view: down the room from the far end, over the table
+ // and rug to the range and chimney breast, a window in each side wall.
+ const henry=h.number===22&&dimensions.level===0;
+ const p=henry?localPoint(h,HENRY_VIEW.eye[0],HENRY_VIEW.eye[2]):localPoint(h,0,d*.30),q=henry?localPoint(h,HENRY_VIEW.look[0],HENRY_VIEW.look[2]):localPoint(h,-w*.19,-d*.15);
+ camera.fov=68;camera.updateProjectionMatrix();camera.position.set(p[0],h.height+dimensions.base+(henry?HENRY_VIEW.eye[1]:1.53),p[1]);
+ controls.target.set(q[0],h.height+dimensions.base+(henry?HENRY_VIEW.look[1]:1.13),q[1]);controls.update();
  $('house-panel').hidden=true;selection.visible=false;
  $('place-label').textContent=(roomFloor?'Upstairs · ':'Downstairs · ')+h.household_name+' · No. '+h.number;
  $('room-floor').hidden=h.style!==1;$('room-floor').textContent=roomFloor?'Go downstairs':'Go upstairs';
