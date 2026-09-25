@@ -1,0 +1,4 @@
+# The village experience is the home page; keep old /village links and bookmarks working
+# (query strings such as ?view=brook pass through). Assets under /village/* are real files.
+/village   /   301
+/village/  /   301
