@@ -19,7 +19,7 @@ export type SoundscapeOptions={
 export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
  let ctx:AudioContext|null=null,master:GainNode,enabled=true,started=false;
  try{enabled=localStorage.getItem('mg-sound')!=='off';}catch{/* storage may be blocked */}
- let brookPanner:PannerNode,brookGain:GainNode,rainGain:GainNode|null=null,rain=0,noise:AudioBuffer,nextBird=0,lastTime=0,dusk=false,paused=false;
+ let brookPanner:PannerNode,brookGain:GainNode,rainGain:GainNode|null=null,rainMuffle:BiquadFilterNode|null=null,rainLoading=false,rain=0,rainSheltered=false,noise:AudioBuffer,nextBird=0,lastTime=0,dusk=false,paused=false;
  const brookPoints=opts.brooks.flatMap(line=>{const out:Point[]=[];for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/2));for(let j=0;j<n;j++)out.push([a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n]);}return out;});
  // Water surface heights, looked up once rather than every frame.
  const brookSurface=brookPoints.map(q=>opts.surface(q[0],q[1]));
@@ -43,14 +43,10 @@ export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
   void fetch('/sounds/babbling-brook.mp3').then(r=>r.arrayBuffer()).then(data=>ctx!.decodeAudioData(data)).then(buffer=>{
    const src=ctx!.createBufferSource();src.buffer=seamless(buffer);src.loop=true;src.connect(toPanner);src.connect(bed);src.start();
   }).catch(error=>console.warn('Brook sound unavailable',error));
-  // Rain: a soft, even hiss of drops on leaves and roofs with a low patter under it (not placed:
-  // it falls all round the listener). Silent until a shower.
-  rainGain=ctx.createGain();rainGain.gain.value=0;rainGain.connect(master);
-  for(const [type,freq,q,level,rate] of [['highpass',1600,.5,.55,1.13],['bandpass',520,.8,.35,.87]] as const){
-   const src=ctx.createBufferSource();src.buffer=noise;src.loop=true;src.playbackRate.value=rate;
-   const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;const g=ctx.createGain();g.gain.value=level;
-   src.connect(f).connect(g).connect(rainGain);src.start(0,rand()*1.5);
-  }
+  // Rain: a licensed field recording of rain on foliage, heard all round the listener (not placed).
+  // Under a roof (a room or the chainshop cutaway) it is muffled. Fetched only when rain first starts.
+  rainGain=ctx.createGain();rainGain.gain.value=0;rainMuffle=ctx.createBiquadFilter();rainMuffle.type='lowpass';rainMuffle.frequency.value=20000;rainMuffle.Q.value=.5;
+  rainMuffle.connect(rainGain).connect(master);
   nextBird=ctx.currentTime+.5;
   document.addEventListener('visibilitychange',()=>{if(!ctx)return;if(document.hidden)void ctx.suspend();else if(enabled)void ctx.resume();});
  }
@@ -124,7 +120,11 @@ export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
   let best=brookPoints[0],bestY=0,d=Infinity;for(let k=0;k<brookPoints.length;k++){const q=brookPoints[k],y=brookSurface[k],e=(q[0]-cp.x)**2+(y-cp.y)**2+(q[1]-cp.z)**2;if(e<d){d=e;best=q;bestY=y;}}
   const brookDistance=Math.sqrt(d),near=1-Math.min(1,Math.max(0,(brookDistance-10)/25));
   place(brookPanner,best[0],bestY+.1,best[1],now);brookGain.gain.setTargetAtTime(1.05*near,now,.3);
-  rainGain?.gain.setTargetAtTime(rain*.42,now,.8);
+  if(rain>0&&!rainLoading&&rainMuffle){rainLoading=true;
+   void fetch('/sounds/rain-on-foliage.mp3').then(r=>r.arrayBuffer()).then(data=>ctx!.decodeAudioData(data)).then(buffer=>{
+    const src=ctx!.createBufferSource();src.buffer=seamless(buffer);src.loop=true;src.connect(rainMuffle!);src.start();
+   }).catch(error=>{rainLoading=false;console.warn('Rain sound unavailable',error);});}
+  rainGain?.gain.setTargetAtTime(rain*(rainSheltered?.5:.8),now,.6);rainMuffle?.frequency.setTargetAtTime(rainSheltered?850:20000,now,.3);
   // Birds: more under trees, few at dusk, quiet in the rain.
   if(!paused&&nextBird<now){const cover=opts.canopyAt(cp.x,cp.z);if(rain<.5)sing(now+.05);nextBird=now+((dusk?14:3)+rand()*(dusk?20:7)*(1.3-cover*.6))*(1+rain*3);}
   // Hammer blows, from the shared clock (so they stop with the worker when paused).
@@ -140,7 +140,7 @@ export function createSoundscape(camera:T.Camera,opts:SoundscapeOptions){
   update,
   setDusk(value:boolean){dusk=value;},
   setPaused(value:boolean){paused=value;},
-  setRain(value:number){rain=value;},
+  setRain(value:number,sheltered=false){rain=value;rainSheltered=sheltered;},
   get enabled(){return enabled;},
   toggle(){enabled=!enabled;try{localStorage.setItem('mg-sound',enabled?'on':'off');}catch{/* ignore */}if(enabled){start();void ctx?.resume();}return enabled;},
  };
