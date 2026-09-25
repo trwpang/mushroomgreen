@@ -24,43 +24,49 @@ export const skyPalette={
 export function createSky(scene:T.Scene){
  const uniforms={
   skySun:{value:new T.Vector3(.17,.54,.83).normalize()},skyTime:{value:0},
-  skyZenith:{value:skyPalette.day.zenith.clone()},skyHorizon:{value:skyPalette.day.horizon.clone()},skyGround:{value:skyPalette.day.ground.clone()},skyDusk:{value:0},
+  skyZenith:{value:skyPalette.day.zenith.clone()},skyHorizon:{value:skyPalette.day.horizon.clone()},skyGround:{value:skyPalette.day.ground.clone()},skyDusk:{value:0},skyRain:{value:0},
  };
  const material=new T.ShaderMaterial({uniforms,side:T.BackSide,depthWrite:false,depthTest:false,fog:false,
   vertexShader:`varying vec3 skyDir;void main(){skyDir=normalize(position);vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position=vec4(p.xy,p.w*.99999,p.w);}`,
-  fragmentShader:`uniform vec3 skySun,skyZenith,skyHorizon,skyGround;uniform float skyTime,skyDusk;varying vec3 skyDir;${GLSL_NOISE}
+  fragmentShader:`uniform vec3 skySun,skyZenith,skyHorizon,skyGround;uniform float skyTime,skyDusk,skyRain;varying vec3 skyDir;${GLSL_NOISE}
   void main(){
    vec3 d=normalize(skyDir);float h=d.y;
    vec3 sky=mix(skyHorizon,skyZenith,pow(clamp(h,0.,1.),.5));
    // Smoke-stained haze thickens toward the horizon.
    sky=mix(sky,skyHorizon*vec3(1.02,.99,.93),exp(-max(h,0.)*9.)*.55);
    float sun=max(dot(d,skySun),0.);
-   sky+=vec3(1.,.93,.78)*(pow(sun,6.)*.16+pow(sun,64.)*.22)*(1.-skyDusk*.8);
+   sky+=vec3(1.,.93,.78)*(pow(sun,6.)*.16+pow(sun,64.)*.22)*(1.-skyDusk*.8)*(1.-skyRain*.85);
    // Soft cumulus on a curved layer, thinning toward the haze.
    vec2 cloudUv=d.xz/(h+.14)*1.35+vec2(skyTime*.004,skyTime*.0015);
    float cover=skyFbm(cloudUv*1.1),detail=skyFbm(cloudUv*3.7+cover);
-   float cloud=smoothstep(.5,.78,cover*.78+detail*.32)*smoothstep(.02,.22,h);
+   // Showers close the gaps: cover rises and the base darkens to rain-grey.
+   float cloud=smoothstep(.5-skyRain*.42,.78-skyRain*.3,cover*.78+detail*.32)*smoothstep(.02,.22,h);
    float lit=clamp(.55+.45*dot(normalize(vec3(d.x,0.,d.z)+.001),normalize(vec3(skySun.x,0.,skySun.z))),0.,1.);
    vec3 cloudColour=mix(vec3(.66,.66,.63),vec3(.95,.93,.88),lit*.6+detail*.4)*mix(vec3(1.),vec3(.45,.47,.5),skyDusk);
-   sky=mix(sky,cloudColour,cloud*.85);
+   cloudColour=mix(cloudColour,vec3(.47,.49,.5)*(.8+detail*.3),skyRain*.75);
+   sky=mix(sky,cloudColour,cloud*(.85+.13*skyRain));
+   sky=mix(sky,vec3(.56,.58,.59),skyRain*.35);
    sky=mix(sky,skyGround,smoothstep(.0,-.08,h));
    gl_FragColor=vec4(sky,1.);
    #include <tonemapping_fragment>
    #include <colorspace_fragment>
   }`});
  // Large enough that planar-reflection cameras stay inside it; layer 1 keeps it out of the GTAO pass.
+ const rainHaze=new T.Color(),rainGrey=new T.Color('#8e9394');
  const dome=new T.Mesh(new T.SphereGeometry(2000,48,24),material);
  dome.frustumCulled=false;dome.renderOrder=-10;dome.layers.set(1);
  scene.add(dome);
  return {
   dome,
   /** Returns the horizon/fog colour for this frame. */
-  update(camera:T.Camera,sunDirection:T.Vector3,dusk:number,time:number){
-   dome.position.copy(camera.position);uniforms.skySun.value.copy(sunDirection).normalize();uniforms.skyTime.value=time;uniforms.skyDusk.value=dusk;
+  update(camera:T.Camera,sunDirection:T.Vector3,dusk:number,time:number,rain=0){
+   dome.position.copy(camera.position);uniforms.skySun.value.copy(sunDirection).normalize();uniforms.skyTime.value=time;uniforms.skyDusk.value=dusk;uniforms.skyRain.value=rain;
    uniforms.skyZenith.value.lerpColors(skyPalette.day.zenith,skyPalette.dusk.zenith,dusk);
    uniforms.skyHorizon.value.lerpColors(skyPalette.day.horizon,skyPalette.dusk.horizon,dusk);
    uniforms.skyGround.value.lerpColors(skyPalette.day.ground,skyPalette.dusk.ground,dusk);
-   return uniforms.skyGround.value;
+   // Haze (fog and background) greys during a shower.
+   rainHaze.copy(uniforms.skyGround.value).lerp(rainGrey,rain*.45);
+   return rainHaze;
   },
  };
 }

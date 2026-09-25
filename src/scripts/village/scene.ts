@@ -22,6 +22,7 @@ import {addSpringFlowers} from './spring-flowers';
 import {addFlyAgarics} from './fly-agaric';
 import {createSoundscape} from './soundscape';
 import {chunkInstances} from './instance-chunks';
+import {createWeather} from './weather';
 import {LINK} from '../chainmaker/rig';
 import {refineObject,refineSurface,weatherArchitecture} from '../rendering/surfaces';
 import {addWorkingChainmaker} from '../chainmaker/worker';
@@ -79,7 +80,7 @@ const basePixelRatio=Math.min(devicePixelRatio,lite?1:handheld?1.25:1.5);
 // multisampled drawing buffer only cost ~90 MB of GPU memory and a resolve per frame.
 const renderer=new T.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(basePixelRatio);renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;mount.append(renderer.domElement);renderer.domElement.tabIndex=0;renderer.domElement.setAttribute('aria-label','Village. Drag to orbit; scroll to zoom; select a house.');
 addEventListener('pagehide',event=>{if(!event.persisted)disposeMaterialTextures();});
-const scene=new T.Scene();scene.background=new T.Color('#c4c7b9');scene.fog=new T.Fog('#c4c7b9',850,1700);const sky=createSky(scene);
+const scene=new T.Scene();scene.background=new T.Color('#c4c7b9');scene.fog=new T.Fog('#c4c7b9',850,1700);const sky=createSky(scene);const weather=createWeather(scene);const fogBase={near:850,far:1700};
 const camera=new T.PerspectiveCamera(38,innerWidth/innerHeight,.2,2600);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=9;controls.maxDistance=1800;controls.maxPolarAngle=Math.PI*.48;controls.minPolarAngle=.04;controls.maxTargetRadius=300;controls.cursor.set(0,0,-60);controls.zoomSpeed=.8;
 const updateCompass=createCompass($('village-compass'));
 const hemi=new T.HemisphereLight('#d6e2ec','#5c5140',2.0);scene.add(hemi);const sun=new T.DirectionalLight('#fff0d4',3.2);sun.position.set(-100,180,95);sun.castShadow=true;sun.shadow.mapSize.set(lite?2048:4096,lite?2048:4096);Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:500});sun.shadow.normalBias=.025;sun.shadow.radius=2.3;sun.shadow.bias=-.0004;scene.add(sun,sun.target);const fill=new T.DirectionalLight('#c4d4e4',.75);fill.position.set(70,50,-90);scene.add(fill);installLightPool(scene,6);
@@ -547,14 +548,18 @@ const sight=new T.Line3(camera.position,target),closest=new T.Vector3(),zero=new
 for(const tree of crownRecords){const t=sight.closestPointToPointParameter(tree.center,true);sight.at(t,closest);const hide=!inspection.active&&distance<80&&t>.03&&t<.94&&tree.center.distanceTo(closest)<tree.radius;
 if(hide!==tree.hidden){tree.hidden=hide;crownMeshes[tree.kind].setMatrixAt(tree.slot,hide?zero:tree.matrix);crownMeshes[tree.kind].instanceMatrix.needsUpdate=true;trunkMeshes[tree.trunkMesh].setMatrixAt(tree.trunk,hide?zero:tree.matrix);trunkMeshes[tree.trunkMesh].instanceMatrix.needsUpdate=true;shadowDirty=true;}}
 // Industrial haze rather than mist: the subject stays clear and the far country fades over half a kilometre.
-(scene.fog as T.Fog).near=Math.max(40,distance+25);(scene.fog as T.Fog).far=Math.max(560,distance+520);// The shadow frustum moves in steps of span/16 (a whole number of shadow texels) and is widened by one
+fogBase.near=Math.max(40,distance+25);fogBase.far=Math.max(560,distance+520);// The shadow frustum moves in steps of span/16 (a whole number of shadow texels) and is widened by one
 // step, so it always covers the view. Re-rendering 4096² shadows only when a step is crossed removes
 // most panning hitches, and texel-aligned steps stop shadow edges shimmering while the camera moves.
 const span=camera.position.distanceTo(target)>140?200:38,step=span/16,texel=2*(span+step)/sun.shadow.mapSize.x;
 const snapped=new T.Vector3(Math.round(target.x/step)*step,Math.round(target.y/texel)*texel,Math.round(target.z/step)*step);
 sun.target.position.copy(snapped);sun.position.set(snapped.x+34,snapped.y+58,snapped.z+96);Object.assign(sun.shadow.camera,{left:-span-step,right:span+step,top:span+step,bottom:-span-step});sun.shadow.camera.updateProjectionMatrix();
 if(shadowDirty||snapped.distanceToSquared(lastShadowTarget)>1e-6||shadowSpan!==span){renderer.shadowMap.needsUpdate=true;lastShadowTarget.copy(snapped);shadowSpan=span;}}
-lightAmount=T.MathUtils.damp(lightAmount,dusk?1:0,3,dt);landscape.waterMaterial.envMapIntensity=.3*(1-.7*lightAmount);sun.color.set('#ffe4bf');sun.intensity=T.MathUtils.lerp(3.9,.35,lightAmount);hemi.intensity=T.MathUtils.lerp(1.5,.75,lightAmount);showcase.glow.intensity=18+Math.sin(time*8)*.7;for(const m of windowMaterials){m.emissive.set('#a16635');m.emissiveIntensity=.10+lightAmount*.65;}const haze=sky.update(camera,sun.position.clone().sub(sun.target.position),lightAmount,time);// Cutaway inspections isolate one building: frame it against a dark, warm backdrop, not an empty pale void.
+lightAmount=T.MathUtils.damp(lightAmount,dusk?1:0,3,dt);landscape.waterMaterial.envMapIntensity=.3*(1-.7*lightAmount);sun.color.set('#ffe4bf');weather.update(time,dt,camera,inspection.active||!!roomHome);const rain=weather.amount;soundscape.setRain(rain);
+// A shower dims the sun and softens the shadows' contrast.
+sun.intensity=T.MathUtils.lerp(3.9,.35,lightAmount)*(1-.68*rain);hemi.intensity=T.MathUtils.lerp(1.5,.75,lightAmount)*(1-.1*rain);
+// Rain thickens the haze beyond the subject only: fog still starts just past what you look at.
+(scene.fog as T.Fog).near=fogBase.near;(scene.fog as T.Fog).far=fogBase.far-(fogBase.far-fogBase.near)*.5*rain;showcase.glow.intensity=18+Math.sin(time*8)*.7;for(const m of windowMaterials){m.emissive.set('#a16635');m.emissiveIntensity=.10+lightAmount*.65;}const haze=sky.update(camera,sun.position.clone().sub(sun.target.position),lightAmount,time,rain);// Cutaway inspections isolate one building: frame it against a dark, warm backdrop, not an empty pale void.
 if(inspection.active){(scene.background as T.Color).set('#26231f');(scene.fog as T.Fog).color.set('#26231f');sky.dome.visible=false;}else{(scene.background as T.Color).copy(haze);(scene.fog as T.Fog).color.copy(haze);sky.dome.visible=true;}
 {const positions:T.Vector3[]=[],shapes:number[][]=[];
 smoke.forEach(({p,phase,draw,rate},i)=>{const age=(time*.45*rate+phase)%8;const size=.5+age*.34+age*age*.035;const curl=Math.sin(age*1.6+phase)*.16*age;const gust=.8+.3*Math.sin(time*.13+phase*.1);const point=p.clone().add(new T.Vector3((age*.3+age*age*.05)*gust+curl,age*.55-age*age*.012,(-age*.16-age*age*.02)*gust+Math.cos(age+phase)*age*.06));positions.push(point);shapes.push([size*(1+.12*Math.sin(age+phase)),size*.8,phase+age*.12,Math.min(1,age*.9)*Math.pow(1-age/8,1.6)*.8*draw]);smokeDepth[i]=smokePoint.copy(point).applyMatrix4(camera.matrixWorldInverse).z;});

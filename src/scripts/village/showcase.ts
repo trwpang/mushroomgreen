@@ -1,5 +1,6 @@
 import {refineSurface} from '../rendering/surfaces';
 import * as T from 'three';
+import {wetness} from './weather';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 import {ground,chainshopPosition,type Point} from './layout';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -137,10 +138,10 @@ const noCanopy=new T.DataTexture(new Uint8Array(4),1,1);noCanopy.needsUpdate=tru
  * closed canopy grass gives way to leaf litter, bare soil and moss. */
 export function weatherGround(material:T.MeshStandardMaterial,canopy:T.Texture=noCanopy){
   material.onBeforeCompile=shader=>{
-    shader.uniforms.canopyMap={value:canopy};
+    shader.uniforms.canopyMap={value:canopy};shader.uniforms.groundWet=wetness;
     shader.vertexShader='varying vec3 earthPoint;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nearthPoint=(modelMatrix*vec4(transformed,1.0)).xyz;');
-    shader.fragmentShader=`varying vec3 earthPoint;uniform sampler2D canopyMap;
+    shader.fragmentShader=`varying vec3 earthPoint;uniform sampler2D canopyMap;uniform float groundWet;
 float earthHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float earthNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(earthHash(i),earthHash(i+vec2(1.,0.)),f.x),mix(earthHash(i+vec2(0.,1.)),earthHash(i+vec2(1.,1.)),f.x),f.y);}
 `+shader.fragmentShader;
@@ -197,11 +198,16 @@ vec2 pebbleCell=floor(earthPoint.xz*14.),pebbleOff=vec2(earthHash(pebbleCell),ea
 float pebbleSize=.18+.22*earthHash(pebbleCell+9.1);
 float bareSoil=smoothstep(.012,.05,diffuseColor.r-diffuseColor.g)*(1.-litter);
 float pebble=(1.-smoothstep(pebbleSize*.55,pebbleSize*.8,length(fract(earthPoint.xz*14.)-pebbleOff*.6-.2)))*step(.7,earthHash(pebbleCell+1.3))*bareSoil*earthNear*grainFilter;
-diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.12,1.1,1.06)*(.85+earthHash(pebbleCell+5.)*.3),pebble*.6);`);
+diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.12,1.1,1.06)*(.85+earthHash(pebbleCell+5.)*.3),pebble*.6);
+// Rain darkens the ground; bare earth and paths darken most (under canopy less, the leaves shelter it).
+float wetGround=groundWet*(1.-litter*.5);
+diffuseColor.rgb*=1.-wetGround*(.16+.2*bareSoil);`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
 float bareEarth=smoothstep(.002,.025,diffuseColor.r-diffuseColor.g);
 float damp=bareEarth*smoothstep(.52,.75,earthNoise(earthPoint.xz*.62));
-roughnessFactor=mix(roughnessFactor,.31,damp*.77*(1.-litter*.7));`);
+roughnessFactor=mix(roughnessFactor,.31,damp*.77*(1.-litter*.7));
+// Wet sheen on paths and bare soil during and after a shower.
+roughnessFactor=mix(roughnessFactor,.38,wetGround*bareEarth*.8);`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
 vec3 earthRipple=vec3((earthNoise(earthPoint.xz*16.0)-.5)*.23,0.,(earthNoise(earthPoint.zx*16.0+9.0)-.5)*.23);
 float gritHeight=(earthNoise(earthPoint.xz*32.)-.5)*.006*grainFilter+pebble*.0035-tuft*greenGround*.002+leafMask*litter*.0011*grainFilter;
@@ -211,5 +217,5 @@ float groundDet=dot(groundDx,groundR1);
 normal=normalize(max(abs(groundDet),1e-9)*normal-sign(groundDet)*(dFdx(gritHeight)*groundR1+dFdy(gritHeight)*groundR2));
 normal=normalize(normal+mat3(viewMatrix)*earthRipple*.65);`);
   };
-  material.customProgramCacheKey=()=> 'earth-detail-v6';
+  material.customProgramCacheKey=()=> 'earth-detail-v7';
 }
