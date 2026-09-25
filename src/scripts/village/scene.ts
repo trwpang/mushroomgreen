@@ -555,7 +555,7 @@ const span=camera.position.distanceTo(target)>140?200:38,step=span/16,texel=2*(s
 const snapped=new T.Vector3(Math.round(target.x/step)*step,Math.round(target.y/texel)*texel,Math.round(target.z/step)*step);
 sun.target.position.copy(snapped);sun.position.set(snapped.x+34,snapped.y+58,snapped.z+96);Object.assign(sun.shadow.camera,{left:-span-step,right:span+step,top:span+step,bottom:-span-step});sun.shadow.camera.updateProjectionMatrix();
 if(shadowDirty||snapped.distanceToSquared(lastShadowTarget)>1e-6||shadowSpan!==span){renderer.shadowMap.needsUpdate=true;lastShadowTarget.copy(snapped);shadowSpan=span;}}
-lightAmount=T.MathUtils.damp(lightAmount,dusk?1:0,3,dt);landscape.waterMaterial.envMapIntensity=.3*(1-.7*lightAmount);sun.color.set('#ffe4bf');weather.update(time,dt,camera,inspection.active||!!roomHome);const rain=weather.amount;soundscape.setRain(rain);
+lightAmount=T.MathUtils.damp(lightAmount,dusk?1:0,3,dt);landscape.waterMaterial.envMapIntensity=.3*(1-.7*lightAmount);sun.color.set('#ffe4bf');weather.update(time,camera,inspection.active||!!roomHome);const rain=weather.amount;soundscape.setRain(rain);
 // A shower dims the sun and softens the shadows' contrast.
 sun.intensity=T.MathUtils.lerp(3.9,.35,lightAmount)*(1-.68*rain);hemi.intensity=T.MathUtils.lerp(1.5,.75,lightAmount)*(1-.1*rain);
 // Rain thickens the haze beyond the subject only: fog still starts just past what you look at.
