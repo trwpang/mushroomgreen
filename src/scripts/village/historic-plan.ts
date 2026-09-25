@@ -35,7 +35,9 @@ export function historicGround(x:number,z:number,y:number,roadDistance:number){
  const roadFade=smooth(4,9,roadDistance);
  // hollowRadius<1 needs the point within 1.13 of the larger semi-axis; skip the trig beyond that.
  for(const e of excavations){if(Math.hypot(x-e.p[0],z-e.p[1])>1.14*Math.max(e.rx,e.rz))continue;const r=hollowRadius(x,z,e);if(r<1)y-=e.depth*(1-smooth(.25,1,r))*roadFade;}
- for(const e of pools){const r=Math.hypot((x-e.p[0])/e.rx,(z-e.p[1])/e.rz);if(r<1.35)y-=e.depth*(1-smooth(.7,1.35,r))*roadFade;}
+ // Pools sit down in their hollows: a short, firm bank (not a long shallow dish), so the water
+ // reads below the grass rather than as a disc laid on it; the rim wanders in lobes, never an ellipse.
+ for(const e of pools){const dx=(x-e.p[0])/e.rx,dz=(z-e.p[1])/e.rz,a=Math.atan2(dz,dx),r=Math.hypot(dx,dz)/(1+.1*Math.sin(a*3+e.rx)+.06*Math.sin(a*7+e.rz*2));if(r<1.35)y-=e.depth*1.25*(1-smooth(.82,1.22,r))*roadFade;}
  const rail=railNearest(x,z,6.5);if(rail.distance<6.5){const t=1-smooth(1.6,6.5,rail.distance);y+=(railBed(...rail.p)-y)*t*roadFade;}
  return y;
 }

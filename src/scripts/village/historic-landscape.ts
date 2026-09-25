@@ -3,6 +3,8 @@ import {DetailBatch} from './detail-batch';
 import {excavations,hollowRadius,railRoutes,railNearest,pools,shafts,insideSite} from './historic-plan';
 import {ground,nearestRoad,baseGround,type Point} from './layout';
 import {refineSurface} from '../rendering/surfaces';
+import {rushGeometry,swayRushes} from './riverbank';
+import {fireTime} from './fire';
 import {textureDetail} from './texture-detail';
 import type {BackyardShop} from './backyard-workshops';
 export function lineSamples(line:Point[],step=.8){const out:{p:Point;t:Point}[]=[];for(let i=1;i<line.length;i++){const a=line[i-1],c=line[i],l=Math.hypot(c[0]-a[0],c[1]-a[1]),n=Math.ceil(l/step);for(let j=0;j<n;j++)out.push({p:[a[0]+(c[0]-a[0])*j/n,a[1]+(c[1]-a[1])*j/n],t:[(c[0]-a[0])/l,(c[1]-a[1])/l]});}return out;}
@@ -61,11 +63,56 @@ export function addHistoricLandscape(scene:T.Scene){
  };
  const waterMeshes:T.Mesh[]=[];
  let waterTriangles=0;
- for(const e of pools){const water=baseGround(...e.p)-e.depth*.50,vertices:number[]=[];
-  // Sample the actual hollow. Trim water to ground contour to prevent a floating ellipse.
-  for(let x=e.p[0]-e.rx*1.5;x<e.p[0]+e.rx*1.5;x+=.25)for(let z=e.p[1]-e.rz*1.5;z<e.p[1]+e.rz*1.5;z+=.25){const points:Point[]=[[x,z],[x,z+.25],[x+.25,z],[x+.25,z+.25]];for(const ids of [[0,1,2],[2,1,3]])if(ids.every(i=>insideSite(...points[i])&&ground(...points[i])<water-.015)){for(const i of ids)vertices.push(points[i][0],water,points[i][1]);waterTriangles++;}}
-  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geo.computeVertexNormals();const mesh=new T.Mesh(geo,waterMaterial);mesh.name='Small pool in working hollow';scene.add(mesh);waterMeshes.push(mesh);
-  for(let j=0;j<45;j++){const a=j*2.4,p:Point=[e.p[0]+Math.cos(a)*e.rx,e.p[1]+Math.sin(a)*e.rz];if(ground(...p)<water-.1)continue;for(let k=0;k<3;k++){const start=v([p[0]+k*.05,p[1]]);batch.beam(reed,start,start.clone().add(new T.Vector3(.07,.35+(j%7)*.07,.03)),.012);}}
- }
- const result=batch.finish();scene.add(result.root);return {...result,sleepers,railMetres,crossings,bankRocks,shaftCount:shafts.length,pools:pools.length,waterTriangles,waterMaterial,waterMeshes};
+ // Still pools in the working hollows: dark, peaty water, clear at the shallow margin and opaque
+ // in the middle, with slow faint ripples, a true Fresnel reflection and duckweed in the sheltered
+ // edges. The surface runs past the waterline and fades out on the true water depth, so the bank
+ // itself forms the shoreline (no stepped edge). The far-country streams keep `waterMaterial`.
+ const poolMaterial=new T.MeshStandardMaterial({name:'Working-hollow pools',color:'#2a3326',roughness:.16,metalness:0,transparent:true,depthWrite:false,envMapIntensity:.1});
+ poolMaterial.onBeforeCompile=shader=>{
+  shader.uniforms.poolTime=fireTime;
+  shader.vertexShader='attribute float poolDepth;varying float vPoolDepth;varying vec3 poolPoint;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvPoolDepth=poolDepth;poolPoint=(modelMatrix*vec4(position,1.)).xyz;');
+  shader.fragmentShader=`uniform float poolTime;varying float vPoolDepth;varying vec3 poolPoint;
+   float pHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+   float pNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(pHash(i),pHash(i+vec2(1,0)),f.x),mix(pHash(i+vec2(0,1)),pHash(i+vec2(1,1)),f.x),f.y);}
+   float pFbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*pNoise(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
+`+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+   float poolShore=smoothstep(.0,.06,vPoolDepth+(pNoise(poolPoint.xz*3.1)-.5)*.03);
+   float poolDeep=smoothstep(.03,.4,vPoolDepth);
+   // Clear, tea-brown shallows over the mud; dark peaty water where it deepens.
+   diffuseColor.rgb=mix(vec3(.24,.2,.13),vec3(.06,.075,.05),poolDeep);
+   diffuseColor.a=mix(.35,.94,poolDeep)*poolShore;
+   // Duckweed and scum drift into the sheltered margins.
+   float weed=smoothstep(.64,.74,pFbm(poolPoint.xz*.7+vec2(poolTime*.004,0.)))*smoothstep(.35,.06,vPoolDepth)*poolShore*.8;
+   diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.13,.17,.06)*(.85+.3*pNoise(poolPoint.xz*9.)),weed);diffuseColor.a=mix(diffuseColor.a,1.,weed*.85);`);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\n   // Ripples finer than a pixel would turn the whole pool into one sun glint from afar: roughen with distance.\n   roughnessFactor=mix(roughnessFactor+clamp(length(fwidth(poolPoint.xz))*.9,0.,.5),.8,weed);');
+  shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+   // Faint, slow ripples: two drifting noise layers, never regular stripes; none on duckweed.
+   vec2 q=poolPoint.xz*1.7,e=vec2(.05,0.);float h0=pFbm(q+poolTime*vec2(.03,.02))+.5*pFbm(q*2.3-poolTime*vec2(.02,.035));
+   float hx=pFbm(q+e+poolTime*vec2(.03,.02))+.5*pFbm((q+e)*2.3-poolTime*vec2(.02,.035)),hz=pFbm(q+e.yx+poolTime*vec2(.03,.02))+.5*pFbm((q+e.yx)*2.3-poolTime*vec2(.02,.035));
+   normal=normalize(normal+mat3(viewMatrix)*vec3(-(hx-h0),0.,-(hz-h0))*.9*(1.-weed));`);
+ };
+ // A hollow pond is sheltered and matt with scum: keep a little sun sparkle, not a white sheet of glare.
+ const poolShader=poolMaterial.onBeforeCompile;poolMaterial.onBeforeCompile=(shader,renderer)=>{poolShader(shader,renderer);shader.fragmentShader=shader.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n   reflectedLight.directSpecular*=.22;');};
+ poolMaterial.customProgramCacheKey=()=> 'working-pool-v3';
+ const rushes:{p:Point;s:number;a:number}[]=[];
+ pools.forEach((e,pi)=>{const water=baseGround(...e.p)-e.depth*.50,position:number[]=[],depth:number[]=[],index:number[]=[];
+  // Polar ribbon past the shore; the terrain clips it and the depth fade softens the edge.
+  const rings=18,segs=96;
+  for(let i=0;i<=rings;i++)for(let j=0;j<segs;j++){const r=1.6*i/rings,a=j/segs*Math.PI*2,x=e.p[0]+Math.cos(a)*e.rx*r,z=e.p[1]+Math.sin(a)*e.rz*r;position.push(x,water,z);depth.push(water-ground(x,z));}
+  for(let i=0;i<rings;i++)for(let j=0;j<segs;j++){const a=i*segs+j,b=i*segs+(j+1)%segs,c=a+segs,d=b+segs;if(depth[a]>-.08||depth[b]>-.08||depth[c]>-.08||depth[d]>-.08){index.push(a,b,c,b,d,c);waterTriangles+=2;}}
+  // Flat water faces up (checked: the winding above is counter-clockwise seen from above).
+  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(position,3));geo.setAttribute('poolDepth',new T.Float32BufferAttribute(depth,1));geo.setIndex(index);geo.computeVertexNormals();
+  {const n=geo.getAttribute('normal');if(n.count&&n.getY(0)<0){for(let t=0;t<index.length;t+=3){const k=index[t+1];index[t+1]=index[t+2];index[t+2]=k;}geo.setIndex(index);}for(let i=0;i<n.count;i++)n.setXYZ(i,0,1,0);}
+  const mesh=new T.Mesh(geo,poolMaterial);mesh.name='Small pool in working hollow';mesh.renderOrder=2;mesh.receiveShadow=true;scene.add(mesh);waterMeshes.push(mesh);
+  // Soft-rush clumps in the shallows and on the wet margin: irregular groups, never a ring.
+  let seed=4417+pi*131;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  for(let tries=0,groups=0;tries<200&&groups<7;tries++){const a=rand()*Math.PI*2,r=.75+rand()*.5,p:Point=[e.p[0]+Math.cos(a)*e.rx*r,e.p[1]+Math.sin(a)*e.rz*r],d=water-ground(...p);
+   if(d<-.18||d>.22)continue;groups++;const n=2+Math.floor(rand()*5);
+   for(let k=0;k<n;k++){const q:Point=[p[0]+(rand()-.5)*1.1,p[1]+(rand()-.5)*1.1],dq=water-ground(...q);if(dq<-.25||dq>.28)continue;rushes.push({p:q,s:.6+rand()*.7,a:rand()*6.28});}}
+ });
+ if(rushes.length){const clumps=new T.InstancedMesh(rushGeometry(),swayRushes(new T.MeshStandardMaterial({vertexColors:true,side:T.DoubleSide,roughness:.9}),fireTime),rushes.length),m=new T.Object3D();
+  rushes.forEach((r,i)=>{m.position.set(r.p[0],Math.min(ground(...r.p),baseGround(...r.p))-.02,r.p[1]);m.rotation.set(0,r.a,0);m.scale.setScalar(r.s);m.updateMatrix();clumps.setMatrixAt(i,m.matrix);});
+  clumps.name='Pool rushes';clumps.castShadow=true;scene.add(clumps);}
+ const result=batch.finish();scene.add(result.root);return {...result,sleepers,railMetres,crossings,bankRocks,shaftCount:shafts.length,pools:pools.length,waterTriangles,waterMaterial,poolMaterial,waterMeshes};
 }
