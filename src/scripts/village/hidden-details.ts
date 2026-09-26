@@ -189,29 +189,46 @@ function horseshoe(){
  return group;
 }
 
-// 7 · Initials carved into the gate: TRW and a date, the date's end hidden under a later patch board.
+// 7 · Initials cut into the gate: TRW and a date, the end of the date hidden under a later patch.
+// The cuts are in the board's own face: a groove depth map gives a normal map (lit and shaded
+// groove walls) and darkens the weathered wood inside the cuts. Nothing is laid on top.
 function gateCarving(){
- const W=512,H=192,draw=(bump:boolean)=>(g:CanvasRenderingContext2D,w:number,h:number)=>{
-  g.fillStyle=bump?'#fff':'rgba(0,0,0,0)';g.fillRect(0,0,w,h);
-  const groove=bump?'#262626':'rgba(40,28,18,.92)',lip=bump?'#ffffff':'rgba(220,196,160,.35)';
-  g.textBaseline='middle';g.lineJoin='round';
-  const text=(s:string,x:number,y:number,size:number)=>{g.font=`bold ${size}px Georgia, serif`;g.lineWidth=3;g.strokeStyle=lip;g.strokeText(s,x+2,y+2);g.fillStyle=groove;g.fillText(s,x,y);};
-  // Knife-cut letters: straight V-cuts, slightly uneven, as a pocket knife would leave them.
-  const r=seeded(1852),cut=(pts:[number,number][],width:number)=>{g.lineCap='round';for(const pass of [0,1]){g.beginPath();pts.forEach(([x,y],i)=>{const jx=x+(r()-.5)*2.5,jy=y+(r()-.5)*2.5;if(i)g.lineTo(jx+(pass?2:0),jy+(pass?2:0));else g.moveTo(jx+(pass?2:0),jy+(pass?2:0));});g.lineWidth=pass?width*.45:width;g.strokeStyle=pass?lip:groove;g.stroke();}};
-  const L=(x:number,y:number,s=1)=>({T:()=>{cut([[x,y],[x+56*s,y+3]],11);cut([[x+28*s,y+1],[x+30*s,y+92*s]],11);},
-   R:()=>{cut([[x,y+2],[x+2,y+92*s]],11);cut([[x,y+2],[x+34*s,y+4],[x+48*s,y+22*s],[x+34*s,y+44*s],[x+2,y+46*s]],10);cut([[x+22*s,y+46*s],[x+52*s,y+92*s]],11);},
-   W:()=>cut([[x,y],[x+16*s,y+92*s],[x+36*s,y+30*s],[x+56*s,y+90*s],[x+74*s,y-2]],11)});
-  L(60,22).T();L(150,26).R();L(236,20).W();
-  g.font='bold 52px Georgia, serif';g.textBaseline='middle';g.lineWidth=2;g.strokeStyle=lip;g.strokeText('1852',152,160);g.fillStyle=groove;g.fillText('1852',150,158);
- };
- const map=canvasTexture([W,H],draw(false)),bump=canvasTexture([W,H],draw(true),false);
+ const BW=1.16,BH=.13,W=2048,H=Math.round(W*BH/BW),px=(x:number)=>(x+BW/2)*W/BW,py=(y:number)=>(BH/2-y)*H/BH;
+ // 1. Cut mask: knife strokes for the letters, a small cut figure for the date.
+ const mask=document.createElement('canvas');mask.width=W;mask.height=H;const g=mask.getContext('2d')!;
+ g.fillStyle='#000';g.fillRect(0,0,W,H);g.strokeStyle=g.fillStyle='#fff';g.lineCap='round';g.lineJoin='round';
+ const r=seeded(1852),cut=(pts:[number,number][],width=10)=>{g.lineWidth=width;g.beginPath();pts.forEach(([x,y],k)=>{const X=px(x)+(r()-.5)*3,Y=py(y)+(r()-.5)*3;if(k)g.lineTo(X,Y);else g.moveTo(X,Y);});g.stroke();};
+ const top=.05,bottom=-.032;
+ cut([[-.33,top],[-.265,top+.003]]);cut([[-.297,top+.002],[-.294,bottom]]);
+ cut([[-.235,top],[-.233,bottom]]);cut([[-.235,top],[-.2,top-.002],[-.186,top-.018],[-.2,top-.04],[-.233,top-.041]]);cut([[-.21,top-.041],[-.18,bottom]]);
+ cut([[-.15,top+.002],[-.132,bottom],[-.112,top-.03],[-.093,bottom-.002],[-.075,top]]);
+ g.font='600 64px Georgia, serif';g.textBaseline='middle';g.fillText('1852',px(-.02),py(.01));
+ // 2. Depth: blur the mask so each cut has a V-shaped floor.
+ const src=g.getImageData(0,0,W,H).data,depth=new Float32Array(W*H),tmp=new Float32Array(W*H);
+ for(let k=0;k<W*H;k++)depth[k]=src[k*4]/255;
+ const blur=(radius:number)=>{for(let y=0;y<H;y++){let sum=0;for(let x=-radius;x<=radius;x++)sum+=depth[y*W+Math.min(W-1,Math.max(0,x))];for(let x=0;x<W;x++){tmp[y*W+x]=sum/(2*radius+1);sum+=depth[y*W+Math.min(W-1,x+radius+1)]-depth[y*W+Math.max(0,x-radius)];}}
+  for(let x=0;x<W;x++){let sum=0;for(let y=-radius;y<=radius;y++)sum+=tmp[Math.min(H-1,Math.max(0,y))*W+x];for(let y=0;y<H;y++){depth[y*W+x]=sum/(2*radius+1);sum+=tmp[Math.min(H-1,y+radius+1)*W+x]-tmp[Math.max(0,y-radius)*W+x];}}};
+ blur(3);blur(2);
+ // 3. Colour (weathered grey oak with grain; darker, grimier wood in the cuts) and normals.
+ const colour=document.createElement('canvas'),normal=document.createElement('canvas');colour.width=normal.width=W;colour.height=normal.height=H;
+ const ci=colour.getContext('2d')!.createImageData(W,H),ni=normal.getContext('2d')!.createImageData(W,H),grain=new Float32Array(H);
+ for(let y=0;y<H;y++)grain[y]=Math.sin(y*.21)*.5+Math.sin(y*.047+1.3)*.8+(r()-.5)*.6;
+ const strength=16;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const k=y*W+x,d=depth[k],streak=grain[y]+Math.sin(x*.004+y*.02)*.4;
+  const base=[125+streak*6,114+streak*5,99+streak*4],cutTone=Math.pow(Math.min(1,d*1.6),.8);
+  ci.data[k*4]=base[0]*(1-cutTone*.28);ci.data[k*4+1]=base[1]*(1-cutTone*.31);ci.data[k*4+2]=base[2]*(1-cutTone*.34);ci.data[k*4+3]=255;
+  const dx=(depth[y*W+Math.min(W-1,x+1)]-depth[y*W+Math.max(0,x-1)])*.5,dv=(depth[Math.max(0,y-1)*W+x]-depth[Math.min(H-1,y+1)*W+x])*.5;
+  // Height is -depth; the surface normal leans away from the uphill side of each groove wall.
+  let nx=dx*strength,ny=dv*strength,nz=1;const l=Math.hypot(nx,ny,nz);nx/=l;ny/=l;nz/=l;
+  ni.data[k*4]=(nx*.5+.5)*255;ni.data[k*4+1]=(ny*.5+.5)*255;ni.data[k*4+2]=(nz*.5+.5)*255;ni.data[k*4+3]=255;}
+ colour.getContext('2d')!.putImageData(ci,0,0);normal.getContext('2d')!.putImageData(ni,0,0);
+ const map=new T.CanvasTexture(colour);map.colorSpace=T.SRGBColorSpace;map.anisotropy=8;const normalMap=new T.CanvasTexture(normal);normalMap.anisotropy=8;
+ const face=new T.MeshStandardMaterial({map,normalMap,normalScale:new T.Vector2(1.4,1.4),roughness:.92}),plain=std('#7d7263',.95);
  const group=new T.Group();group.name='TRW carved on the gate';
- // The old ledge board that carries the carving, worn grey.
- const board=new T.Mesh(new T.BoxGeometry(1.16,.13,.024),std('#7d7263',.95));board.castShadow=board.receiveShadow=true;group.add(board);
- const decal=new T.Mesh(new T.PlaneGeometry(.52,.195),new T.MeshStandardMaterial({map,bumpMap:bump,bumpScale:2.5,transparent:true,roughness:.95,polygonOffset:true,polygonOffsetFactor:-2}));decal.position.set(-.08,0,.0125);group.add(decal);
+ const board=new T.Mesh(new T.BoxGeometry(BW,BH,.024),[plain,plain,plain,plain,face,plain]);board.castShadow=board.receiveShadow=true;group.add(board);
  // The later repair: a paler, newer piece nailed over the end of the date.
- const patch=new T.Mesh(new T.BoxGeometry(.13,.08,.02),std('#a38d6a',.9));patch.position.set(-.085,-.052,.022);patch.rotation.z=.05;patch.castShadow=true;group.add(patch);
- const nail=std('#2b2927',.6,.6);for(const [x,y] of [[-.135,-.022],[-.035,-.019],[-.135,-.082],[-.035,-.08],[-.52,0],[.52,0]]){const n=new T.Mesh(new T.CylinderGeometry(.004,.004,.004,6),nail);n.rotation.x=Math.PI/2;n.position.set(x,y,x>.4||x<-.4?.014:.034);group.add(n);}
+ const patch=new T.Mesh(new T.BoxGeometry(.12,.085,.018),std('#a38d6a',.9));patch.position.set(.097,-.004,.021);patch.rotation.z=.05;patch.castShadow=true;group.add(patch);
+ const nail=std('#2b2927',.6,.6);for(const [x,y,z] of [[.052,.028,.031],[.142,.032,.031],[.052,-.036,.031],[.142,-.032,.031],[-.54,0,.013],[.54,0,.013]]){const n=new T.Mesh(new T.CylinderGeometry(.004,.004,.004,6),nail);n.rotation.x=Math.PI/2;n.position.set(x,y,z);group.add(n);}
  return group;
 }
 
@@ -234,19 +251,16 @@ function facePipe(rand:Rand){
  // Stem, broken short, lying back along the sill.
  b.add(new T.CylinderGeometry(.0024,.0036,.1,8).rotateX(Math.PI/2),clay,m4(0,.009,-.056,-.06));
  const pipe=b.build('Clay pipe with a face');pipe.children.forEach(c=>{c.rotation.z=Math.PI/2;c.position.y=.0125;});
- const tin=new Batch(),red=std('#5e231a',.5,.55),worn=std('#9a958a',.35,.85),rust=std('#7a4a2c',.95,.2);
- // Body: a shallow oval tin, dented on one side, its paint worn to bare tinplate at the rim.
- const body=new T.CylinderGeometry(1,1,.02,28,2).scale(.043,1,.028),bp=body.attributes.position;
- for(let i=0;i<bp.count;i++){const x=bp.getX(i),z=bp.getZ(i);if(x>.018&&z>0)bp.setZ(i,z-.005*Math.min(1,(x-.018)/.02));}body.computeVertexNormals();
- tin.add(body,red,m4(0,.01,0));tin.add(new T.TorusGeometry(1,.035,4,28).scale(.043,.028,1),worn,m4(0,.02,0,Math.PI/2));
- // Lid: pushed back a little so a crescent of tobacco shows; a faded paper label on top.
- tin.add(new T.CylinderGeometry(1,1,.006,28).scale(.0445,1,.0295),red,m4(-.007,.0225,-.003,0,.08,.035));
- tin.add(new T.CircleGeometry(.9,24).scale(.0445,.0295,1),std('#6b4a2e',1),m4(0,.0195,0,-Math.PI/2));
+ const tin=new Batch(),red=std('#6a261c',.5,.55),worn=std('#8f8a80',.35,.85);
+ // A flat oval tin, dented on one side; the lid sits a little askew; paint worn at the base edge.
+ const body=new T.CylinderGeometry(1,1,.014,28,2).scale(.043,1,.028),bp=body.attributes.position;
+ for(let i=0;i<bp.count;i++){const x=bp.getX(i),z=bp.getZ(i);if(x>.018&&z>0)bp.setZ(i,z-.004*Math.min(1,(x-.018)/.02));}body.computeVertexNormals();
+ tin.add(body,red,m4(0,.007,0));tin.add(new T.CylinderGeometry(1,1,.0015,28).scale(.0432,1,.0282),worn,m4(0,.0008,0));
+ tin.add(new T.CylinderGeometry(1,1,.005,28).scale(.0445,1,.0292),red,m4(-.003,.0165,-.0015,0,.06,0));
  const label=canvasTexture([128,84],(g,w,h)=>{g.fillStyle='#d8c9a2';g.beginPath();g.ellipse(w/2,h/2,w/2-2,h/2-2,0,0,7);g.fill();g.strokeStyle='#7a2a1f';g.lineWidth=3;g.beginPath();g.ellipse(w/2,h/2,w/2-8,h/2-8,0,0,7);g.stroke();
   g.fillStyle='#6d241a';g.font='bold 17px Georgia, serif';g.textAlign='center';g.fillText('FINE',w/2,h/2-4);g.font='bold 15px Georgia, serif';g.fillText('SHAG',w/2,h/2+14);
   const r=seeded(1865);g.fillStyle='rgba(120,90,60,.45)';for(let i=0;i<40;i++)g.fillRect(r()*w,r()*h,2+r()*6,1+r()*3);});
- tin.add(new T.CircleGeometry(.8,24).scale(.0445,.0295,1),std('#ffffff',.9,0,{map:label,transparent:true}),m4(-.007,.0256,-.003,-Math.PI/2+.035,0,-.08));
- tin.add(new T.TorusGeometry(1,.05,4,28).scale(.0445,.0295,1),rust,m4(-.007,.0254,-.003,Math.PI/2+.035,0,.08));
+ tin.add(new T.CircleGeometry(.82,24).scale(.0445,.0292,1),std('#ffffff',.9,0,{map:label,transparent:true}),m4(-.003,.0192,-.0015,-Math.PI/2,0,-.06));
  const tinGroup=tin.build('Battered tobacco tin');
  const group=new T.Group();group.name='Pipe and tobacco tin on the ledge';pipe.position.set(-.04,0,.005);pipe.rotation.y=.35;tinGroup.position.set(.07,0,-.01);tinGroup.rotation.y=-.2;group.add(pipe,tinGroup);
  return group;
@@ -293,7 +307,7 @@ export type HiddenDetailAnchors={
 export function addHiddenDetails(scene:T.Scene,a:HiddenDetailAnchors){
  const root=new T.Group();root.name='Hidden details';scene.add(root);
  const where:Record<string,number[]>={};
- const note=(name:string,o:T.Object3D)=>{o.updateMatrixWorld(true);const p=o.getWorldPosition(new T.Vector3());where[name]=[+p.x.toFixed(2),+p.y.toFixed(2),+p.z.toFixed(2)];};
+ const note=(name:string,o:T.Object3D)=>{o.userData.hiddenDetail=name;o.updateMatrixWorld(true);const p=o.getWorldPosition(new T.Vector3());where[name]=[+p.x.toFixed(2),+p.y.toFixed(2),+p.z.toFixed(2)];};
  where.founder=[a.founder.x,a.founder.z,a.founder.angle,[6.4,7.2,9.2][a.founder.style]*a.founder.sx,[4.6,4.8,4.5][a.founder.style]*a.founder.sz].map(n=>+n.toFixed(3));
  const weaverHomes=a.homes.filter(h=>/Weaver/.test(h.family??'')&&h.number!==a.chainshopReplacesHouse);
 
@@ -325,7 +339,7 @@ export function addHiddenDetails(scene:T.Scene,a:HiddenDetailAnchors){
  // 5 · In the lee of Henry's back wall, near the gable end.
  {const fd=[4.6,4.8,4.5][a.founder.style]*a.founder.sz,fw=[6.4,7.2,9.2][a.founder.style]*a.founder.sx,centre=a.yardPoint(fw/2-1.3,-(fd/2+1.0)),angle=a.founder.angle;
   const place=(x:number,z:number)=>{const c=Math.cos(angle),s=Math.sin(angle),px=centre.x+c*x+s*z,pz=centre.z-s*x+c*z;return new T.Vector3(px,ground(px,pz),pz);};
-  const game=marbles(seeded(7051),place);root.add(game);where.marbles=[+centre.x.toFixed(2),+centre.y.toFixed(2),+centre.z.toFixed(2)];}
+  const game=marbles(seeded(7051),place);game.userData.hiddenDetail='marbles';root.add(game);where.marbles=[+centre.x.toFixed(2),+centre.y.toFixed(2),+centre.z.toFixed(2)];}
 
  // 7 · On the mended gate beside Henry's yard, on the lane side.
  {const p=a.yardPoint(5.8,-1.75,.64),carving=gateCarving();carving.position.copy(p);carving.rotation.y=a.founder.angle+Math.PI/2;
@@ -336,11 +350,13 @@ export function addHiddenDetails(scene:T.Scene,a:HiddenDetailAnchors){
   const items=facePipe(seeded(7081));items.position.copy(p);items.rotation.y=shop.rotation.y;root.add(items);note('facePipe',items);}
 
  // 9 · Parked beside the works cart's right wheel.
- {const toy=toyCart(seeded(7091));toy.position.set(.95,0,5.35);a.forgeRoot.add(toy);toy.updateMatrixWorld(true);
+ {const toy=toyCart(seeded(7091));toy.scale.setScalar(1.35);toy.position.set(1.0,0,5.35);a.forgeRoot.add(toy);toy.updateMatrixWorld(true);
   const w=toy.getWorldPosition(new T.Vector3());toy.position.y=ground(w.x,w.z)-a.forgeRoot.position.y+.002;toy.rotation.y=-.35;note('toyCart',toy);}
 
  // 10 · A patch in the lane-side grass.
  {const caps=libertyCaps(seeded(7101),16);caps.position.set(a.grass[0],ground(...a.grass)-.004,a.grass[1]);root.add(caps);note('libertyCaps',caps);}
 
- return {root,where};
+ // Every detail, for double-click focusing (their small CPU copies are kept so rays can hit them).
+ const items:T.Object3D[]=[];scene.traverse(o=>{if(o.userData.hiddenDetail)items.push(o);});
+ return {root,where,items};
 }
