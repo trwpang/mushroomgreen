@@ -32,6 +32,7 @@ export function serviceStore(number:number, width:number, depth:number, height:n
   const eave=Math.max(1.94,height),pitch=.30,roof=(z:number)=>eave+(z-front)*pitch;
   const doorX=(number%3-1)*width*.12,doorW=.76,doorH=1.76;
   const left=doorX-doorW/2,right=doorX+doorW/2;
+  group.userData.store={width,depth,eave,doorX,doorW};
   const brick=['#784432','#87503a','#6a4335','#925741'][number%4];
   const timber=['#61503a','#514735','#706048'][number%3];
   const isTimber=number%2===1;

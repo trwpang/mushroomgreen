@@ -20,6 +20,7 @@ import {createFire,fireTime,softSmokeTexture} from './fire';
 import {installLightPool,updateLightPool} from './light-pool';
 import {addSpringFlowers} from './spring-flowers';
 import {addFlyAgarics} from './fly-agaric';
+import {addHiddenDetails} from './hidden-details';
 import {createSoundscape} from './soundscape';
 import {chunkInstances} from './instance-chunks';
 import {releaseGeometryAfterUpload,releaseTextureImages} from './release-cpu';
@@ -374,6 +375,17 @@ const woodlandFloor=addWoodlandFloor(scene,{trees:treePositions.map(p=>({p})),cl
 paintWoodlandLitter(ctx,pixel,woodlandFloor.litter);groundTexture.needsUpdate=true;mount.dataset.woodlandFloor=JSON.stringify(woodlandFloor.counts);
 // Fly agarics at the foot of the tree beside the fallen log, right of the brook view.
 addFlyAgarics(scene,[{p:[-75.4,69.25],radius:.09,height:.2,open:.85,lean:.06},{p:[-74.7,69.8],radius:.074,height:.16,open:.6,lean:-.08},{p:[-75.05,69.65],radius:.034,height:.07,open:.05,lean:.04}]);
+// Ten small things to find (hidden-details.ts): the boat sits at the brook's edge by the fly agarics,
+// the liberty caps in the lane-side grass in view of the lane stop.
+{const agaric:Point=[-75.05,69.65],viewTarget:Point=[-73,70];let p:Point=brooks[0][0],along:Point=[1,0];
+ // The brook stop looks at the brook point nearest viewTarget; the boat sits there, at the agarics' bank.
+ const line=brooks[0];let k=0;for(let i=1;i<line.length;i++)if(Math.hypot(line[i][0]-viewTarget[0],line[i][1]-viewTarget[1])<Math.hypot(line[k][0]-viewTarget[0],line[k][1]-viewTarget[1]))k=i;
+ {const a=line[Math.max(0,k-1)],b=line[Math.min(line.length-1,k+1)],l=Math.hypot(b[0]-a[0],b[1]-a[1])||1;p=line[k];along=[(b[0]-a[0])/l,(b[1]-a[1])/l];}
+ const toward=(agaric[0]-p[0])*-along[1]+(agaric[1]-p[1])*along[0],bank=Math.sign(toward)*streamWidth(...p)*.38;
+ const lane:Point=[-47.6,-62.9],grass=grassPoints.reduce((best,g)=>Math.hypot(g.p[0]-lane[0],g.p[1]-lane[1])<Math.hypot(best.p[0]-lane[0],best.p[1]-lane[1])?g:best,grassPoints[0]).p;
+ const stores:T.Object3D[]=[];scene.traverse(o=>{if(o.userData.store)stores.push(o);});
+ const details=addHiddenDetails(scene,{forgeRoot,weaverShop,founder,homes,stores,brook:{p,along,water:streamSurface(...p),bank},grass,yardPoint,chainshopReplacesHouse});
+ mount.dataset.hiddenDetails=JSON.stringify(details.where);}
 stage('before lane verges');// Lane margins avoid buildings, paths, working props, animals and reserved sites.
 const occupied=[...life.placements.map(a=>a.p),...workingProps.placements.map(a=>a.p)];
 const laneClear=(p:Point,r:number)=>within(...p)&&!siteIssue(p,r)&&industryClear(...p,r)&&!occupied.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1+r)&&
@@ -506,7 +518,7 @@ const inhabited=inhabitHouses(scene,homes);
 const initialPlace=new URLSearchParams(location.search),requestedView=initialPlace.get('view');view(requestedView&&['village','approach','forge','henry','brook','lane','washing','yard','outside','workings','workshops'].includes(requestedView)?requestedView:'village',true);
 // Review hook: ?cam=x,y,z,tx,ty,tz fixes an exact outdoor camera for repeatable comparisons.
 // Performance inspection: ?debug exposes the scene graph and renderer statistics.
-if(initialPlace.has('debug'))Object.assign(window,{__village:{scene,renderer,camera,controls,composer,ao}});
+if(initialPlace.has('debug'))Object.assign(window,{__village:{scene,renderer,camera,controls,composer,ao,THREE:T}});
 const reviewCamera=initialPlace.get('cam')?.split(',').map(Number);if(reviewCamera?.length===6&&reviewCamera.every(Number.isFinite))move(new T.Vector3(...reviewCamera.slice(0,3)),new T.Vector3(...reviewCamera.slice(3)),true);
 // Room layouts for every cottage are planned in a worker and seeded into the cache as they arrive.
 {const planner=new Worker(new URL('./plan-worker.ts',import.meta.url),{type:'module'});let remaining=homes.length;
